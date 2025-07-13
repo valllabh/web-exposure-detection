@@ -167,7 +167,7 @@ Generates JSON reports following schema v1 based on sample-exposure-report.md:
 {
   "schema_version": "v1",
   "report_metadata": {
-    "title": "TotalAppSec External Application Discovery for example.com",
+    "title": "External Application Discovery for example.com",
     "date": "2025-07-12",
     "target_domain": "example.com"
   },
