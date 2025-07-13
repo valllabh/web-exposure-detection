@@ -1,0 +1,290 @@
+id: frontend-tech-detection
+info:
+  name: Frontend Technology Detection
+  author: Vallabh
+  severity: info
+  description: |
+    Detects signs of frontend JavaScript frameworks commonly used in Single Page Applications.
+    React.js, Angular, Vue.js, Svelte, Ember.js, Preact, SolidJS, Backbone.js, Alpine.js, Lit,
+    Marko, Mithril, Inferno, Hyperapp, Dojo Toolkit, Knockout.js, Meteor, Next.js, Nuxt.js, Gatsby,
+    Remix, Astro, Qwik, Fresh
+  tags: frontend,spa,js,detection
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+    matchers:
+      # detects if body has
+      - type: regex
+        part: body
+        regex:
+          # React.js
+          - (data-reactroot|__REACT_DEVTOOLS_GLOBAL_HOOK__|react-dom\/)
+          # Angular
+          - (<[^>]+(ng-app|ng-controller|ng-model)[^>]*>|ng-version=|angular\.[a-z])
+          # Vue.js
+          - (window\.__VUE__|vue\.[a-z]|data-v-)
+          # Svelte
+          - (svelte-[a-z0-9]+|__SVELTEKIT_DEV__|SvelteKit)
+          # Ember.js
+          - (Ember\.ENV|Ember\.Application|data-ember-extension)
+          # Preact
+          - (preactRender|preact\/|__PREACT_DEVTOOLS__)
+          # SolidJS
+          - (window\.__SOLID_DEVTOOLS_HOOK__|solid-js\/|SolidRoot)
+          # Backbone.js
+          - (Backbone\.(Model|View|Router|Collection))
+          # Alpine.js
+          - (<[^>]+(x-data|x-init|x-bind|x-on|x-model)[^>]*>|Alpine\.start)
+          # Lit
+          - (lit-html\/|lit-element\/|LitElement\.prototype)
+          # Marko
+          - (\$marko|\$_marko|marko-components|marko\.runtime)
+          # Mithril
+          - (m\.route\(|m\.render\(|m\.mount\()
+          # Inferno
+          - (Inferno\.createElement|Inferno\.render)
+          # Hyperapp
+          - (hyperapp\.app|h\.app\()
+          # Dojo Toolkit
+          - (dojo\.require\(|dojo\.addOnLoad\(|dojo\.version)
+          # Knockout.js
+          - (ko\.applyBindings\(|ko\.observable\()
+          # Meteor
+          - (__meteor_runtime_config__|Meteor\.is(Client|Server))
+          # Next.js
+          - (__NEXT_DATA__|next\/static\/chunks\/|window\.__NEXT_PRELOAD_READY__)
+          # Nuxt.js
+          - (window\.__NUXT__|nuxt\.config|nuxtState)
+          # Gatsby
+          - (window\.___gatsby|gatsby-config\.js|gatsby-browser\.js)
+          # Remix
+          - (__remixContext|window\.__REMIX_CONTEXT__)
+          # Astro
+          - (Astro\.fetchContent|astro\/client|astro:load)
+          # Qwik
+          - (qwik\.devtools|qwik\.hydrate|QwikCity)
+          # Fresh
+          - (window\.__FRESH_DATA__|FreshRuntime|window\.__FRESH_MANIFEST__)
+    extractors:
+      # Extractor for React.js
+      - type: regex
+        name: react
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(data-reactroot|__REACT_DEVTOOLS_GLOBAL_HOOK__|react-dom\\/)"
+      # Extractor for Angular
+      - type: regex
+        name: angular
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(ng-app|ng-controller|ng-model|ng-version=|angular\\.[a-z])"
+      # Extractor for Vue.js
+      - type: regex
+        name: vuejs
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(window\\.__VUE__|vue\\.[a-z]|data-v-)"
+      # Extractor for Svelte
+      - type: regex
+        name: svelte
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(svelte-[a-z0-9]+|__SVELTEKIT_DEV__|SvelteKit)"
+      # Extractor for Ember.js
+      - type: regex
+        name: ember
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(Ember\\.ENV|Ember\\.Application|data-ember-extension)"
+      # Extractor for Preact
+      - type: regex
+        name: preact
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(preactRender|preact\\/|__PREACT_DEVTOOLS__)"
+      # Extractor for SolidJS
+      - type: regex
+        name: solidjs
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(window\\.__SOLID_DEVTOOLS_HOOK__|solid-js/|SolidRoot)"
+      # Extractor for Backbone.js
+      - type: regex
+        name: backbone
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(Backbone.(Model|View|Router|Collection))"
+      # Extractor for Alpine.js
+      - type: regex
+        name: alpine
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(<[^>]+(x-data|x-init|x-bind|x-on|x-model)[^>]*>|Alpine\\.start)"
+      # Extractor for Lit
+      - type: regex
+        name: lit
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(lit-html\\/|lit-element\\/|LitElement\\.prototype)"
+      # Extractor for Marko
+      - type: regex
+        name: marko
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(\\$marko|\\$_marko|marko-components|marko\\.runtime)"
+      # Extractor for Mithril
+      - type: regex
+        name: mithril
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(m\\.route\\(|m\\.render\\(|m\\.mount\\()"
+      # Extractor for Inferno
+      - type: regex
+        name: inferno
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(Inferno\\.createElement|Inferno\\.render)"
+      # Extractor for Hyperapp
+      - type: regex
+        name: hyperapp
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(hyperapp\\.app|h\\.app\\()"
+      # Extractor for Dojo Toolkit
+      - type: regex
+        name: dojo
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(dojo\\.require\\(|dojo\\.addOnLoad\\(|dojo\\.version)"
+      # Extractor for Knockout.js
+      - type: regex
+        name: knockout
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(ko\\.applyBindings\\(|ko\\.observable\\()"
+      # Extractor for Meteor
+      - type: regex
+        name: meteor
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(__meteor_runtime_config__|Meteor\\.is(Client|Server))"
+      # Extractor for Next.js
+      - type: regex
+        name: nextjs
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(__NEXT_DATA__|next\\/static\\/chunks\\/|window\\.__NEXT_PRELOAD_READY__)"
+      # Extractor for Nuxt.js
+      - type: regex
+        name: nuxtjs
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(window\\.__NUXT__|nuxt\\.config|nuxtState)"
+      # Extractor for Gatsby
+      - type: regex
+        name: gatsby
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(window\\.___gatsby|gatsby-config\\.js|gatsby-browser\\.js)"
+      # Extractor for Remix
+      - type: regex
+        name: remix
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(__remixContext|window\\.__REMIX_CONTEXT__)"
+      # Extractor for Astro
+      - type: regex
+        name: astro
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(Astro\\.fetchContent|astro\\/client|astro:load)"
+      # Extractor for Qwik
+      - type: regex
+        name: qwik
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(qwik\\.devtools|qwik\\.hydrate|QwikCity)"
+      # Extractor for Fresh
+      - type: regex
+        name: fresh
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(window\\.__FRESH_DATA__|FreshRuntime|window\\.__FRESH_MANIFEST__)"
+      # DSL to return framework name if extractor has value example for extractor angular
+      # and if extractor has value then return Angular
+      # else return empty
+      - type: dsl
+        dsl:
+          - "len(react) > 0 ? 'React.js' : ''"
+          - "len(angular) > 0 ? 'Angular' : ''"
+          - "len(vuejs) > 0 ? 'Vue.js' : ''"
+          - "len(svelte) > 0 ? 'Svelte' : ''"
+          - "len(ember) > 0 ? 'Ember.js' : ''"
+          - "len(preact) > 0 ? 'Preact' : ''"
+          - "len(solidjs) > 0 ? 'SolidJS' : ''"
+          - "len(backbone) > 0 ? 'Backbone.js' : ''"
+          - "len(alpine) > 0 ? 'Alpine.js' : ''"
+          - "len(lit) > 0 ? 'Lit' : ''"
+          - "len(marko) > 0 ? 'Marko' : ''"
+          - "len(mithril) > 0 ? 'Mithril' : ''"
+          - "len(inferno) > 0 ? 'Inferno' : ''"
+          - "len(hyperapp) > 0 ? 'Hyperapp' : ''"
+          - "len(dojo) > 0 ? 'Dojo Toolkit' : ''"
+          - "len(knockout) > 0 ? 'Knockout.js' : ''"
+          - "len(meteor) > 0 ? 'Meteor' : ''"
+          - "len(nextjs) > 0 ? 'Next.js' : ''"
+          - "len(nuxtjs) > 0 ? 'Nuxt.js' : ''"
+          - "len(gatsby) > 0 ? 'Gatsby' : ''"
+          - "len(remix) > 0 ? 'Remix' : ''"
+          - "len(astro) > 0 ? 'Astro' : ''"
+          - "len(qwik) > 0 ? 'Qwik' : ''"
+          - "len(fresh) > 0 ? 'Fresh' : ''"

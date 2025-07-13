@@ -1,0 +1,32 @@
+id: live-domain
+info:
+  name: Detects if domain is live
+  author: Vallabh
+  severity: info
+  description: |
+    Detects if domain is live
+  tags: http
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+    matchers-condition: or
+    matchers:
+      # detects if domain is live
+      - type: status
+        status:
+          - 200
+          - 201
+          - 300
+          - 301
+          - 302
+          - 307
+          - 308
+          - 400
+          - 401
+          - 403
+          - 404
+          - 500
+          - 502
+          - 503
+          - 504

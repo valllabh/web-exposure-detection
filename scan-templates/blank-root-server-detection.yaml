@@ -1,0 +1,37 @@
+id: blank-root-server-detection
+info:
+  name: HTTP Server with Blank Root
+  author: Vallabh
+  severity: info
+  description: |
+    Detects signs of HTTP Server with Blank Root
+  tags: http,blank-root
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+    matchers-condition: and
+    matchers:
+      # detect if resonse is of type html
+      - type: word
+        part: header
+        words:
+          - "text/html"
+      # detect if http status code is 2XX 3XX 4XX 5XX 
+      - type: status
+        status:
+          - 200
+          - 204
+          - 301
+          - 302
+          - 401
+          - 403
+          - 404
+          - 500
+      # detect if page does not contain any style or script tags
+      - type: regex
+        part: body
+        regex:
+          - "<style.*?>.*?</style>"
+          - "<script.*?>.*?</script>"
+        negative: true

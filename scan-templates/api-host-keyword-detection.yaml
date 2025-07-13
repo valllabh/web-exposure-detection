@@ -1,0 +1,19 @@
+id: api-host-keyword-detection
+info:
+  name: API Server Keyword Detection
+  author: Vallabh
+  severity: info
+  description: |
+    Detects signs of API Server
+  tags: http,api
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+    matchers-condition: or
+    matchers:
+      # detects if host name has sign of api
+      - type: regex
+        part: host
+        regex:
+          - '(?i)(api|apis|api-server|api-gateway|api-portal|api-docs|alpha-api|api|api-alpha|api-beta|api-demo|api-dev|api-fhir|api-gateway|api-gw|api-int|api-integration|api-preprod|api-prod|api-production|api-sandbox|api-stage|api-staging|api-stg|api-test|api-uat|api-v1|api-v2|api-v3|api1|api2|api3|apigateway|apigw|apis|b2b-api|b2c-api|beta-api|client-api|core-api|customer-api|demo-api|dev-api|external-api|fhir|fhir-api|gateway|graph|graph-api|graphapi|graphql|gw|int-api|integration-api|internal-api|legacy-api|mapi|mobile-api|mobileapi|new-api|old-api|open-api|openapi|openbanking|partner-api|partners-api|preprod-api|private-api|prod-api|production-api|psd2|public-api|qa-api|rest-api|restapi|sandbox-api|service|services|stage-api|staging-api|stg-api|test-api|uat-api|xs2a)'

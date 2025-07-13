@@ -1,0 +1,89 @@
+{
+    "website-host-detection": {
+        "label": "Web Server",
+        "detection_template": ["Web App", "Web Server"],
+        "finding_template": ["Web Server", "Live Domain"]
+    },
+    "api-server-detection": {
+        "label": "API Server Detection",
+        "detection_template": ["API", "Serving JSON/XML"],
+        "finding_template": ["Serving JSON/XML"]
+    },
+    "backend-framework-detection": {
+        "label": "Backend Framework",
+        "detection_template": ["Web App", "Backend Framework/CMS"],
+        "finding_template": [
+            "Backend Framework/CMS",
+            "{{if .ExtractedResults}}Using {{join .ExtractedResults \", \"}}{{end}}"
+        ]
+    },
+    "xhr-detection-headless": {
+        "label": "Using API",
+        "detection_template": ["Web App", "Using API"],
+        "finding_template": ["Using API"]
+    },
+    "live-domain": {
+        "label": "Live Domain",
+        "detection_template": ["Live Domain"],
+        "finding_template": ["Live Domain"]
+    },
+    "openapi": {
+        "label": "OpenAPI Documentation",
+        "detection_template": ["API Spec", "{{if .Matched}}API Spec Found at {{.Matched}}{{end}}"],
+        "finding_template": ["{{if .Matched}}API Spec Found at {{.Matched}}{{else}}OpenAPI Documentation Found{{end}}"]
+    },
+    "swagger-api": {
+        "label": "Swagger API Documentation",
+        "detection_template": ["API Spec", "{{if .Matched}}API Spec Found at {{.Matched}}{{end}}"],
+        "finding_template": ["{{if .Matched}}API Spec Found at {{.Matched}}{{else}}Swagger Documentation Available{{end}}"]
+    },
+    "wadl-api": {
+        "label": "WADL API Documentation",
+        "detection_template": ["API Spec", "{{if .Matched}}API Spec Found at {{.Matched}}{{end}}"],
+        "finding_template": ["{{if .Matched}}API Spec Found at {{.Matched}}{{else}}WADL API Documentation{{end}}"]
+    },
+    "wsdl-api": {
+        "label": "WSDL API Documentation",
+        "detection_template": ["API Spec", "{{if .Matched}}API Spec Found at {{.Matched}}{{end}}"],
+        "finding_template": ["{{if .Matched}}API Spec Found at {{.Matched}}{{else}}WSDL API Documentation{{end}}"]
+    },
+    "api-host-keyword-detection": {
+        "label": "API Domain Pattern",
+        "detection_template": ["API", "Domain has API keyword"],
+        "finding_template": ["Domain has API keyword"]
+    },
+    "blank-root-server-detection": {
+        "label": "Routing Server",
+        "detection_template": ["API", "Routing Server"],
+        "finding_template": ["Routing Server"]
+    },
+    "frontend-tech-detection": {
+        "label": "Frontend Technology",
+        "detection_template": ["Web App", "Frontend Technology"],
+        "finding_template": [
+            "{{if .ExtractedResults}}Frontend Technology: {{join .ExtractedResults \", \"}}{{else}}Frontend Technology{{end}}",
+            "Technology Detection"
+        ]
+    },
+    "api-gateway-proxy-lb-detection": {
+        "label": "API Gateway/Proxy/Load Balancer",
+        "detection_template": ["Infrastructure", "API Gateway/Proxy/Load Balancer"],
+        "finding_template": ["API Gateway/Proxy/Load Balancer"]
+    },
+    "js-libraries-detect": {
+        "label": "JavaScript Libraries",
+        "detection_template": ["Technology", "JavaScript Libraries"],
+        "finding_template": [
+            "JavaScript Libraries",
+            "{{if .ExtractedResults}}Libraries: {{join .ExtractedResults \", \"}}{{end}}"
+        ]
+    },
+    "sap-spartacus": {
+        "label": "SAP Spartacus Storefront",
+        "detection_template": ["Web App", "Using SAP Spartacus"],
+        "finding_template": [
+            "Using SAP Spartacus",
+            "{{if .ExtractedResults}}Version: {{join .ExtractedResults \", \"}}{{end}}"
+        ]
+    }
+}

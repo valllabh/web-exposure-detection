@@ -1,0 +1,84 @@
+id: website-host-detection
+info:
+  name: Website Host Detection with Crawlability Check
+  author: Vallabh
+  severity: info
+  description: |
+    This template checks if a domain is hosting a real, crawlable website by verifying HTML content and presence of typical web page elements,
+    while avoiding default server pages.
+  tags: website-host,crawlable,http-server
+headless:
+  - steps:
+      - action: navigate
+        args:
+          url: "{{BaseURL}}"
+      - action: waitload
+      - action: waitstable
+    matchers:
+      - type: regex
+        part: body
+        regex:
+          - "<!DOCTYPE html>"
+          - "<html[^>]*>"
+          - "<head>.*?</head>"
+          - "<a\\s+href=.*?>.*?</a>"
+          - "(<a\\s+href=.*?>){5,}"
+          - "<meta[^>]+(name|property)=[\"'](description|og:title|og:description|viewport)[\"']"
+          - "<link[^>]+rel=[\"']stylesheet[\"']"
+          - "<script[^>]+src=\".*?\\.js\""
+          # check if page has form or login button
+          - "<form[^>]*>"
+          - "<input[^>]+type=[\"'](submit|button)[\"']"
+          - "<button[^>]*>"
+          - "<input[^>]+type=[\"'](text|email|password)[\"']"
+          # check for login href
+          - "<a[^>]+href=[\"'](login|signin|sign-in|log-in)[\"']"
+          - "<a[^>]+href=[\"'](register|signup|sign-up)[\"']"
+          - "<a[^>]+href=[\"'](forgot|reset)[\"']"
+          - "<a[^>]+href=[\"'](password|pwd)[\"']"
+          # http:
+          #   - method: GET
+          #     path:
+          #       - "{{BaseURL}}"
+
+          #     matchers-condition: and
+          #     matchers:
+          #       - type: word
+          #         part: header
+          #         words:
+          #           - "text/html"
+
+          #       - type: status
+          #         status:
+          #           - 200
+
+          #       - type: regex
+          #         part: body
+          #         regex:
+          #           - "<!DOCTYPE html>"
+          #           - "<html[^>]*>"
+          #           - "<head>.*?</head>"
+          #           - "<a\\s+href=.*?>.*?</a>"
+          #           - "(<a\\s+href=.*?>){5,}"
+          #           - "<meta[^>]+(name|property)=[\"'](description|og:title|og:description|viewport)[\"']"
+          #           - "<link[^>]+rel=[\"']stylesheet[\"']"
+          #           - "<script[^>]+src=\".*?\\.js\""
+          #           # check if page has form or login button
+          #           - "<form[^>]*>"
+          #           - "<input[^>]+type=[\"'](submit|button)[\"']"
+          #           - "<button[^>]*>"
+          #           - "<input[^>]+type=[\"'](text|email|password)[\"']"
+    extractors:
+      # Detect if the page has a login form
+      - type: regex
+        part: body
+        name: loginform
+        internal: true
+        regex:
+          - "<form[^>]*>"
+          - "<input[^>]+type=[\"'](text|email|password)[\"']"
+          - "<input[^>]+name=[\"'](username|user-name|email|user|login
+        group: 0
+      - type: dsl
+        dsl:
+          - "len(loginform) > 0 ? 'Has Forms' : ''"

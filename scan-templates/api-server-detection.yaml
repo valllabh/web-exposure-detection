@@ -1,0 +1,20 @@
+id: api-server-detection
+info:
+  name: API Server Detected
+  author: Vallabh
+  severity: info
+  description: |
+    Detects signs of API Server
+  tags: http,api
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+    matchers-condition: or
+    matchers:
+      # detect if api resonse is of type application
+      - type: word
+        part: header
+        words:
+          - "application/json"
+          - "application/xml"

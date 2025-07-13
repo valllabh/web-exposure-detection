@@ -1,0 +1,77 @@
+id: backend-framework-detection
+info:
+  name: Backend Framework & CMS Detection
+  author: Vallabh
+  severity: info
+  description: |
+    Detects presence of CMS, blogging platforms, e-commerce tools, site builders, and other backend platforms
+    using structured markers from HTTP headers, cookies, and HTML content.
+  tags: http,backend,framework,cms,ecommerce,blog,sitebuilder,detection
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+    matchers-condition: or
+    matchers:
+      # HEADER-BASED DETECTION
+      - type: word
+        part: header
+        words:
+          - "x-powered-by"
+          - "x-generator"
+          - "x-cms-powered-by"
+          - "x-cms-type-edition"
+      # COOKIE-BASED DETECTION
+      - type: regex
+        part: cookie
+        regex:
+          - "(?i)(wordpress_logged_in_|wp-settings-|laravel_session|ci_session|PHPSESSID|JSESSIONID|frontend|ghost-admin-api-session|Drupal.visitor.|SESS[a-z0-9]+|SHOP_SESSION_TOKEN|PrestaShop-)"
+      # BODY STRUCTURE-BASED DETECTION (LOW FALSE POSITIVES)
+      - type: word
+        part: body
+        words:
+          - "wp-content/"
+          - "wp-includes/"
+          - "wp-json"
+          - "Drupal.settings"
+          - "data-drupal-selector"
+          - "media/system/js/"
+          - "cdn.shopify.com"
+          - "ghost-sdk.js"
+          - "window.checkoutConfig"
+          - "Shopify.designMode"
+          - "data-ghost"
+    extractors:
+      # Extractor for WordPress
+      - type: regex
+        name: wordpress
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(wp-content|wp-includes|wp-admin)"
+      # Extractor for Drupal
+      - type: regex
+        name: drupal
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(Drupal.settings|data-drupal-selector)"
+      # Extractor for Shopify
+      - type: regex
+        name: shopify
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(cdn.shopify.com|Shopify.designMode|window.checkoutConfig)"
+      # DSL to return CMS name if extractor has value example for extractor wordpress
+      # and if extractor has value then return wordpress
+      # else return empty
+      - type: dsl
+        dsl:
+          - "len(wordpress) > 0 ? 'Wordpress' : ''"
+          - "len(drupal) > 0 ? 'Drupal' : ''"
+          - "len(shopify) > 0 ? 'Shopify' : ''"
+          - "len(ghost) > 0 ? 'Ghost' : ''"

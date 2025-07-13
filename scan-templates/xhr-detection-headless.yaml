@@ -1,0 +1,49 @@
+id: xhr-detection-headless
+info:
+  name: XHR Detection
+  author: your-name
+  severity: info
+  description: Detects if a website is making XHR requests
+  tags: api,xhr,headless
+headless:
+  - steps:
+      - action: navigate
+        args:
+          url: "{{BaseURL}}"
+      - action: waitload
+      - action: waitstable
+      - action: script
+        args:
+          code: |
+            () => {
+              window.apiDetected = false;
+              window.apiUrls = {}
+              var origOpen = XMLHttpRequest.prototype.open;
+              XMLHttpRequest.prototype.open = function(method, url) {
+                window.apiUrls[url] = true
+                window.apiDetected = true;
+                return origOpen.apply(this, arguments);
+              }
+            }
+          hook: true
+      - action: waitstable
+      - action: script
+        name: api_detected
+        args:
+          code: |
+            () => window.apiDetected
+      - action: script
+        name: api_urls
+        args:
+          code: |
+            () => window.apiUrls
+    matchers:
+      - type: word
+        part: api_detected
+        words:
+          - "true"
+    extractors:
+      - type: kval
+        part: api_urls
+        kval:
+          - api_urls
