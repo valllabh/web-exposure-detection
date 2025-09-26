@@ -28,8 +28,7 @@
         "label": "Using API",
         "detection_template": ["Web App", "Using API"],
         "finding_template": [
-            "Using API",
-            "{{if .ExtractedResults}}{{range $i, $v := .ExtractedResults}}{{if $i}}, {{end}}{{$v}}{{end}}{{end}}"
+            "Using API"
         ]
     },
     "live-domain": {

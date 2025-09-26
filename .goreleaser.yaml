@@ -1,0 +1,122 @@
+version: 2
+
+before:
+  hooks:
+    # Clean build artifacts
+    - go mod tidy
+    - go generate ./...
+
+builds:
+  - id: web-exposure-detection
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    goarm:
+      - 7
+    ignore:
+      - goos: darwin
+        goarch: "386"
+    binary: web-exposure-detection
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+universal_binaries:
+  - id: web-exposure-detection-universal
+    ids:
+      - web-exposure-detection
+    name_template: "web-exposure-detection"
+    replace: true
+
+archives:
+  - id: default
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE*
+      - CHANGELOG.md
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: Bug fixes
+      regexp: '^.*?bug(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Enhancements
+      regexp: '^.*?(enhance|improve)(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: Others
+      order: 999
+
+release:
+  draft: false
+  replace_existing_draft: true
+  target_commitish: "{{ .Commit }}"
+  discussion_category_name: General
+  prerelease: auto
+  mode: replace
+  header: |
+    ## Web Exposure Detection {{.Tag}}
+
+    A security tool that scans for potential web exposure vulnerabilities and misconfigurations.
+
+    ### Installation
+
+    #### Linux / macOS (Homebrew)
+    ```bash
+    # Download and extract
+    curl -sL https://github.com/valllabh/web-exposure-detection/releases/download/{{.Tag}}/web-exposure-detection_Linux_x86_64.tar.gz | tar xz
+    sudo mv web-exposure-detection /usr/local/bin/
+    ```
+
+    #### Direct Download
+    Download the appropriate binary for your platform from the assets below.
+
+  footer: |
+    **Full Changelog**: https://github.com/valllabh/web-exposure-detection/compare/{{.PreviousTag}}...{{.Tag}}
+
+    ---
+
+    ### Checksums
+    All binaries are signed and checksums are provided for verification.
+
+# Skip Docker builds since we want utils only
+dockers: []
+docker_manifests: []
+
+# Skip Homebrew for now - can be added later
+brews: []
+
+# Skip packages - just focus on binaries
+nfpms: []

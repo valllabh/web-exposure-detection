@@ -259,20 +259,8 @@ func (s *scanner) ScanWithOptions(domains []string, keywords []string, templates
 		return fmt.Errorf("nuclei scanning failed: %w", err)
 	}
 
-	// Step 3: Aggregate Results
-	groupedResults, err := s.AggregateResults(nucleiResults)
-	if err != nil {
-		return fmt.Errorf("result aggregation failed: %w", err)
-	}
-
-	// Step 4: Generate Report
-	report, err := s.GenerateReport(groupedResults, targetDomain)
-	if err != nil {
-		return fmt.Errorf("report generation failed: %w", err)
-	}
-
-	// Step 5: Write JSON to results directory
-	return s.writeJSONToResults(report, resultsDir)
+	// Step 3: Hand off to report generation with nuclei results
+	return s.generateReportsFromNucleiResults(nucleiResults, targetDomain, resultsDir)
 }
 
 // GenerateReportFromExistingResults regenerates report from existing Nuclei results
@@ -323,38 +311,52 @@ func (s *scanner) GenerateReportFromExistingResults(domains []string) error {
 		return fmt.Errorf("failed to load existing nuclei results: %w", err)
 	}
 
-	// Step 3: Aggregate Results
+	// Step 3: Hand off to report generation with nuclei results
+	return s.generateReportsFromNucleiResults(nucleiResults, targetDomain, resultsDir)
+}
+
+// generateReportsFromNucleiResults handles complete report generation orchestration
+// This is the single entry point for all report generation (JSON + HTML + PDF)
+func (s *scanner) generateReportsFromNucleiResults(nucleiResults []*output.ResultEvent, targetDomain, resultsDir string) error {
+	// Step 1: Aggregate Results
 	groupedResults, err := s.AggregateResults(nucleiResults)
 	if err != nil {
 		return fmt.Errorf("result aggregation failed: %w", err)
 	}
 
-	// Step 4: Generate Report
+	// Step 2: Generate Report Structure
 	report, err := s.GenerateReport(groupedResults, targetDomain)
 	if err != nil {
 		return fmt.Errorf("report generation failed: %w", err)
 	}
 
-	// Step 5: Write JSON to results directory
+	// Step 3: Write JSON to results directory
 	err = s.writeJSONToResults(report, resultsDir)
 	if err != nil {
 		return err
 	}
 
-	// Step 6: Generate HTML report
+	// Step 4: Generate HTML report
 	err = s.generateHTMLReport(report, resultsDir)
 	if err != nil {
-		// Log warning but don't fail the entire report generation
+		// Log warning but don't fail the entire process
 		fmt.Printf("⚠️  Warning: Failed to generate HTML report: %v\n", err)
 	} else {
-		// Step 7: Generate PDF from HTML
+		// Step 5: Generate PDF from HTML
 		htmlPath := filepath.Join(resultsDir, "report", "index.html")
 		pdfPath := filepath.Join(resultsDir, report.ReportMetadata.TargetDomain+"-web-exposure-report.pdf")
 
 		err = s.generatePDF(htmlPath, pdfPath)
 		if err != nil {
-			// Log warning but don't fail the entire report generation
+			// Log warning but don't fail the entire process
 			fmt.Printf("⚠️  Warning: Failed to generate PDF report: %v\n", err)
+		} else {
+			// Step 6: Clean up HTML report directory after successful PDF generation
+			reportDir := filepath.Join(resultsDir, "report")
+			if err := os.RemoveAll(reportDir); err != nil {
+				// Log warning but don't fail - this is just cleanup
+				fmt.Printf("⚠️  Warning: Failed to cleanup HTML report directory: %v\n", err)
+			}
 		}
 	}
 

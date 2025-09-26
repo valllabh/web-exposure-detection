@@ -17,12 +17,20 @@ The system generates reports in three formats:
 ### Full Report Generation Pipeline
 
 ```
+Scan Command Flow:
 1. Domain Discovery → Nuclei Scan → Raw Results
-2. AggregateResults() → GroupedResults (domain+template mapping)
-3. GenerateReport() → ExposureReport (JSON structure)
-4. writeJSONToResults() → results/domain/web-exposure-result.json
-5. generateHTMLReport() → results/domain/report/index.html + assets/
-6. generatePDF() → results/domain/domain-web-exposure-report.pdf
+2. Hand off to → generateReportsFromNucleiResults()
+
+Report Command Flow:
+1. Load existing Nuclei results → generateReportsFromNucleiResults()
+
+generateReportsFromNucleiResults() (Single Entry Point):
+1. AggregateResults() → GroupedResults (domain+template mapping)
+2. GenerateReport() → ExposureReport (JSON structure)
+3. writeJSONToResults() → results/domain/web-exposure-result.json
+4. generateHTMLReport() → results/domain/report/index.html + assets/
+5. generatePDF() → results/domain/domain-web-exposure-report.pdf
+6. cleanup: Remove HTML report directory after successful PDF generation
 ```
 
 ### Directory Structure Output
@@ -30,32 +38,37 @@ The system generates reports in three formats:
 After complete scan, the system creates:
 ```
 results/example-com/
-├── domain-scan.json              # Cached domain discovery results
+├── domain-scan.json                    # Cached domain discovery results
 ├── nuclei-results/
-│   └── results.json             # Raw Nuclei scan results
-├── web-exposure-result.json     # Final JSON report (schema v1)
-├── report/                      # HTML report directory
-│   ├── index.html              # Main HTML report
-│   └── assets/                 # CSS, JS, images, icons
-│       ├── angular.svg
-│       ├── nginx.svg
-│       ├── qualys-logo.svg
-│       └── [17 technology icons]
-└── example-com-web-exposure-report.pdf  # PDF report
+│   └── results.json                   # Raw Nuclei scan results
+├── web-exposure-result.json           # Final JSON report (schema v1)
+└── example-com-web-exposure-report.pdf # PDF report
+
+# Note: HTML report directory (report/) is automatically cleaned up after PDF generation
 ```
+
+**Important:** The HTML report directory is temporary and gets automatically deleted after successful PDF generation to keep only essential files.
 
 ## Core Components
 
 ### Data Flow Pipeline
 
 ```
-Nuclei Results → AggregateResults() → GenerateReport() → Multi-Format Output
+Scan: Domain Discovery → Nuclei Scan → generateReportsFromNucleiResults()
+Report: Load Cached Results → generateReportsFromNucleiResults()
+
+generateReportsFromNucleiResults():
+Nuclei Results → AggregateResults() → GenerateReport() → Multi-Format Output + Cleanup
 ```
 
 **Key Files:**
-- `pkg/webexposure/report.go` - Main report generation logic
+- `pkg/webexposure/scanner.go` - Scanning logic + report orchestration
+- `pkg/webexposure/report.go` - Report structure generation
+- `pkg/webexposure/report-html.go` - HTML report generation with embedded templates
+- `pkg/webexposure/report-pdf.go` - PDF generation from HTML
 - `pkg/webexposure/types.go` - Data structures and interfaces
-- `pkg/webexposure/scan-template-meanings.json` - Template configuration with DSL
+- `embed.go` - Embedded scan-templates and templates filesystems
+- `scan-template-meanings.json` - Template configuration with DSL (embedded)
 
 ### Result Processing Architecture
 
@@ -293,17 +306,18 @@ The template system supports all Sprig functions plus standard Go template funct
 - Primary data source for HTML/PDF generation
 - Used for programmatic consumption
 
-### HTML Report (`generateHTMLReport`)
+### HTML Report (`generateHTMLReport`) - Temporary
 
-**Output:** `results/{domain}/report/index.html` + assets directory
+**Output:** `results/{domain}/report/index.html` + assets directory (temporary)
 
 **Process:**
-1. Copies `templates/assets/` → `results/{domain}/report/assets/`
-2. Processes `templates/report.html` with Go templates
+1. Extracts embedded `templates/assets/` → `results/{domain}/report/assets/`
+2. Processes embedded `templates/report.html` with Go templates
 3. Injects ExposureReport data into HTML template
 4. Creates self-contained report directory
+5. **Automatically deleted after PDF generation**
 
-**Assets Include:**
+**Embedded Assets Include:**
 - Technology icons (17 SVG files): nginx, react, angular, wordpress, etc.
 - Qualys branding logo
 - CSS styles optimized for print and web
@@ -331,6 +345,26 @@ The template system supports all Sprig functions plus standard Go template funct
 - Scale: 100%
 - Print backgrounds: enabled
 - Color adjustment: exact
+
+## Embedded Architecture
+
+### No External Dependencies
+
+The system uses Go's `embed` package to include all external files in the binary:
+
+**Embedded in Binary:**
+- ✅ `scan-templates/` - 14 Nuclei YAML templates
+- ✅ `templates/report.html` - HTML report template
+- ✅ `templates/assets/` - 17 SVG technology icons + logo
+- ✅ `scan-template-meanings.json` - Template processing configuration
+
+**Runtime Process:**
+1. **Scan Templates:** Extracted to temporary directory for Nuclei
+2. **HTML Template:** Loaded from embedded filesystem
+3. **Assets:** Copied from embedded filesystem to report directory
+4. **Cleanup:** Temporary files removed after PDF generation
+
+**Distribution:** Single standalone binary with zero external file dependencies.
 
 ## CLI Integration
 
