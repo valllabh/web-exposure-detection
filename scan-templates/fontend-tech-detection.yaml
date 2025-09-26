@@ -13,6 +13,8 @@ http:
   - method: GET
     path:
       - "{{BaseURL}}"
+    redirects: true
+    max-redirects: 10
     matchers:
       # detects if body has
       - type: regex

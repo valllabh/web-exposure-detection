@@ -8,6 +8,7 @@ import (
 	"github.com/Masterminds/sprig/v3"
 	"github.com/projectdiscovery/nuclei/v3/pkg/output"
 	"github.com/projectdiscovery/nuclei/v3/pkg/progress"
+	"github.com/valllabh/domain-scan/pkg/domainscan"
 )
 
 // Templates is an array of template strings with DSL support using Go text/template + sprig
@@ -62,12 +63,19 @@ type Scanner interface {
 	Scan(domains []string, keywords []string) error
 	ScanWithOptions(domains []string, keywords []string, templates []string, force bool) error
 
+	// Report generation
+	GenerateReportFromExistingResults(domains []string) error
+
 	// Progress monitoring
 	SetProgressCallback(callback ProgressCallback)
 
 	// Individual pipeline steps
 	DiscoverDomains(domains []string, keywords []string) ([]string, error)
 	RunNucleiScan(targets []string, opts *NucleiOptions) ([]*output.ResultEvent, error)
+
+	// Enhanced methods that preserve protocol information
+	DiscoverDomainsWithProtocol(domains []string, keywords []string) (map[string]*domainscan.DomainEntry, error)
+	RunNucleiScanWithProtocol(targets map[string]*domainscan.DomainEntry, opts *NucleiOptions) ([]*output.ResultEvent, error)
 	AggregateResults(results []*output.ResultEvent) (*GroupedResults, error)
 	GenerateReport(grouped *GroupedResults, targetDomain string) (*ExposureReport, error)
 
@@ -82,6 +90,8 @@ type Scanner interface {
 	WriteJSONReport(report *ExposureReport, filename string) error
 }
 
+// Use domainscan.DomainEntry directly instead of custom type
+
 // NucleiOptions configures the Nuclei scan
 type NucleiOptions struct {
 	TemplatesPath       string
@@ -95,6 +105,8 @@ type NucleiOptions struct {
 	OmitTemplate        bool
 	FollowHostRedirects bool
 	ShowMatchLine       bool
+	Timeout             int // Timeout per request in seconds
+	Delay               int // Delay between requests in seconds
 }
 
 // GroupedResults represents Nuclei results grouped by domain and template
@@ -137,19 +149,33 @@ type TechnologiesDetected struct {
 	Technologies []string `json:"technologies"`
 }
 
-// APIFinding represents an API discovery
-type APIFinding struct {
-	Domain     string `json:"domain"`
-	Discovered string `json:"discovered"`
-	Findings   string `json:"findings"`
+// Discovery represents both API and Web App discoveries
+type Discovery struct {
+	Domain     string   `json:"domain"`
+	Discovered string   `json:"discovered"`
+	Findings   []string `json:"findings"`
 }
 
-// WebAppFinding represents a web application discovery
-type WebAppFinding struct {
-	Domain       string   `json:"domain"`
-	Discovered   string   `json:"discovered"`
-	Findings     string   `json:"findings"`
-	Technologies []string `json:"technologies,omitempty"`
+// Backward compatibility type aliases
+type APIFinding = Discovery
+type WebAppFinding = Discovery
+
+// ResultProcessor centralizes all report generation logic
+type ResultProcessor struct {
+	meanings     map[string]TemplateMeaning
+	summary      *Summary
+	apis         []*Discovery
+	webApps      []*Discovery
+	technologies map[string]bool // set for deduplication
+}
+
+// DomainResult holds processed results for a single domain
+type DomainResult struct {
+	Domain       string
+	Findings     map[string]bool // set for deduplication
+	Detections   map[string]bool // set for deduplication
+	Technologies map[string]bool // set for deduplication
+	Discovered   string          // classification result
 }
 
 // scanner implements the Scanner interface

@@ -69,16 +69,71 @@ headless:
           #           - "<button[^>]*>"
           #           - "<input[^>]+type=[\"'](text|email|password)[\"']"
     extractors:
-      # Detect if the page has a login form
+      # Detect authentication mechanisms
       - type: regex
         part: body
-        name: loginform
+        name: auth_forms
         internal: true
         regex:
           - "<form[^>]*>"
           - "<input[^>]+type=[\"'](text|email|password)[\"']"
-          - "<input[^>]+name=[\"'](username|user-name|email|user|login
+          - "<input[^>]+name=[\"'](username|user-name|email|user|login)[\"']"
         group: 0
+
+      # Detect SSO and Social Login buttons/links
+      - type: regex
+        part: body
+        name: sso_social
+        internal: true
+        regex:
+          # SSO providers
+          - "(?i)(sign|log).{0,5}(in|on).{0,20}(google|microsoft|azure|okta|auth0|onelogin|ping|saml|sso)"
+          - "(?i)(oauth|openid|saml|sso)"
+          - "(?i)href=[\"'][^\"']*oauth[^\"']*[\"']"
+          - "(?i)href=[\"'][^\"']*saml[^\"']*[\"']"
+          - "(?i)href=[\"'][^\"']*sso[^\"']*[\"']"
+          # Social login providers
+          - "(?i)(sign|log).{0,5}(in|on).{0,20}(facebook|twitter|linkedin|github|apple)"
+          - "(?i)connect.{0,20}(facebook|google|twitter|linkedin|github|apple)"
+          - "(?i)(facebook|google|twitter|linkedin|github|apple).{0,20}(sign|log).{0,5}(in|on)"
+          # Social login buttons/icons
+          - "(?i)<[^>]*(facebook|google|twitter|linkedin|github|apple)[^>]*>"
+          - "(?i)class=[\"'][^\"']*(facebook|google|twitter|linkedin|github|apple|social)[^\"']*[\"']"
+        group: 0
+
+      # Detect web technologies from headers and meta tags
+      - type: regex
+        part: body
+        name: tech_stack
+        internal: true
+        regex:
+          # JavaScript frameworks
+          - "(?i)(angular|react|vue|next\\.js|nuxt|ember|backbone)"
+          - "(?i)<script[^>]*src=[\"'][^\"']*(angular|react|vue|next|nuxt|ember|backbone)[^\"']*[\"']"
+          # CSS frameworks
+          - "(?i)<link[^>]*href=[\"'][^\"']*(bootstrap|tailwind|bulma|foundation)[^\"']*[\"']"
+          # CMS indicators
+          - "(?i)(wordpress|drupal|joomla|magento|shopify|wix|squarespace)"
+          - "(?i)generator[\"']\\s*content=[\"'][^\"']*(wordpress|drupal|joomla|magento|shopify)[^\"']*[\"']"
+          # Authentication systems
+          - "(?i)(keycloak|auth0|okta|firebase|cognito)"
+        group: 0
+
+      # Extract server information from headers
+      - type: kval
+        kval:
+          - server
+          - x-powered-by
+          - x-generator
+          - x-drupal-cache
+          - x-wp-version
+        name: server_tech
+        internal: true
+
+      # Main extractor combining all findings
       - type: dsl
         dsl:
-          - "len(loginform) > 0 ? 'Has Forms' : ''"
+          - "len(auth_forms) > 0 ? 'Has Forms' : ''"
+          - "len(sso_social) > 0 ? 'Has SSO/Social Login' : ''"
+          - "join(server_tech, ', ')"
+          - "join(tech_stack, ', ')"

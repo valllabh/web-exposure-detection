@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -14,6 +15,37 @@ import (
 	"github.com/valllabh/domain-scan/pkg/domainscan"
 	"gopkg.in/yaml.v3"
 )
+
+// cleanDomainName cleans and normalizes domain names
+func cleanDomainName(domain string) string {
+	// Remove all invalid characters and normalize
+	cleaned := strings.ToLower(strings.TrimSpace(domain))
+
+	// Remove common invalid characters that might be included
+	cleaned = strings.ReplaceAll(cleaned, ",", "")
+	cleaned = strings.ReplaceAll(cleaned, ";", "")
+	cleaned = strings.ReplaceAll(cleaned, " ", "")
+	cleaned = strings.ReplaceAll(cleaned, "\t", "")
+	cleaned = strings.ReplaceAll(cleaned, "\n", "")
+	cleaned = strings.ReplaceAll(cleaned, "\r", "")
+
+	// Remove quotes if present
+	cleaned = strings.Trim(cleaned, `"'`)
+
+	// Remove protocol if present
+	if strings.HasPrefix(cleaned, "http://") {
+		cleaned = strings.TrimPrefix(cleaned, "http://")
+	} else if strings.HasPrefix(cleaned, "https://") {
+		cleaned = strings.TrimPrefix(cleaned, "https://")
+	}
+
+	// Remove trailing slashes and paths
+	if idx := strings.Index(cleaned, "/"); idx > 0 {
+		cleaned = cleaned[:idx]
+	}
+
+	return cleaned
+}
 
 // Native Nuclei output.ResultEvent is used directly - no custom struct needed
 
@@ -88,25 +120,37 @@ func (s *scanner) ScanWithOptions(domains []string, keywords []string, templates
 		return fmt.Errorf("no domains provided")
 	}
 
-	// Step 0: Validate specific templates early to fail fast
+	// Step 0: Clean and normalize all input domains
+	var normalizedDomains []string
+	for _, domain := range domains {
+		cleaned := cleanDomainName(domain)
+		if cleaned != "" {
+			normalizedDomains = append(normalizedDomains, cleaned)
+		}
+	}
+
+	if len(normalizedDomains) == 0 {
+		return fmt.Errorf("no valid domains provided after cleaning")
+	}
+
+	// Step 1: Validate specific templates early to fail fast
 	if len(templates) > 0 {
 		if err := s.validateSpecificTemplates(templates, "./scan-templates"); err != nil {
 			return fmt.Errorf("template validation failed: %w", err)
 		}
 	}
 
-	targetDomain := domains[0] // Use first domain as primary target
+	targetDomain := normalizedDomains[0] // Use first domain as primary target
 
 	// Create results directory structure
-	cleanDomain := strings.ReplaceAll(targetDomain, ".", "-")
-	resultsDir := filepath.Join("results", cleanDomain)
+	resultsDir := filepath.Join("results", targetDomain)
 	err := os.MkdirAll(resultsDir, 0755)
 	if err != nil {
 		return fmt.Errorf("failed to create results directory: %w", err)
 	}
 
-	// Step 1: Domain Discovery with caching
-	discoveredDomains, err := s.discoverDomainsWithCache(domains, keywords, resultsDir, force)
+	// Step 2: Domain Discovery with caching (using original method for now)
+	discoveredURLs, err := s.discoverDomainsWithCache(normalizedDomains, keywords, resultsDir, force)
 	if err != nil {
 		return fmt.Errorf("domain discovery failed: %w", err)
 	}
@@ -115,15 +159,17 @@ func (s *scanner) ScanWithOptions(domains []string, keywords []string, templates
 	nucleiOptions := &NucleiOptions{
 		TemplatesPath:       "./scan-templates",
 		SpecificTemplates:   templates,
-		IncludeTags:         []string{"tech"},
+		IncludeTags:         []string{},
 		ExcludeTags:         []string{"ssl"},
-		RateLimit:           30,
-		BulkSize:            10,
-		Concurrency:         5,
+		RateLimit:           15, // Reduced rate limit for slower requests
+		BulkSize:            5,  // Reduced bulk size
+		Concurrency:         3,  // Reduced concurrency for more stability
 		Headless:            true,
 		OmitTemplate:        true,
 		FollowHostRedirects: true,
 		ShowMatchLine:       true,
+		Timeout:             60, // 60 second timeout per request (increased for headless)
+		Delay:               2,  // 2 second delay between requests
 	}
 
 	// Step 1.6: Validate template meanings before starting scan
@@ -132,7 +178,7 @@ func (s *scanner) ScanWithOptions(domains []string, keywords []string, templates
 	}
 
 	// Step 2: Nuclei Scanning with result storage
-	nucleiResults, err := s.runNucleiScanWithStorage(discoveredDomains, nucleiOptions, resultsDir)
+	nucleiResults, err := s.runNucleiScanWithStorage(discoveredURLs, nucleiOptions, resultsDir)
 	if err != nil {
 		return fmt.Errorf("nuclei scanning failed: %w", err)
 	}
@@ -153,20 +199,97 @@ func (s *scanner) ScanWithOptions(domains []string, keywords []string, templates
 	return s.writeJSONToResults(report, resultsDir)
 }
 
+// GenerateReportFromExistingResults regenerates report from existing Nuclei results
+func (s *scanner) GenerateReportFromExistingResults(domains []string) error {
+	if len(domains) == 0 {
+		return fmt.Errorf("no domains provided")
+	}
+
+	// Step 0: Clean and normalize all input domains (same as ScanWithOptions)
+	var normalizedDomains []string
+	for _, domain := range domains {
+		cleaned := cleanDomainName(domain)
+		if cleaned != "" {
+			normalizedDomains = append(normalizedDomains, cleaned)
+		}
+	}
+
+	if len(normalizedDomains) == 0 {
+		return fmt.Errorf("no valid domains provided after cleaning")
+	}
+
+	targetDomain := normalizedDomains[0] // Use first domain as primary target
+
+	// Create results directory structure (same as ScanWithOptions)
+	resultsDir := filepath.Join("results", targetDomain)
+	err := os.MkdirAll(resultsDir, 0755)
+	if err != nil {
+		return fmt.Errorf("failed to create results directory: %w", err)
+	}
+
+	// Step 1.5: Validate template meanings
+	nucleiOptions := &NucleiOptions{
+		TemplatesPath: "./scan-templates",
+	}
+	if err := s.ValidateTemplateMeanings(nucleiOptions.TemplatesPath); err != nil {
+		return fmt.Errorf("template validation failed: %w", err)
+	}
+
+	// Step 2: Load existing Nuclei results
+	nucleiResults, err := s.loadExistingNucleiResults(resultsDir)
+	if err != nil {
+		return fmt.Errorf("failed to load existing nuclei results: %w", err)
+	}
+
+	// Step 3: Aggregate Results
+	groupedResults, err := s.AggregateResults(nucleiResults)
+	if err != nil {
+		return fmt.Errorf("result aggregation failed: %w", err)
+	}
+
+	// Step 4: Generate Report
+	report, err := s.GenerateReport(groupedResults, targetDomain)
+	if err != nil {
+		return fmt.Errorf("report generation failed: %w", err)
+	}
+
+	// Step 5: Write JSON to results directory
+	err = s.writeJSONToResults(report, resultsDir)
+	if err != nil {
+		return err
+	}
+
+	// Step 6: Generate HTML report
+	err = s.generateHTMLReport(report, resultsDir)
+	if err != nil {
+		// Log warning but don't fail the entire report generation
+		fmt.Printf("⚠️  Warning: Failed to generate HTML report: %v\n", err)
+	} else {
+		// Step 7: Generate PDF from HTML
+		htmlPath := filepath.Join(resultsDir, "report", "index.html")
+		pdfPath := filepath.Join(resultsDir, report.ReportMetadata.TargetDomain+"-web-exposure-report.pdf")
+
+		err = s.generatePDF(htmlPath, pdfPath)
+		if err != nil {
+			// Log warning but don't fail the entire report generation
+			fmt.Printf("⚠️  Warning: Failed to generate PDF report: %v\n", err)
+		}
+	}
+
+	return nil
+}
+
 // writeJSONReport writes the report to a JSON file with proper organization
 func (s *scanner) writeJSONReport(report *ExposureReport, targetDomain string) error {
-	// Clean domain name for filesystem use
-	cleanDomain := strings.ReplaceAll(targetDomain, ".", "-")
-
 	// Create directory structure: ./reports/{first-domain-name}/
-	reportsDir := filepath.Join("reports", cleanDomain)
+	reportsDir := filepath.Join("reports", targetDomain)
 	err := os.MkdirAll(reportsDir, 0755)
 	if err != nil {
 		return fmt.Errorf("failed to create reports directory: %w", err)
 	}
 
 	// Create filename: {first-domain-name}-web-exposure-report.json
-	filename := fmt.Sprintf("%s-web-exposure-report.json", cleanDomain)
+	filename := fmt.Sprintf("%s-web-exposure-report.json", targetDomain)
 	fullPath := filepath.Join(reportsDir, filename)
 
 	data, err := json.MarshalIndent(report, "", "  ")
@@ -195,8 +318,12 @@ func (s *scanner) DiscoverDomains(domains []string, keywords []string) ([]string
 
 	var allDiscovered []string
 
-	// Always include original domains
-	allDiscovered = append(allDiscovered, domains...)
+	// Convert original domains to HTTPS URLs (default assumption)
+	for _, domain := range domains {
+		// Try HTTPS first for original domains
+		httpsURL := "https://" + domain
+		allDiscovered = append(allDiscovered, httpsURL)
+	}
 
 	// Use domain-scan SDK with controlled comprehensive discovery
 	config := domainscan.DefaultConfig()
@@ -228,26 +355,32 @@ func (s *scanner) DiscoverDomains(domains []string, keywords []string) ([]string
 	result, err := domainScanner.ScanWithOptions(ctx, scanReq)
 
 	if err != nil {
-		// Return original domains if scan fails
+		// Return original domains as HTTPS URLs if scan fails
 		if s.progress != nil {
-			s.progress.OnDomainDiscoveryComplete(len(domains), len(domains), 0)
+			s.progress.OnDomainDiscoveryComplete(len(allDiscovered), len(domains), 0)
 		}
-		return domains, nil
+		return allDiscovered, nil
 	}
 
-	// Extract all discovered domains from the result
-	for domain, entry := range result.Domains {
+	// Track seen clean domains to avoid duplicates
+	seenDomains := make(map[string]bool)
+	for _, url := range allDiscovered {
+		clean := extractDomainFromURL(url)
+		seenDomains[clean] = true
+	}
+
+	// Extract all discovered domains from the result with protocol information
+	for domainURL, entry := range result.Domains {
 		if entry.IsLive {
-			// Extract clean domain from the URL-like format
-			cleanDomain := extractDomainFromURL(domain)
-			if cleanDomain != "" && !contains(allDiscovered, cleanDomain) {
-				allDiscovered = append(allDiscovered, cleanDomain)
+			// Extract clean domain for deduplication check
+			cleanDomain := extractDomainFromURL(domainURL)
+			if cleanDomain != "" && !seenDomains[cleanDomain] {
+				// Use the full URL with protocol from domain-scan
+				allDiscovered = append(allDiscovered, domainURL)
+				seenDomains[cleanDomain] = true
 			}
 		}
 	}
-
-	// Remove duplicates
-	allDiscovered = removeDuplicates(allDiscovered)
 
 	// Notify progress callback of completion
 	if s.progress != nil {
@@ -255,6 +388,87 @@ func (s *scanner) DiscoverDomains(domains []string, keywords []string) ([]string
 	}
 
 	return allDiscovered, nil
+}
+
+// DiscoverDomainsWithProtocol performs domain discovery preserving protocol information
+func (s *scanner) DiscoverDomainsWithProtocol(domains []string, keywords []string) (map[string]*domainscan.DomainEntry, error) {
+	// Notify progress callback if set
+	if s.progress != nil {
+		s.progress.OnDomainDiscoveryStart(domains, keywords)
+	}
+
+	// Use domain-scan SDK with controlled comprehensive discovery
+	config := domainscan.DefaultConfig()
+	config.Discovery.Timeout = 5 * time.Minute
+	config.Keywords = keywords
+
+	domainScanner := domainscan.New(config)
+
+	// Set up real progress tracking from domain-scan SDK
+	if s.progress != nil {
+		domainScanner.SetProgressCallback(&domainScanProgressAdapter{
+			webExposureProgress: s.progress,
+		})
+	}
+
+	// Create context with timeout for safety
+	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Minute)
+	defer cancel()
+
+	// Create controlled comprehensive scan request
+	scanReq := &domainscan.ScanRequest{
+		Domains:  domains,
+		Keywords: keywords,
+		Timeout:  5 * time.Minute,
+	}
+
+	// Run comprehensive domain discovery with real progress tracking
+	result, err := domainScanner.ScanWithOptions(ctx, scanReq)
+
+	if err != nil {
+		// Return original domains with default HTTPS assumption as DomainEntry objects
+		fallbackDomains := make(map[string]*domainscan.DomainEntry)
+		for _, domain := range domains {
+			httpsURL := "https://" + domain
+			fallbackDomains[httpsURL] = &domainscan.DomainEntry{
+				IsLive: true, // Assume live for fallback
+			}
+		}
+
+		if s.progress != nil {
+			s.progress.OnDomainDiscoveryComplete(len(fallbackDomains), len(domains), 0)
+		}
+		return fallbackDomains, nil
+	}
+
+	// Filter only live domains and return the DomainEntry map directly
+	liveDomains := make(map[string]*domainscan.DomainEntry)
+	for domainURL, entry := range result.Domains {
+		if entry.IsLive {
+			liveDomains[domainURL] = entry
+		}
+	}
+
+	// Notify progress callback of completion
+	if s.progress != nil {
+		s.progress.OnDomainDiscoveryComplete(len(liveDomains), len(domains), len(liveDomains)-len(domains))
+	}
+
+	return liveDomains, nil
+}
+
+// RunNucleiScanWithProtocol runs Nuclei scan using protocol-aware targets
+func (s *scanner) RunNucleiScanWithProtocol(targets map[string]*domainscan.DomainEntry, opts *NucleiOptions) ([]*output.ResultEvent, error) {
+	// Extract URLs from DomainEntry map - the key is already the full URL with protocol
+	var urls []string
+	for domainURL, entry := range targets {
+		if entry.IsLive {
+			urls = append(urls, domainURL)
+		}
+	}
+
+	// Use the existing RunNucleiScan method with full URLs
+	return s.RunNucleiScan(urls, opts)
 }
 
 // Helper functions for domain processing
@@ -317,19 +531,104 @@ func (s *scanner) AggregateResults(results []*output.ResultEvent) (*GroupedResul
 // Testing helper methods - expose internal methods for testing
 
 func (s *scanner) CountIssues(grouped *GroupedResults, keys []string) int {
-	return s.countIssues(grouped, keys)
+	uniqueDomainsMap := make(map[string]bool)
+	for domain, templates := range grouped.Domains {
+		for _, key := range keys {
+			if _, exists := templates[key]; exists {
+				uniqueDomainsMap[domain] = true
+				break
+			}
+		}
+	}
+	return len(uniqueDomainsMap)
 }
 
 func (s *scanner) NormalizeAndClean(input string) []string {
-	return s.normalizeAndClean(input)
+	// Apply exact bash regex transformations
+	normalized := strings.ToLower(input)
+
+	// gsub("[<>\"]"; "")
+	normalized = regexp.MustCompile(`[<>"]`).ReplaceAllString(normalized, "")
+
+	// gsub(".*generator.*:"; "")
+	normalized = regexp.MustCompile(`.*generator.*:`).ReplaceAllString(normalized, "")
+
+	// gsub("[;].*"; "")
+	normalized = regexp.MustCompile(`;.*`).ReplaceAllString(normalized, "")
+
+	// gsub("[^a-zA-Z0-9\\-\\.]+"; " ")
+	normalized = regexp.MustCompile(`[^a-zA-Z0-9\-\.]+`).ReplaceAllString(normalized, " ")
+
+	// Split by spaces and filter by length
+	parts := strings.Fields(normalized)
+	var result []string
+	for _, part := range parts {
+		if len(part) > 2 {
+			result = append(result, part)
+		}
+	}
+
+	return result
 }
 
 func (s *scanner) ClassifyAsAPI(templates map[string]*output.ResultEvent) (string, string) {
-	return s.classifyAsAPI(templates)
+	// Create a temporary ResultProcessor to use its classification logic
+	processor := NewResultProcessor(s.meanings)
+
+	// Process templates to get findings
+	var allFindings []string
+
+	for templateID, event := range templates {
+		meaning, exists := s.meanings[templateID]
+		if !exists {
+			continue
+		}
+
+		findings := meaning.FindingTemplate.Process(event)
+		allFindings = append(allFindings, findings...)
+	}
+
+	discovered := processor.classifyAsAPI(templates, allFindings)
+	findingsText := processor.cleanFindings(allFindings)
+
+	return discovered, findingsText
 }
 
 func (s *scanner) ClassifyAsWebApp(templates map[string]*output.ResultEvent) (string, string, []string) {
-	return s.classifyAsWebApp(templates)
+	// Create a temporary ResultProcessor to use its classification logic
+	processor := NewResultProcessor(s.meanings)
+
+	// Process templates to get detections, findings, and technologies
+	var allDetections []string
+	var allFindings []string
+	var technologies []string
+
+	for templateID, event := range templates {
+		meaning, exists := s.meanings[templateID]
+		if !exists {
+			continue
+		}
+
+		detections := meaning.DetectionTemplate.Process(event)
+		allDetections = append(allDetections, detections...)
+
+		findings := meaning.FindingTemplate.Process(event)
+		allFindings = append(allFindings, findings...)
+
+		// Extract technologies from specific templates
+		if processor.isTechnologyTemplate(templateID) && event.ExtractedResults != nil {
+			for _, tech := range event.ExtractedResults {
+				if tech != "" {
+					technologies = append(technologies, tech)
+				}
+			}
+		}
+	}
+
+	discovered := processor.classifyAsWebApp(templates)
+	findingsText := processor.cleanFindings(allFindings)
+
+	return discovered, findingsText, technologies
 }
 
 func (s *scanner) WriteJSONReport(report *ExposureReport, filename string) error {
@@ -574,6 +873,30 @@ func (s *scanner) saveNucleiResults(results []*output.ResultEvent, filename stri
 	}
 
 	return os.WriteFile(filename, data, 0644)
+}
+
+// loadExistingNucleiResults loads existing nuclei results from JSON file
+func (s *scanner) loadExistingNucleiResults(resultsDir string) ([]*output.ResultEvent, error) {
+	nucleiResultsFile := filepath.Join(resultsDir, "nuclei-results", "results.json")
+
+	// Check if the results file exists
+	if _, err := os.Stat(nucleiResultsFile); os.IsNotExist(err) {
+		return nil, fmt.Errorf("nuclei results file not found: %s", nucleiResultsFile)
+	}
+
+	// Read the JSON file
+	data, err := os.ReadFile(nucleiResultsFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read nuclei results file: %w", err)
+	}
+
+	// Unmarshal the JSON data
+	var results []*output.ResultEvent
+	if err := json.Unmarshal(data, &results); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal nuclei results: %w", err)
+	}
+
+	return results, nil
 }
 
 // writeJSONToResults writes the final report to results directory

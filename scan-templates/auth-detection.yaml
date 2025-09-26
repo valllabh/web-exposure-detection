@@ -1,0 +1,130 @@
+id: auth-detection
+info:
+  name: Authentication Mechanisms Detection
+  author: Vallabh
+  severity: info
+  description: |
+    This template detects various authentication mechanisms including traditional forms, SSO, social login,
+    multi-factor authentication, and other authentication patterns on web applications.
+  tags: auth,sso,login,authentication,security
+headless:
+  - steps:
+      - action: navigate
+        args:
+          url: "{{BaseURL}}"
+      - action: waitload
+      - action: waitstable
+    matchers:
+      - type: regex
+        part: body
+        regex:
+          # Basic authentication forms
+          - "(?i)<form[^>]*?(login|signin|sign-in|log-in|authenticate)"
+          - "(?i)<input[^>]+type=[\"'](email|password)[\"']"
+          - "(?i)<input[^>]+name=[\"']+(username|user-name|email|user|login|password|pwd)[\"']"
+          # Login/Signin buttons and links
+          - "(?i)(login|signin|sign.in|log.in|authenticate)"
+          - "(?i)<button[^>]*?(login|signin|authenticate)"
+          - "(?i)<a[^>]+href=[\"'][^\"']*(login|signin|sign-in|log-in|authenticate)"
+    extractors:
+      # Traditional authentication forms
+      - type: regex
+        part: body
+        name: basic_auth
+        internal: true
+        regex:
+          - "(?i)<form[^>]*?(login|signin|sign-in|log-in|authenticate)"
+          - "(?i)<input[^>]+type=[\"']password[\"']"
+          - "(?i)<input[^>]+name=[\"']+(username|user-name|email|user|login|password|pwd)[\"']"
+        group: 0
+
+      # SSO and Enterprise Authentication
+      - type: regex
+        part: body
+        name: sso_enterprise
+        internal: true
+        regex:
+          # SAML/SSO patterns
+          - "(?i)(saml|sso|single.sign.on)"
+          - "(?i)href=[\"'][^\"']*saml[^\"']*[\"']"
+          - "(?i)href=[\"'][^\"']*sso[^\"']*[\"']"
+          # Enterprise SSO providers
+          - "(?i)(sign|log).{0,10}(in|on).{0,20}(microsoft|azure|okta|auth0|onelogin|ping|adfs)"
+          - "(?i)(okta|auth0|onelogin|ping|keycloak|adfs|azure.ad)"
+          - "(?i)action=[\"'][^\"']*(saml|sso|oauth)[^\"']*[\"']"
+        group: 0
+
+      # Social login providers
+      - type: regex
+        part: body
+        name: social_auth
+        internal: true
+        regex:
+          # Social login buttons/links
+          - "(?i)(sign|log).{0,10}(in|on).{0,20}(google|facebook|twitter|linkedin|github|apple)"
+          - "(?i)(google|facebook|twitter|linkedin|github|apple).{0,20}(sign|log).{0,10}(in|on)"
+          - "(?i)connect.{0,20}(with|via).{0,20}(google|facebook|twitter|linkedin|github|apple)"
+          # OAuth patterns
+          - "(?i)(oauth|openid)"
+          - "(?i)href=[\"'][^\"']*oauth[^\"']*[\"']"
+          - "(?i)href=[\"'][^\"']*openid[^\"']*[\"']"
+          # Social login button classes/IDs
+          - "(?i)(class|id)=[\"'][^\"']*(google|facebook|twitter|linkedin|github|apple|social)[^\"']*login[^\"']*[\"']"
+          - "(?i)(class|id)=[\"'][^\"']*login[^\"']*(google|facebook|twitter|linkedin|github|apple|social)[^\"']*[\"']"
+        group: 0
+
+      # Multi-factor authentication
+      - type: regex
+        part: body
+        name: mfa_auth
+        internal: true
+        regex:
+          - "(?i)(multi.factor|two.factor|2fa|mfa|authenticator)"
+          - "(?i)(verification.code|security.code|auth.code)"
+          - "(?i)(sms.code|phone.verification|mobile.verification)"
+          - "(?i)(totp|time.based|google.authenticator|authy)"
+        group: 0
+
+      # Passwordless authentication
+      - type: regex
+        part: body
+        name: passwordless_auth
+        internal: true
+        regex:
+          - "(?i)(passwordless|magic.link|email.link)"
+          - "(?i)(fingerprint|biometric|face.id|touch.id)"
+          - "(?i)(webauthn|fido|yubikey|security.key)"
+        group: 0
+
+      # Registration/signup forms
+      - type: regex
+        part: body
+        name: registration
+        internal: true
+        regex:
+          - "(?i)<form[^>]*?(register|signup|sign-up|create.account)"
+          - "(?i)<a[^>]+href=[\"'][^\"']*(register|signup|sign-up|create)[^\"']*[\"']"
+          - "(?i)(register|signup|sign.up|create.account|join.now)"
+        group: 0
+
+      # Password recovery
+      - type: regex
+        part: body
+        name: password_recovery
+        internal: true
+        regex:
+          - "(?i)(forgot|forgotten|reset).{0,20}password"
+          - "(?i)password.{0,20}(forgot|forgotten|reset)"
+          - "(?i)<a[^>]+href=[\"'][^\"']*(forgot|reset|recover)[^\"']*[\"']"
+        group: 0
+
+      # Main extractor combining all findings
+      - type: dsl
+        dsl:
+          - "len(basic_auth) > 0 ? 'Traditional Login Forms' : ''"
+          - "len(sso_enterprise) > 0 ? 'SSO/Enterprise Authentication' : ''"
+          - "len(social_auth) > 0 ? 'Social Login (OAuth)' : ''"
+          - "len(mfa_auth) > 0 ? 'Multi-Factor Authentication' : ''"
+          - "len(passwordless_auth) > 0 ? 'Passwordless Authentication' : ''"
+          - "len(registration) > 0 ? 'User Registration' : ''"
+          - "len(password_recovery) > 0 ? 'Password Recovery' : ''"

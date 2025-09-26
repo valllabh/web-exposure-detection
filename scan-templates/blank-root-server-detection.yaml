@@ -1,37 +1,45 @@
 id: blank-root-server-detection
 info:
-  name: HTTP Server with Blank Root
+  name: HTTP Server with Blank Root Detection
   author: Vallabh
   severity: info
   description: |
-    Detects signs of HTTP Server with Blank Root
-  tags: http,blank-root
+    Detects HTTP servers serving blank, default, or minimal content pages
+  tags: blank-root,server-default
 http:
   - method: GET
     path:
       - "{{BaseURL}}"
-    matchers-condition: and
+    redirects: true
+    max-redirects: 3
+    matchers-condition: or
     matchers:
-      # detect if resonse is of type html
+      # Detect server default pages
       - type: word
-        part: header
+        part: body
         words:
-          - "text/html"
-      # detect if http status code is 2XX 3XX 4XX 5XX 
-      - type: status
-        status:
-          - 200
-          - 204
-          - 301
-          - 302
-          - 401
-          - 403
-          - 404
-          - 500
-      # detect if page does not contain any style or script tags
+          - "Apache2 Default Page"
+          - "Welcome to nginx"
+          - "IIS Windows Server"
+          - "It works!"
+          - "Test Page"
+          - "Default Web Site Page"
+          - "Apache HTTP Server Test Page"
+          - "This page is used to test the proper operation of the Apache HTTP server"
+          - "If you can see this page, then the people who own this host have just installed the web server software successfully"
+          - "Apache2 Ubuntu Default Page"
+          - "nginx default page"
+        condition: or
+      # Detect minimal/empty body content with very few elements
       - type: regex
         part: body
         regex:
-          - "<style.*?>.*?</style>"
-          - "<script.*?>.*?</script>"
-        negative: true
+          - "(?i)<body[^>]*>\\s*</body>"
+          - "(?i)<body[^>]*>\\s*(&nbsp;|\\s)*\\s*</body>"
+          - "(?i)<body[^>]*>\\s*<(br|p|div)[^>]*>\\s*</(br|p|div)>\\s*</body>"
+        condition: or
+      # Detect pages with minimal content (very short body, few links/elements)
+      - type: dsl
+        dsl:
+          - 'len(body) < 500 && !contains(tolower(body), "login") && !contains(tolower(body), "signin") && !contains(tolower(body), "form") && !contains(tolower(body), "script") && !contains(tolower(body), "stylesheet")'
+        condition: and

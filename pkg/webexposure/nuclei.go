@@ -3,6 +3,7 @@ package webexposure
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	nuclei "github.com/projectdiscovery/nuclei/v3/lib"
@@ -41,8 +42,29 @@ func (s *scanner) RunNucleiScan(targets []string, opts *NucleiOptions) ([]*outpu
 
 	ne, err := nuclei.NewNucleiEngineCtx(ctx,
 		nuclei.WithTemplateFilters(templateFilters),
-		nuclei.EnableHeadlessWithOpts(nil),
-		nuclei.EnableStatsWithOpts(nuclei.StatsOptions{}),
+		nuclei.WithTemplatesOrWorkflows(nuclei.TemplateSources{
+			Templates: []string{opts.TemplatesPath},
+		}),
+		nuclei.EnableHeadlessWithOpts(&nuclei.HeadlessOpts{
+			PageTimeout: 90, // 90 second timeout for page operations
+			ShowBrowser: false,
+		}),
+		nuclei.WithVerbosity(nuclei.VerbosityOptions{Verbose: false}),
+		nuclei.WithGlobalRateLimit(opts.RateLimit, time.Second),
+		nuclei.WithConcurrency(nuclei.Concurrency{
+			TemplateConcurrency:           opts.Concurrency,
+			HostConcurrency:               opts.Concurrency,
+			HeadlessHostConcurrency:       1,
+			HeadlessTemplateConcurrency:   1,
+			JavascriptTemplateConcurrency: 1,
+			TemplatePayloadConcurrency:    25,
+			ProbeConcurrency:              50,
+		}),
+		nuclei.WithNetworkConfig(nuclei.NetworkConfig{
+			Timeout:           opts.Timeout, // Timeout in seconds
+			Retries:           2,
+			LeaveDefaultPorts: false,
+		}),
 		nuclei.UseStatsWriter(s.progress), // Use CLI progress handler for Nuclei
 	)
 	if err != nil {
@@ -50,8 +72,25 @@ func (s *scanner) RunNucleiScan(targets []string, opts *NucleiOptions) ([]*outpu
 	}
 	defer ne.Close()
 
-	// Load targets
-	ne.LoadTargets(targets, false)
+	// Normalize targets to ensure proper URLs for headless templates
+	normalizedTargets := make([]string, 0, len(targets))
+	for _, target := range targets {
+		// Clean up target (remove commas, spaces, etc.)
+		target = strings.TrimSpace(strings.Trim(target, ","))
+		if target == "" {
+			continue
+		}
+
+		// Add protocol if missing
+		if !strings.Contains(target, "://") {
+			target = "https://" + target
+		}
+
+		normalizedTargets = append(normalizedTargets, target)
+	}
+
+	// Load normalized targets
+	ne.LoadTargets(normalizedTargets, false)
 
 	// Template loading happens silently - progress callbacks for UI if needed
 
@@ -75,7 +114,7 @@ func (s *scanner) RunNucleiScan(targets []string, opts *NucleiOptions) ([]*outpu
 			if currentHost != "" && s.progress != nil {
 				if startTime, exists := hostStartTimes[currentHost]; exists {
 					duration := time.Since(startTime)
-					fmt.Printf("   ✅ Completed scanning %s (%v)\n", currentHost, duration.Round(time.Millisecond))
+					fmt.Printf("Completed %s (%v)\n", currentHost, duration.Round(100*time.Millisecond))
 				}
 			}
 
@@ -83,7 +122,7 @@ func (s *scanner) RunNucleiScan(targets []string, opts *NucleiOptions) ([]*outpu
 			hostStartTimes[currentHost] = time.Now()
 
 			if s.progress != nil {
-				fmt.Printf("   🎯 Testing %s...\n", currentHost)
+				fmt.Printf("Testing %s\n", currentHost)
 			}
 		}
 
@@ -103,7 +142,7 @@ func (s *scanner) RunNucleiScan(targets []string, opts *NucleiOptions) ([]*outpu
 
 		// Show findings as they're discovered
 		if s.progress != nil {
-			fmt.Printf("   🚨 Found: %s on %s\n", event.Info.Name, event.Host)
+			fmt.Printf("Found: %s on %s\n", event.Info.Name, event.Host)
 		}
 	})
 
@@ -115,7 +154,7 @@ func (s *scanner) RunNucleiScan(targets []string, opts *NucleiOptions) ([]*outpu
 	if currentHost != "" && s.progress != nil {
 		if startTime, exists := hostStartTimes[currentHost]; exists {
 			duration := time.Since(startTime)
-			fmt.Printf("   ✅ Completed scanning %s (%v)\n", currentHost, duration.Round(time.Millisecond))
+			fmt.Printf("Completed %s (%v)\n", currentHost, duration.Round(100*time.Millisecond))
 		}
 	}
 
@@ -125,23 +164,4 @@ func (s *scanner) RunNucleiScan(targets []string, opts *NucleiOptions) ([]*outpu
 	}
 
 	return results, nil
-}
-
-// ExecuteNucleiWithTargets is a helper function to run Nuclei on specific targets
-func (s *scanner) ExecuteNucleiWithTargets(targets []string) ([]*output.ResultEvent, error) {
-	opts := &NucleiOptions{
-		TemplatesPath:       "./scan-templates",
-		SpecificTemplates:   []string{},
-		IncludeTags:         []string{"tech"},
-		ExcludeTags:         []string{"ssl"},
-		RateLimit:           30,
-		BulkSize:            10,
-		Concurrency:         5,
-		Headless:            false, // Disable headless to reduce resource usage
-		OmitTemplate:        true,
-		FollowHostRedirects: true,
-		ShowMatchLine:       true,
-	}
-
-	return s.RunNucleiScan(targets, opts)
 }

@@ -11,6 +11,8 @@ http:
   - method: GET
     path:
       - "{{BaseURL}}"
+    redirects: true
+    max-redirects: 10
     matchers-condition: or
     matchers:
       - type: word

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"web-exposure-detection/internal/cli"
@@ -22,6 +23,23 @@ Examples:
   web-exposure-detection scan domain1.com domain2.com --templates "live-domain"`,
 	Args: cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// Parse domain arguments - handle both space-separated and comma-separated
+		var domains []string
+		for _, arg := range args {
+			// Split by comma in case user passed comma-separated domains
+			parts := strings.Split(arg, ",")
+			for _, part := range parts {
+				cleaned := strings.TrimSpace(part)
+				if cleaned != "" {
+					domains = append(domains, cleaned)
+				}
+			}
+		}
+
+		if len(domains) == 0 {
+			return fmt.Errorf("no valid domains provided")
+		}
+
 		// Get keywords flag
 		keywords, err := cmd.Flags().GetStringSlice("keywords")
 		if err != nil {
@@ -51,20 +69,20 @@ Examples:
 		scanner.SetProgressCallback(progressHandler)
 
 		// Run scan with CLI interface
-		fmt.Printf("🎯 Starting web exposure scan for: %v\n", args)
+		fmt.Printf("Starting web exposure scan for: %v\n", domains)
 		if len(keywords) > 0 {
-			fmt.Printf("📋 Using keywords: %v\n", keywords)
+			fmt.Printf("Using keywords: %v\n", keywords)
 		}
 		if len(templates) > 0 {
-			fmt.Printf("🎯 Using specific templates: %v\n", templates)
+			fmt.Printf("Using specific templates: %v\n", templates)
 		}
 
-		err = scanner.ScanWithOptions(args, keywords, templates, force)
+		err = scanner.ScanWithOptions(domains, keywords, templates, force)
 		if err != nil {
 			return fmt.Errorf("scan failed: %w", err)
 		}
 
-		fmt.Printf("✅ Scan completed successfully\n")
+		fmt.Printf("Scan completed successfully\n")
 		return nil
 	},
 }

@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.ReportMetadata.Title}}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <style>
+        @page {
+            size: A4;
+            margin: 0.3in;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                background: white !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            .no-print { display: none; }
+            .container {
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0.2in !important;
+                max-width: none !important;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+        }
+
+        body {
+            font-family: "Montserrat", sans-serif;
+            font-optical-sizing: auto;
+            line-height: 1.4;
+            color: #2d3748;
+            background: white;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            padding: 10px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 0;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .qualys-logo img {
+            height: 36px;
+            width: auto;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+            display: inline-block;
+        }
+
+        .main-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2d3748;
+            margin: 0;
+        }
+
+        .client-info {
+            text-align: right;
+            color: #2d3748;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+
+        .scan-info {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+
+        .scan-details {
+            display: flex;
+            gap: 30px;
+        }
+
+        .scan-detail-item {
+            font-size: 13px;
+            color: #4a5568;
+            line-height: 1.4;
+        }
+
+        .scan-detail-item strong {
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .asset-inventory {
+            margin-bottom: 30px;
+        }
+
+        .asset-inventory h2 {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        .inventory-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 30px;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .tech-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 100px;
+        }
+
+        .tech-count {
+            font-size: 36px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .tech-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        .tech-icons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            max-width: 120px;
+        }
+
+        .summary {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+        }
+
+        .summary h2 {
+            color: #2d3748;
+            font-size: 16px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+
+        @media screen {
+            .stat-card {
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                border: 1px solid #e9ecef;
+            }
+        }
+
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 8px;
+            color: #2d3748;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #6c757d;
+        }
+
+        .risk-high .number {
+            color: #dc3545;
+        }
+
+        .risk-medium .number {
+            color: #fd7e14;
+        }
+
+        .risk-low .number {
+            color: #198754;
+        }
+
+        .tech-count-card .number {
+            color: #0d6efd;
+        }
+
+        .tech-icons-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-left: auto;
+        }
+
+        .tech-icons {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .tech-icon {
+            height: 24px;
+            width: 24px;
+            object-fit: contain;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+            display: inline-block;
+        }
+
+        .technologies {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+        }
+
+        .technologies h2 {
+            color: #2d3748;
+            font-size: 16px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .tech-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+        }
+        .no-tech-message {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            margin-top: 15px;
+        }
+        .no-tech-content {
+            text-align: center;
+        }
+        .no-tech-content h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+        .no-tech-content p {
+            font-size: 13px;
+            color: #718096;
+            line-height: 1.5;
+            max-width: 400px;
+        }
+
+        @media screen {
+            .tech-item {
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                border: 1px solid #e2e8f0;
+            }
+        }
+
+        .tech-name {
+            margin-top: 8px;
+            font-size: 10px;
+            font-weight: 500;
+            color: #4a5568;
+            text-align: center;
+            text-transform: capitalize;
+        }
+
+        .section {
+            margin: 25px 0;
+        }
+
+        .section h2 {
+            color: #2d3748;
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .findings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        @media screen {
+            .findings-table {
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                border: 1px solid #dee2e6;
+            }
+        }
+
+        .findings-table th {
+            background: #f8f9fa !important;
+            color: #495057;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            border-bottom: 2px solid #dee2e6;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+
+        .findings-table td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+            vertical-align: top;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .findings-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .findings-table tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .domain-cell {
+            font-weight: 600;
+            color: #2d3748;
+            min-width: 180px;
+            font-size: 13px;
+        }
+
+
+
+
+
+        .findings-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .findings-list li {
+            padding: 2px 0;
+            font-size: 12px;
+            color: #4a5568;
+            line-height: 1.4;
+        }
+
+        .findings-list li:before {
+            content: "•";
+            color: #6c757d;
+            margin-right: 6px;
+            font-weight: bold;
+        }
+
+        .status-circle {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-confirmed {
+            background-color: #10b981;
+        }
+
+        .status-potential {
+            background-color: #f59e0b;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .marketing-section {
+            background: #EDF3F9 !important;
+            color: #2d3748;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+            page-break-after: always;
+        }
+
+        .marketing-content {
+            flex: 1;
+            text-align: left;
+            position: relative;
+            z-index: 2;
+        }
+
+        .marketing-section h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            font-weight: 700;
+            line-height: 1.3;
+            color: #2d3748;
+        }
+
+        .marketing-section p {
+            font-size: 15px;
+            margin-bottom: 18px;
+            line-height: 1.4;
+            color: #4a5568;
+        }
+
+        .cta-button {
+            background: #3b82f6 !important;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            border: none;
+            letter-spacing: 0.5px;
+        }
+
+        .qr-section {
+            margin-left: 30px;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .qr-code {
+            width: 170px;
+            height: 170px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+        }
+
+        .qr-code img {
+            width: 100%;
+            height: 100%;
+            print-color-adjust: exact;
+        }
+
+        .footer {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            color: #718096;
+            font-size: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <div class="qualys-logo">
+                    <img src="./assets/qualys-logo.svg" alt="Qualys Logo">
+                </div>
+                <h1 class="main-title">TotalAppSec External Application Discovery</h1>
+            </div>
+        </div>
+
+        <div class="scan-info">
+            <div class="scan-details">
+                <div class="scan-detail-item">
+                    <strong>Target:</strong> {{.ReportMetadata.TargetDomain}}
+                </div>
+                <div class="scan-detail-item">
+                    <strong>Generated:</strong> {{.ReportMetadata.Date}}
+                </div>
+            </div>
+        </div>
+
+        <div class="summary">
+            <h2>Asset Inventory</h2>
+            <div class="stats-grid">
+                <div class="stat-card risk-high">
+                    <span class="number">{{.Summary.APIsFound}}</span>
+                    <span class="label">API Servers</span>
+                </div>
+                <div class="stat-card risk-medium">
+                    <span class="number">{{.Summary.APISpecificationsFound}}</span>
+                    <span class="label">API Specifications</span>
+                </div>
+                <div class="stat-card risk-low">
+                    <span class="number">{{.Summary.WebAppsFound}}</span>
+                    <span class="label">Web Applications</span>
+                </div>
+            </div>
+        </div>
+
+        {{if and .Technologies (gt .Technologies.Count 0)}}
+        <div class="technologies">
+            <h2>Technologies Detected</h2>
+            <div class="tech-grid">
+                {{range .Technologies.Technologies}}
+                <div class="tech-item">
+                    <img src="./assets/{{.}}.svg" alt="{{.}}" class="tech-icon" onerror="this.style.display='none'">
+                    <span class="tech-name">{{.}}</span>
+                </div>
+                {{end}}
+            </div>
+        </div>
+        {{else}}
+        <div class="technologies">
+            <h2>Technology Analysis</h2>
+            <div class="no-tech-message">
+                <p>Could not detect any technologies.</p>
+            </div>
+        </div>
+        {{end}}
+
+        <div class="marketing-section">
+            <div class="marketing-content">
+                <h3>Attackers can see your {{.Summary.TotalDomains}} applications and the technology powering them.</h3>
+                <p>Their attack plan is already in motion. Secure your APIs and Web Apps with Qualys TotalAppSec.</p>
+                <a href="https://www.qualys.com/apps/totalappsec/" class="cta-button">Try Qualys TotalAppSec</a>
+            </div>
+            <div class="qr-section">
+                <div class="qr-code">
+                    <img src="./assets/qr-code.svg" alt="QR Code">
+                </div>
+            </div>
+        </div>
+
+        {{if .APIsFound}}
+        <div class="section">
+            <h2>API Endpoints Discovered</h2>
+            <div class="legend">
+                <div class="legend-item">
+                    <span class="status-circle status-confirmed"></span>
+                    <span>Confirmed API Endpoint</span>
+                </div>
+                <div class="legend-item">
+                    <span class="status-circle status-potential"></span>
+                    <span>Potential API Endpoint</span>
+                </div>
+            </div>
+            <table class="findings-table">
+                <thead>
+                    <tr>
+                        <th>Domain</th>
+                        <th>Discovery Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .APIsFound}}
+                    <tr>
+                        <td class="domain-cell">
+                            {{if eq .Discovered "Confirmed API Endpoint"}}
+                            <span class="status-circle status-confirmed"></span>{{.Domain}}
+                            {{else}}
+                            <span class="status-circle status-potential"></span>{{.Domain}}
+                            {{end}}
+                        </td>
+                        <td>
+                            <ul class="findings-list">
+                                {{if and (eq (len .Findings) 1) (eq (index .Findings 0) "Routing Server")}}
+                                <li>Basic web service detected</li>
+                                {{else}}
+                                {{range .Findings}}
+                                <li>{{.}}</li>
+                                {{end}}
+                                {{end}}
+                            </ul>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        {{end}}
+
+        {{if .WebAppsFound}}
+        <div class="section">
+            <h2>Web Applications Discovered</h2>
+            <table class="findings-table">
+                <thead>
+                    <tr>
+                        <th>Domain</th>
+                        <th>Discovery Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .WebAppsFound}}
+                    <tr>
+                        <td class="domain-cell">{{.Domain}}</td>
+                        <td>
+                            <ul class="findings-list">
+                                {{if and (eq (len .Findings) 1) (eq (index .Findings 0) "Web Server")}}
+                                <li>Standard web application</li>
+                                {{else}}
+                                {{range .Findings}}
+                                <li>{{.}}</li>
+                                {{end}}
+                                {{end}}
+                            </ul>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        {{end}}
+
+
+        <div class="footer">
+            © 2025 Qualys, Inc. All rights reserved | Confidential and Proprietary Information
+        </div>
+    </div>
+</body>
+</html>

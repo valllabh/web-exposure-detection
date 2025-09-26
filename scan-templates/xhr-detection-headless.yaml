@@ -11,32 +11,49 @@ headless:
         args:
           url: "{{BaseURL}}"
       - action: waitload
+        args:
+          time: 5
       - action: waitstable
+        args:
+          time: 3
       - action: script
         args:
           code: |
             () => {
               window.apiDetected = false;
-              window.apiUrls = {}
+              window.apiUrls = [];
               var origOpen = XMLHttpRequest.prototype.open;
               XMLHttpRequest.prototype.open = function(method, url) {
-                window.apiUrls[url] = true
+                if (!window.apiUrls.includes(url)) {
+                  window.apiUrls.push(url);
+                }
                 window.apiDetected = true;
                 return origOpen.apply(this, arguments);
-              }
+              };
+              // Also hook fetch API
+              var origFetch = window.fetch;
+              window.fetch = function(url) {
+                if (typeof url === 'string' && !window.apiUrls.includes(url)) {
+                  window.apiUrls.push(url);
+                }
+                window.apiDetected = true;
+                return origFetch.apply(this, arguments);
+              };
             }
           hook: true
       - action: waitstable
+        args:
+          time: 3
       - action: script
         name: api_detected
         args:
           code: |
-            () => window.apiDetected
+            () => window.apiDetected || false
       - action: script
         name: api_urls
         args:
           code: |
-            () => window.apiUrls
+            () => JSON.stringify(window.apiUrls || [])
     matchers:
       - type: word
         part: api_detected

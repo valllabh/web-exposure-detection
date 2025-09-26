@@ -16,6 +16,8 @@ http:
   - method: GET
     path:
       - "{{BaseURL}}/?wsdl"
+    redirects: true
+    max-redirects: 10
     matchers:
       - type: word
         words:
