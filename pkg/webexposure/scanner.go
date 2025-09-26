@@ -5,6 +5,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -74,6 +75,9 @@ func (a *domainScanProgressAdapter) OnEnd(result *domainscan.AssetDiscoveryResul
 //go:embed scan-template-meanings.json
 var templateMeanings embed.FS
 
+// scanTemplatesFS will be set from main package
+var scanTemplatesFS embed.FS
+
 // New creates a new Scanner instance
 func New() (Scanner, error) {
 	s := &scanner{
@@ -109,6 +113,73 @@ func (s *scanner) loadMeanings() error {
 	return json.Unmarshal(data, &s.meanings)
 }
 
+// extractEmbeddedTemplates extracts embedded scan-templates to a temporary directory
+func (s *scanner) extractEmbeddedTemplates() (string, error) {
+	// Create temporary directory for templates
+	tempDir, err := os.MkdirTemp("", "scan-templates-*")
+	if err != nil {
+		return "", fmt.Errorf("failed to create temp directory: %w", err)
+	}
+
+	// Extract embedded scan-templates to temp directory
+	if err := extractEmbeddedDirectory(scanTemplatesFS, "scan-templates", tempDir); err != nil {
+		os.RemoveAll(tempDir) // Clean up on error
+		return "", fmt.Errorf("failed to extract embedded templates: %w", err)
+	}
+
+	return tempDir, nil
+}
+
+// extractEmbeddedDirectory recursively extracts a directory from embedded filesystem
+func extractEmbeddedDirectory(embeddedFS embed.FS, src, dst string) error {
+	// Create destination directory
+	if err := os.MkdirAll(dst, 0755); err != nil {
+		return fmt.Errorf("failed to create destination directory %s: %w", dst, err)
+	}
+
+	// Read embedded directory entries
+	entries, err := fs.ReadDir(embeddedFS, src)
+	if err != nil {
+		return fmt.Errorf("failed to read embedded directory %s: %w", src, err)
+	}
+
+	// Extract each entry
+	for _, entry := range entries {
+		srcPath := filepath.Join(src, entry.Name())
+		dstPath := filepath.Join(dst, entry.Name())
+
+		if entry.IsDir() {
+			// Recursively extract subdirectories
+			if err := extractEmbeddedDirectory(embeddedFS, srcPath, dstPath); err != nil {
+				return err
+			}
+		} else {
+			// Extract files from embedded filesystem
+			if err := extractEmbeddedFile(embeddedFS, srcPath, dstPath); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// extractEmbeddedFile extracts a single file from embedded filesystem to destination
+func extractEmbeddedFile(embeddedFS embed.FS, src, dst string) error {
+	// Read file from embedded filesystem
+	data, err := embeddedFS.ReadFile(src)
+	if err != nil {
+		return fmt.Errorf("failed to read embedded file %s: %w", src, err)
+	}
+
+	// Write destination file
+	if err := os.WriteFile(dst, data, 0644); err != nil {
+		return fmt.Errorf("failed to write destination file %s: %w", dst, err)
+	}
+
+	return nil
+}
+
 // Scan performs the complete scan pipeline with default options (no force)
 func (s *scanner) Scan(domains []string, keywords []string) error {
 	return s.ScanWithOptions(domains, keywords, []string{}, false)
@@ -133,9 +204,15 @@ func (s *scanner) ScanWithOptions(domains []string, keywords []string, templates
 		return fmt.Errorf("no valid domains provided after cleaning")
 	}
 
-	// Step 1: Validate specific templates early to fail fast
+	// Step 1: Extract embedded scan-templates to temporary directory
+	tempTemplatesDir, err := s.extractEmbeddedTemplates()
+	if err != nil {
+		return fmt.Errorf("failed to extract embedded templates: %w", err)
+	}
+
+	// Step 1.5: Validate specific templates early to fail fast
 	if len(templates) > 0 {
-		if err := s.validateSpecificTemplates(templates, "./scan-templates"); err != nil {
+		if err := s.validateSpecificTemplates(templates, tempTemplatesDir); err != nil {
 			return fmt.Errorf("template validation failed: %w", err)
 		}
 	}
@@ -144,8 +221,7 @@ func (s *scanner) ScanWithOptions(domains []string, keywords []string, templates
 
 	// Create results directory structure
 	resultsDir := filepath.Join("results", targetDomain)
-	err := os.MkdirAll(resultsDir, 0755)
-	if err != nil {
+	if err := os.MkdirAll(resultsDir, 0755); err != nil {
 		return fmt.Errorf("failed to create results directory: %w", err)
 	}
 
@@ -155,9 +231,9 @@ func (s *scanner) ScanWithOptions(domains []string, keywords []string, templates
 		return fmt.Errorf("domain discovery failed: %w", err)
 	}
 
-	// Step 1.5: Nuclei Options
+	// Step 2: Nuclei Options with extracted templates path
 	nucleiOptions := &NucleiOptions{
-		TemplatesPath:       "./scan-templates",
+		TemplatesPath:       tempTemplatesDir,
 		SpecificTemplates:   templates,
 		IncludeTags:         []string{},
 		ExcludeTags:         []string{"ssl"},
@@ -227,9 +303,15 @@ func (s *scanner) GenerateReportFromExistingResults(domains []string) error {
 		return fmt.Errorf("failed to create results directory: %w", err)
 	}
 
-	// Step 1.5: Validate template meanings
+	// Step 1.5: Extract embedded scan-templates to temporary directory
+	tempTemplatesDir2, err := s.extractEmbeddedTemplates()
+	if err != nil {
+		return fmt.Errorf("failed to extract embedded templates: %w", err)
+	}
+
+	// Step 2: Validate template meanings
 	nucleiOptions := &NucleiOptions{
-		TemplatesPath: "./scan-templates",
+		TemplatesPath: tempTemplatesDir2,
 	}
 	if err := s.ValidateTemplateMeanings(nucleiOptions.TemplatesPath); err != nil {
 		return fmt.Errorf("template validation failed: %w", err)

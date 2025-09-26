@@ -1,6 +1,7 @@
 package webexposure
 
 import (
+	"embed"
 	"strings"
 	"text/template"
 	"time"
@@ -183,4 +184,10 @@ type DomainResult struct {
 type scanner struct {
 	meanings map[string]TemplateMeaning // Loaded from scan-template-meanings.json
 	progress ProgressCallback           // Optional progress callback
+}
+
+// SetEmbeddedFilesystems sets the embedded filesystems from main package
+func SetEmbeddedFilesystems(scanTemplates, templates embed.FS) {
+	scanTemplatesFS = scanTemplates
+	templatesFS = templates
 }

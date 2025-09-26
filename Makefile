@@ -8,12 +8,12 @@ BUILD_DIR=bin
 build:
 	@echo "Building $(BINARY_NAME)..."
 	@mkdir -p $(BUILD_DIR)
-	go build -o $(BUILD_DIR)/$(BINARY_NAME) ./main.go
+	go build -o $(BUILD_DIR)/$(BINARY_NAME) .
 
 # Run the application
 run:
 	@echo "Running $(BINARY_NAME)..."
-	go run main.go
+	go run .
 
 # Run all tests
 test: test-unit
