@@ -247,11 +247,17 @@ func (rp *ResultProcessor) classifyAsAPI(templates map[string]*output.ResultEven
 	}
 
 	// Check for web app indicators (must match classifyAsWebApp function)
-	if templates["website-host-detection"] != nil || templates["backend-framework-detection"] != nil ||
+	// Note: website-host-detection should not override API classification for domains with API keywords
+	if templates["backend-framework-detection"] != nil ||
 		templates["frontend-tech-detection"] != nil || templates["xhr-detection-headless"] != nil ||
 		templates["js-libraries-detect"] != nil || templates["sap-spartacus"] != nil ||
 		templates["gunicorn-detect"] != nil || templates["fingerprinthub-web-fingerprints"] != nil ||
 		templates["tech-detect"] != nil {
+		hasWebApp = true
+	}
+
+	// Only consider website-host-detection as WebApp if no API keywords are present
+	if templates["website-host-detection"] != nil && !hasAPIKeyword {
 		hasWebApp = true
 	}
 
@@ -298,13 +304,24 @@ func (rp *ResultProcessor) classifyAsAPI(templates map[string]*output.ResultEven
 func (rp *ResultProcessor) classifyAsWebApp(templates map[string]*output.ResultEvent) string {
 	hasWebApp := false
 	hasAPIServer := false
+	hasAPIKeyword := false
 
-	// Check for web app indicators
-	if templates["website-host-detection"] != nil || templates["backend-framework-detection"] != nil ||
+	// Check for API keyword/routing server patterns
+	if templates["api-host-keyword-detection"] != nil || templates["blank-root-server-detection"] != nil {
+		hasAPIKeyword = true
+	}
+
+	// Check for web app indicators (excluding website-host-detection when API keywords present)
+	if templates["backend-framework-detection"] != nil ||
 		templates["frontend-tech-detection"] != nil || templates["xhr-detection-headless"] != nil ||
 		templates["js-libraries-detect"] != nil || templates["sap-spartacus"] != nil ||
 		templates["gunicorn-detect"] != nil || templates["fingerprinthub-web-fingerprints"] != nil ||
 		templates["tech-detect"] != nil {
+		hasWebApp = true
+	}
+
+	// Only consider website-host-detection as WebApp if no API keywords are present
+	if templates["website-host-detection"] != nil && !hasAPIKeyword {
 		hasWebApp = true
 	}
 
