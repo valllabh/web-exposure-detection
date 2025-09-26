@@ -330,6 +330,14 @@
             text-transform: capitalize;
         }
 
+        .tech-item.no-icon {
+            justify-content: center;
+        }
+
+        .tech-item.no-icon .tech-name {
+            margin-top: 0;
+        }
+
         .section {
             margin: 25px 0;
         }
@@ -573,7 +581,7 @@
             <div class="tech-grid">
                 {{range .Technologies.Technologies}}
                 <div class="tech-item">
-                    <img src="./assets/{{.}}.svg" alt="{{.}}" class="tech-icon" onerror="this.style.display='none'">
+                    <img src="./assets/{{.}}.svg" alt="{{.}}" class="tech-icon" onerror="this.style.display='none'; this.parentNode.classList.add('no-icon')">
                     <span class="tech-name">{{.}}</span>
                 </div>
                 {{end}}
@@ -590,9 +598,9 @@
 
         <div class="marketing-section">
             <div class="marketing-content">
-                <h3>Attackers can see your {{.Summary.TotalDomains}} applications and the technology powering them.</h3>
+                <h3>Attackers can see your {{.Summary.TotalApps}} applications and the technology powering them.</h3>
                 <p>Their attack plan is already in motion. Secure your APIs and Web Apps with Qualys TotalAppSec.</p>
-                <a href="https://www.qualys.com/apps/totalappsec/" class="cta-button">Try Qualys TotalAppSec</a>
+                <a href="https://www.qualys.com/forms/totalappsec/" class="cta-button">Try Qualys TotalAppSec</a>
             </div>
             <div class="qr-section">
                 <div class="qr-code">

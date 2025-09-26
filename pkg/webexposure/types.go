@@ -141,6 +141,7 @@ type Summary struct {
 	APISpecificationsFound int `json:"api_specifications_found"`
 	WebAppsFound           int `json:"web_apps_found"`
 	DomainsUsingAPI        int `json:"domains_using_api"`
+	TotalApps              int `json:"total_apps"`
 }
 
 // TechnologiesDetected contains detected technologies

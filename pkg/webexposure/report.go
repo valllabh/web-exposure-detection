@@ -22,7 +22,7 @@ func (s *scanner) GenerateReport(grouped *GroupedResults, targetDomain string) (
 	report.SchemaVersion = "v1"
 	report.ReportMetadata = &ReportMetadata{
 		Title:        fmt.Sprintf("External Application Discovery for %s", targetDomain),
-		Date:         time.Now().Format("2006-01-02"),
+		Date:         time.Now().Format("2 Jan 2006 3:04pm"),
 		TargetDomain: targetDomain,
 		Timestamp:    time.Now(),
 	}
@@ -181,8 +181,8 @@ func (rp *ResultProcessor) updateSummary(domainResult *DomainResult) {
 			for tech := range domainResult.Technologies {
 				techLower := strings.ToLower(tech)
 				if strings.Contains(techLower, "angular") || strings.Contains(techLower, "react") ||
-				   strings.Contains(techLower, "vue") || strings.Contains(techLower, "next.js") ||
-				   strings.Contains(techLower, "nuxt") {
+					strings.Contains(techLower, "vue") || strings.Contains(techLower, "next.js") ||
+					strings.Contains(techLower, "nuxt") {
 					usingAPI = true
 					break
 				}
@@ -207,6 +207,9 @@ func (rp *ResultProcessor) buildReport() *ExposureReport {
 	// Build technologies list
 	techList := rp.setToSlice(rp.technologies)
 	sort.Strings(techList)
+
+	// Calculate total applications
+	rp.summary.TotalApps = rp.summary.APIsFound + rp.summary.WebAppsFound
 
 	return &ExposureReport{
 		Summary: rp.summary,
@@ -500,4 +503,3 @@ func (rp *ResultProcessor) filterWebServerFromAPI(findings []string) []string {
 	}
 	return filtered
 }
-
