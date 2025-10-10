@@ -63,6 +63,7 @@ type Scanner interface {
 	// Complete scan pipeline
 	Scan(domains []string, keywords []string) error
 	ScanWithOptions(domains []string, keywords []string, templates []string, force bool) error
+	ScanWithPreset(domains []string, keywords []string, templates []string, force bool, preset ScanPreset) error
 
 	// Report generation
 	GenerateReportFromExistingResults(domains []string, debug bool) error
@@ -96,6 +97,14 @@ type Scanner interface {
 
 // Use domainscan.DomainEntry directly instead of custom type
 
+// ScanPreset defines scan speed/aggressiveness presets
+type ScanPreset string
+
+const (
+	PresetSlow ScanPreset = "slow" // Default: Conservative, stable
+	PresetFast ScanPreset = "fast" // Aggressive: Faster but may be less stable
+)
+
 // NucleiOptions configures the Nuclei scan
 type NucleiOptions struct {
 	TemplatesPath       string
@@ -107,10 +116,12 @@ type NucleiOptions struct {
 	Concurrency         int
 	Headless            bool
 	OmitTemplate        bool
+	OmitResponse        bool
 	FollowHostRedirects bool
 	ShowMatchLine       bool
-	Timeout             int // Timeout per request in seconds
-	Delay               int // Delay between requests in seconds
+	Timeout             int    // Timeout per request in seconds
+	Delay               int    // Delay between requests in seconds
+	ResultsWriter       string // Path to write results progressively (JSONL format)
 }
 
 // GroupedResults represents Nuclei results grouped by domain and template
@@ -156,9 +167,11 @@ type TechnologiesDetected struct {
 
 // Discovery represents both API and Web App discoveries
 type Discovery struct {
-	Domain     string   `json:"domain"`
-	Discovered string   `json:"discovered"`
-	Findings   []string `json:"findings"`
+	Domain      string   `json:"domain"`
+	Title       string   `json:"title,omitempty"`
+	Description string   `json:"description,omitempty"`
+	Discovered  string   `json:"discovered"`
+	Findings    []string `json:"findings"`
 }
 
 // Backward compatibility type aliases
@@ -177,6 +190,8 @@ type ResultProcessor struct {
 // DomainResult holds processed results for a single domain
 type DomainResult struct {
 	Domain       string
+	Title        string          // Page title
+	Description  string          // Page meta description
 	Findings     map[string]bool // set for deduplication
 	Detections   map[string]bool // set for deduplication
 	Technologies map[string]bool // set for deduplication

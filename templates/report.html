@@ -401,6 +401,39 @@
             font-size: 13px;
         }
 
+        .app-title {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 14px;
+            line-height: 1.4;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .app-domain {
+            color: #4a5568;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+
+        .app-description {
+            color: #6b7280;
+            font-size: 11px;
+            font-weight: 400;
+            line-height: 1.5;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            max-height: 3em;
+        }
+
 
 
 
@@ -618,7 +651,7 @@
             <table class="findings-table">
                 <thead>
                     <tr>
-                        <th>Domain</th>
+                        <th>Application</th>
                         <th>Discovery Details</th>
                     </tr>
                 </thead>
@@ -627,9 +660,16 @@
                     <tr>
                         <td class="domain-cell">
                             {{if eq .Discovered "Confirmed API Endpoint"}}
-                            <span class="status-circle status-confirmed"></span>{{.Domain}}
+                            <span class="status-circle status-confirmed"></span>
                             {{else}}
-                            <span class="status-circle status-potential"></span>{{.Domain}}
+                            <span class="status-circle status-potential"></span>
+                            {{end}}
+                            {{if .Title}}
+                            <span class="app-title">{{.Title}}</span>
+                            {{end}}
+                            <div class="app-domain">{{.Domain}}</div>
+                            {{if .Description}}
+                            <div class="app-description">{{.Description}}</div>
                             {{end}}
                         </td>
                         <td>
@@ -656,14 +696,22 @@
             <table class="findings-table">
                 <thead>
                     <tr>
-                        <th>Domain</th>
+                        <th>Application</th>
                         <th>Discovery Details</th>
                     </tr>
                 </thead>
                 <tbody>
                     {{range .WebAppsFound}}
                     <tr>
-                        <td class="domain-cell">{{.Domain}}</td>
+                        <td class="domain-cell">
+                            {{if .Title}}
+                            <span class="app-title">{{.Title}}</span>
+                            {{end}}
+                            <div class="app-domain">{{.Domain}}</div>
+                            {{if .Description}}
+                            <div class="app-description">{{.Description}}</div>
+                            {{end}}
+                        </td>
                         <td>
                             <ul class="findings-list">
                                 {{if and (eq (len .Findings) 1) (eq (index .Findings 0) "Web Server")}}

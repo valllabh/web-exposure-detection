@@ -4,9 +4,11 @@ info:
   author: Vallabh
   severity: info
   description: |
-    Detects presence of CMS, blogging platforms, e-commerce tools, site builders, and other backend platforms
-    using structured markers from HTTP headers, cookies, and HTML content.
-  tags: http,backend,framework,cms,ecommerce,blog,sitebuilder,detection
+    Detects presence of CMS (WordPress, Drupal, Joomla, TYPO3, Ghost, Kentico),
+    e-commerce platforms (Shopify, Magento, WooCommerce, PrestaShop, BigCommerce, OpenCart),
+    site builders (Wix, Squarespace), and backend frameworks (Laravel, Django, ASP.NET, Ruby on Rails,
+    Express.js, JSP, PHP, Spring Boot) using structured markers from HTTP headers, cookies, and HTML content.
+  tags: http,backend,framework,cms,ecommerce,blog,sitebuilder,laravel,django,aspnet,rails,jsp,php,spring,detection
 http:
   - method: GET
     path:
@@ -23,11 +25,14 @@ http:
           - "x-generator"
           - "x-cms-powered-by"
           - "x-cms-type-edition"
+          - "x-aspnet-version"
+          - "x-runtime"
+          - "x-application-context"
       # COOKIE-BASED DETECTION
       - type: regex
         part: cookie
         regex:
-          - "(?i)(wordpress_logged_in_|wp-settings-|laravel_session|ci_session|PHPSESSID|JSESSIONID|frontend|ghost-admin-api-session|Drupal.visitor.|SESS[a-z0-9]+|SHOP_SESSION_TOKEN|PrestaShop-)"
+          - "(?i)(wordpress_logged_in_|wp-settings-|laravel_session|XSRF-TOKEN|ci_session|PHPSESSID|JSESSIONID|frontend|ghost-admin-api-session|Drupal.visitor.|SESS[a-z0-9]+|SHOP_SESSION_TOKEN|PrestaShop-|ASP.NET_SessionId|\\.ASPXAUTH|_session_id|csrftoken|sessionid|django_language|connect\\.sid|joomla_|fe_typo_user|OCSESSID|CMSPreferredCulture)"
       # BODY STRUCTURE-BASED DETECTION (LOW FALSE POSITIVES)
       - type: word
         part: body
@@ -43,8 +48,21 @@ http:
           - "window.checkoutConfig"
           - "Shopify.designMode"
           - "data-ghost"
+          - "__VIEWSTATE"
+          - "__EVENTVALIDATION"
+          - "laravel_token"
+          - "csrf-token"
+          - "csrf-param"
+          - "static.wixstatic.com"
+          - "static1.squarespace.com"
+          - "/components/com_"
+          - "/modules/prestashop"
+          - "bigcommerce.com"
+          - "stencil-utils.js"
+          - "/catalog/view/theme/"
+          - "/CMSPages/"
     extractors:
-      # Extractor for WordPress
+      # CMS Platforms
       - type: regex
         name: wordpress
         part: body
@@ -52,7 +70,6 @@ http:
         internal: true
         regex:
           - "(?i)(wp-content|wp-includes|wp-admin)"
-      # Extractor for Drupal
       - type: regex
         name: drupal
         part: body
@@ -60,7 +77,22 @@ http:
         internal: true
         regex:
           - "(?i)(Drupal.settings|data-drupal-selector)"
-      # Extractor for Shopify
+      - type: regex
+        name: joomla
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(/media/system/js/|/components/com_|joomla)"
+      - type: regex
+        name: typo3
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(typo3|fe_typo_user)"
+
+      # E-commerce Platforms
       - type: regex
         name: shopify
         part: body
@@ -68,12 +100,154 @@ http:
         internal: true
         regex:
           - "(?i)(cdn.shopify.com|Shopify.designMode|window.checkoutConfig)"
-      # DSL to return CMS name if extractor has value example for extractor wordpress
-      # and if extractor has value then return wordpress
-      # else return empty
+      - type: regex
+        name: magento
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(Mage\\.Cookies|/skin/frontend/|adminhtml)"
+      - type: regex
+        name: woocommerce
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(/wp-content/plugins/woocommerce/|woocommerce)"
+      - type: regex
+        name: prestashop
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(/modules/prestashop|PrestaShop)"
+      - type: regex
+        name: bigcommerce
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(bigcommerce\\.com|stencil-utils\\.js)"
+      - type: regex
+        name: opencart
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(/catalog/view/theme/|OCSESSID)"
+
+      # Site Builders
+      - type: regex
+        name: wix
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(static\\.wixstatic\\.com|wix-)"
+      - type: regex
+        name: squarespace
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(static1\\.squarespace\\.com|squarespace-|sqsp-)"
+
+      # Backend Frameworks
+      - type: regex
+        name: laravel
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(laravel_token|laravel_session)"
+      - type: regex
+        name: django
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(csrfmiddlewaretoken|django)"
+      - type: regex
+        name: aspnet
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(__VIEWSTATE|__EVENTVALIDATION|ASP\\.NET)"
+      - type: regex
+        name: rails
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(csrf-token|csrf-param|_session_id)"
+      - type: regex
+        name: express
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(X-Powered-By: Express)"
+      - type: regex
+        name: jsp
+        part: cookie
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(JSESSIONID)"
+      - type: regex
+        name: php
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(X-Powered-By.*PHP|PHPSESSID)"
+      - type: regex
+        name: spring
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(X-Application-Context)"
+
+      # Other CMS
+      - type: regex
+        name: ghost
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(ghost-sdk\\.js|data-ghost)"
+      - type: regex
+        name: kentico
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(/CMSPages/|CMSPreferredCulture)"
+
+      # DSL to return platform names
       - type: dsl
         dsl:
-          - "len(wordpress) > 0 ? 'Wordpress' : ''"
+          - "len(wordpress) > 0 ? 'WordPress' : ''"
           - "len(drupal) > 0 ? 'Drupal' : ''"
+          - "len(joomla) > 0 ? 'Joomla' : ''"
+          - "len(typo3) > 0 ? 'TYPO3' : ''"
           - "len(shopify) > 0 ? 'Shopify' : ''"
+          - "len(magento) > 0 ? 'Magento' : ''"
+          - "len(woocommerce) > 0 ? 'WooCommerce' : ''"
+          - "len(prestashop) > 0 ? 'PrestaShop' : ''"
+          - "len(bigcommerce) > 0 ? 'BigCommerce' : ''"
+          - "len(opencart) > 0 ? 'OpenCart' : ''"
+          - "len(wix) > 0 ? 'Wix' : ''"
+          - "len(squarespace) > 0 ? 'Squarespace' : ''"
+          - "len(laravel) > 0 ? 'Laravel' : ''"
+          - "len(django) > 0 ? 'Django' : ''"
+          - "len(aspnet) > 0 ? 'ASP.NET' : ''"
+          - "len(rails) > 0 ? 'Ruby on Rails' : ''"
+          - "len(express) > 0 ? 'Express.js' : ''"
+          - "len(jsp) > 0 ? 'JSP (Java Server Pages)' : ''"
+          - "len(php) > 0 ? 'PHP' : ''"
+          - "len(spring) > 0 ? 'Spring Boot' : ''"
           - "len(ghost) > 0 ? 'Ghost' : ''"
+          - "len(kentico) > 0 ? 'Kentico' : ''"

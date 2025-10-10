@@ -4,7 +4,7 @@ info:
   author: Vallabh
   severity: info
   description: |
-    Detects if domain is live
+    Detects if domain is live and extracts page title and description
   tags: http
 http:
   - method: GET
@@ -32,3 +32,18 @@ http:
           - 502
           - 503
           - 504
+    extractors:
+      # Extract page title (first occurrence only)
+      - type: regex
+        part: body
+        regex:
+          - "<title[^>]*>([^<]+)</title>"
+        group: 1
+
+      # Extract meta description (first occurrence only)
+      - type: regex
+        part: body
+        regex:
+          - '<meta\s+name=["\047]description["\047]\s+content=["\047]([^"\047]+)["\047]'
+          - '<meta\s+content=["\047]([^"\047]+)["\047]\s+name=["\047]description["\047]'
+        group: 1

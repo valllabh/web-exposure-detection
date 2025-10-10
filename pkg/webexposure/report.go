@@ -84,6 +84,37 @@ func (rp *ResultProcessor) processTemplate(domainResult *DomainResult, templateI
 		return
 	}
 
+	// Extract title and description from live-domain template
+	// Title extractor may match multiple title tags, so we find the longest one (real page title)
+	// Description is always the last extracted result
+	if templateID == "live-domain" && event.ExtractedResults != nil && len(event.ExtractedResults) > 0 {
+		// Find the longest title (real page titles are usually longer than SVG/meta titles)
+		var title string
+		var maxLen int
+		for i := 0; i < len(event.ExtractedResults)-1; i++ { // Exclude last element (description)
+			candidate := strings.TrimSpace(event.ExtractedResults[i])
+			if len(candidate) > maxLen {
+				maxLen = len(candidate)
+				title = candidate
+			}
+		}
+
+		// Last element is the description
+		var description string
+		if len(event.ExtractedResults) > 1 {
+			description = strings.TrimSpace(event.ExtractedResults[len(event.ExtractedResults)-1])
+		}
+
+		// Only use title if it's not generic
+		if title != "" && !rp.isGenericTitle(title) {
+			domainResult.Title = title
+		}
+
+		if description != "" {
+			domainResult.Description = description
+		}
+	}
+
 	// Process detection templates
 	detections := meaning.DetectionTemplate.Process(event)
 	for _, detection := range detections {
@@ -128,16 +159,20 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *DomainResult, templates 
 		// For APIs, filter out "Web Server" from findings
 		apiFindings := rp.filterWebServerFromAPI(findings)
 		rp.apis = append(rp.apis, &Discovery{
-			Domain:     domainResult.Domain,
-			Discovered: apiClassification,
-			Findings:   rp.cleanFindingsArray(apiFindings),
+			Domain:      domainResult.Domain,
+			Title:       domainResult.Title,
+			Description: domainResult.Description,
+			Discovered:  apiClassification,
+			Findings:    rp.cleanFindingsArray(apiFindings),
 		})
 		domainResult.Discovered = "API"
 	} else if webAppClassification != "" {
 		rp.webApps = append(rp.webApps, &Discovery{
-			Domain:     domainResult.Domain,
-			Discovered: webAppClassification,
-			Findings:   rp.cleanFindingsArray(findings),
+			Domain:      domainResult.Domain,
+			Title:       domainResult.Title,
+			Description: domainResult.Description,
+			Discovered:  webAppClassification,
+			Findings:    rp.cleanFindingsArray(findings),
 		})
 		domainResult.Discovered = "WebApp"
 	}
@@ -247,17 +282,11 @@ func (rp *ResultProcessor) classifyAsAPI(templates map[string]*output.ResultEven
 	}
 
 	// Check for web app indicators (must match classifyAsWebApp function)
-	// Note: website-host-detection should not override API classification for domains with API keywords
 	if templates["backend-framework-detection"] != nil ||
-		templates["frontend-tech-detection"] != nil || templates["xhr-detection-headless"] != nil ||
+		templates["frontend-tech-detection"] != nil ||
 		templates["js-libraries-detect"] != nil || templates["sap-spartacus"] != nil ||
 		templates["gunicorn-detect"] != nil || templates["fingerprinthub-web-fingerprints"] != nil ||
 		templates["tech-detect"] != nil {
-		hasWebApp = true
-	}
-
-	// Only consider website-host-detection as WebApp if no API keywords are present
-	if templates["website-host-detection"] != nil && !hasAPIKeyword {
 		hasWebApp = true
 	}
 
@@ -304,24 +333,13 @@ func (rp *ResultProcessor) classifyAsAPI(templates map[string]*output.ResultEven
 func (rp *ResultProcessor) classifyAsWebApp(templates map[string]*output.ResultEvent) string {
 	hasWebApp := false
 	hasAPIServer := false
-	hasAPIKeyword := false
 
-	// Check for API keyword/routing server patterns
-	if templates["api-host-keyword-detection"] != nil || templates["blank-root-server-detection"] != nil {
-		hasAPIKeyword = true
-	}
-
-	// Check for web app indicators (excluding website-host-detection when API keywords present)
+	// Check for web app indicators
 	if templates["backend-framework-detection"] != nil ||
-		templates["frontend-tech-detection"] != nil || templates["xhr-detection-headless"] != nil ||
+		templates["frontend-tech-detection"] != nil ||
 		templates["js-libraries-detect"] != nil || templates["sap-spartacus"] != nil ||
 		templates["gunicorn-detect"] != nil || templates["fingerprinthub-web-fingerprints"] != nil ||
 		templates["tech-detect"] != nil {
-		hasWebApp = true
-	}
-
-	// Only consider website-host-detection as WebApp if no API keywords are present
-	if templates["website-host-detection"] != nil && !hasAPIKeyword {
 		hasWebApp = true
 	}
 
@@ -346,7 +364,6 @@ func (rp *ResultProcessor) classifyAsWebApp(templates map[string]*output.ResultE
 
 func (rp *ResultProcessor) isTechnologyTemplate(templateID string) bool {
 	techTemplates := map[string]bool{
-		"website-host-detection":          true, // Web servers, CDNs, technologies
 		"api-server-detection":            true, // API technologies
 		"backend-framework-detection":     true, // Backend frameworks
 		"frontend-tech-detection":         true, // Frontend technologies
@@ -518,4 +535,42 @@ func (rp *ResultProcessor) filterWebServerFromAPI(findings []string) []string {
 		}
 	}
 	return filtered
+}
+
+// isGenericTitle checks if a title is too generic to be useful
+func (rp *ResultProcessor) isGenericTitle(title string) bool {
+	// List of generic title keywords to ignore
+	genericTitles := []string{
+		"home",
+		"homepage",
+		"home page",
+		"login",
+		"log in",
+		"signin",
+		"sign in",
+		"sign-in",
+		"welcome",
+		"index",
+		"default",
+		"untitled",
+		"404",
+		"error",
+		"not found",
+		"403",
+		"forbidden",
+		"unauthorized",
+		"500",
+		"maintenance",
+	}
+
+	titleLower := strings.ToLower(strings.TrimSpace(title))
+
+	// Check for exact matches or if the title contains only generic words
+	for _, generic := range genericTitles {
+		if titleLower == generic || titleLower == generic+"." {
+			return true
+		}
+	}
+
+	return false
 }

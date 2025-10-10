@@ -1,13 +1,4 @@
 {
-    "website-host-detection": {
-        "label": "Web Server",
-        "detection_template": ["Web App", "Web Server"],
-        "finding_template": [
-            "Web Server",
-            "Live Domain",
-            "{{if .ExtractedResults}}{{range $i, $v := .ExtractedResults}}{{if $i}}, {{end}}{{if eq $v \"Has Forms\"}}Authentication Forms{{else if eq $v \"Has SSO/Social Login\"}}SSO/Social Authentication{{else}}{{$v}}{{end}}{{end}}{{end}}"
-        ]
-    },
     "api-server-detection": {
         "label": "API Server Detection",
         "detection_template": ["API", "Serving JSON/XML"],
@@ -22,13 +13,6 @@
         "finding_template": [
             "Backend Framework/CMS",
             "{{if .ExtractedResults}}Using {{range $i, $v := .ExtractedResults}}{{if $i}}, {{end}}{{$v}}{{end}}{{end}}"
-        ]
-    },
-    "xhr-detection-headless": {
-        "label": "Using API",
-        "detection_template": ["Web App", "Using API"],
-        "finding_template": [
-            "Using API"
         ]
     },
     "live-domain": {

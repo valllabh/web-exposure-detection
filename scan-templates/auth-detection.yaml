@@ -60,17 +60,19 @@ headless:
         name: social_auth
         internal: true
         regex:
-          # Social login buttons/links
-          - "(?i)(sign|log).{0,10}(in|on).{0,20}(google|facebook|twitter|linkedin|github|apple)"
-          - "(?i)(google|facebook|twitter|linkedin|github|apple).{0,20}(sign|log).{0,10}(in|on)"
+          # Social login buttons/links - explicit authentication context
+          - "(?i)(sign|log).{0,10}(in|on|up).{0,20}(with|using|via).{0,20}(google|facebook|twitter|linkedin|github|apple)"
+          - "(?i)(google|facebook|twitter|linkedin|github|apple).{0,20}(sign|log).{0,10}(in|on|up)"
           - "(?i)connect.{0,20}(with|via).{0,20}(google|facebook|twitter|linkedin|github|apple)"
-          # OAuth patterns
-          - "(?i)(oauth|openid)"
-          - "(?i)href=[\"'][^\"']*oauth[^\"']*[\"']"
-          - "(?i)href=[\"'][^\"']*openid[^\"']*[\"']"
-          # Social login button classes/IDs
-          - "(?i)(class|id)=[\"'][^\"']*(google|facebook|twitter|linkedin|github|apple|social)[^\"']*login[^\"']*[\"']"
-          - "(?i)(class|id)=[\"'][^\"']*login[^\"']*(google|facebook|twitter|linkedin|github|apple|social)[^\"']*[\"']"
+          - "(?i)authenticate.{0,20}(with|using|via).{0,20}(google|facebook|twitter|linkedin|github|apple)"
+          # OAuth/OpenID patterns with authentication context
+          - "(?i)href=[\"'][^\"']*(oauth|openid).*(login|signin|auth)[^\"']*[\"']"
+          - "(?i)href=[\"'][^\"']*(login|signin|auth).*(oauth|openid)[^\"']*[\"']"
+          # Social login button classes/IDs - must contain both provider AND auth keywords
+          - "(?i)(class|id)=[\"'][^\"']*(google|facebook|twitter|linkedin|github|apple).*(login|signin|auth|sso)[^\"']*[\"']"
+          - "(?i)(class|id)=[\"'][^\"']*(login|signin|auth|sso).*(google|facebook|twitter|linkedin|github|apple)[^\"']*[\"']"
+          # OAuth provider domain patterns in hrefs (e.g., accounts.google.com, login.microsoftonline.com)
+          - "(?i)href=[\"'][^\"']*(accounts\\.google\\.com|facebook\\.com/dialog/oauth|github\\.com/(login/oauth|oauth)|linkedin\\.com/oauth|appleid\\.apple\\.com/auth)[^\"']*[\"']"
         group: 0
 
       # Multi-factor authentication

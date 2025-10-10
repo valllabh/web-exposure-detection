@@ -1,6 +1,7 @@
 package webexposure
 
 import (
+	"bufio"
 	"embed"
 	"encoding/json"
 	"fmt"
@@ -178,6 +179,33 @@ func extractEmbeddedFile(embeddedFS embed.FS, src, dst string) error {
 	return nil
 }
 
+// applyPresetToNucleiOptions applies preset configuration to NucleiOptions
+func applyPresetToNucleiOptions(opts *NucleiOptions, preset ScanPreset) {
+	switch preset {
+	case PresetFast:
+		// Fast preset: Aggressive scanning for speed
+		opts.RateLimit = 50      // High request rate
+		opts.BulkSize = 10       // Larger bulk requests
+		opts.Concurrency = 10    // High concurrency
+		opts.Timeout = 30        // Shorter timeout
+		opts.Delay = 0           // No delay between requests
+	case PresetSlow:
+		// Slow preset: Conservative scanning for stability (default)
+		opts.RateLimit = 15      // Moderate request rate
+		opts.BulkSize = 5        // Smaller bulk requests
+		opts.Concurrency = 3     // Low concurrency
+		opts.Timeout = 60        // Longer timeout for slow responses
+		opts.Delay = 2           // 2 second delay between requests
+	default:
+		// Default to slow preset
+		opts.RateLimit = 15
+		opts.BulkSize = 5
+		opts.Concurrency = 3
+		opts.Timeout = 60
+		opts.Delay = 2
+	}
+}
+
 // Scan performs the complete scan pipeline with default options (no force)
 func (s *scanner) Scan(domains []string, keywords []string) error {
 	return s.ScanWithOptions(domains, keywords, []string{}, false)
@@ -185,6 +213,11 @@ func (s *scanner) Scan(domains []string, keywords []string) error {
 
 // ScanWithOptions performs the complete scan pipeline with caching support
 func (s *scanner) ScanWithOptions(domains []string, keywords []string, templates []string, force bool) error {
+	return s.ScanWithPreset(domains, keywords, templates, force, PresetSlow)
+}
+
+// ScanWithPreset performs the complete scan pipeline with preset configuration
+func (s *scanner) ScanWithPreset(domains []string, keywords []string, templates []string, force bool, preset ScanPreset) error {
 	if len(domains) == 0 {
 		return fmt.Errorf("no domains provided")
 	}
@@ -229,22 +262,28 @@ func (s *scanner) ScanWithOptions(domains []string, keywords []string, templates
 		return fmt.Errorf("domain discovery failed: %w", err)
 	}
 
+	// Prepare nuclei results directory
+	nucleiResultsDir := filepath.Join(resultsDir, "nuclei-results")
+	if err := os.MkdirAll(nucleiResultsDir, 0755); err != nil {
+		return fmt.Errorf("failed to create nuclei results directory: %w", err)
+	}
+
 	// Step 2: Nuclei Options with extracted templates path
 	nucleiOptions := &NucleiOptions{
 		TemplatesPath:       tempTemplatesDir,
 		SpecificTemplates:   templates,
 		IncludeTags:         []string{},
 		ExcludeTags:         []string{"ssl"},
-		RateLimit:           15, // Reduced rate limit for slower requests
-		BulkSize:            5,  // Reduced bulk size
-		Concurrency:         3,  // Reduced concurrency for more stability
 		Headless:            true,
 		OmitTemplate:        true,
+		OmitResponse:        true, // Omit large response/request bodies to reduce file size
 		FollowHostRedirects: true,
 		ShowMatchLine:       true,
-		Timeout:             60, // 60 second timeout per request (increased for headless)
-		Delay:               2,  // 2 second delay between requests
+		ResultsWriter:       filepath.Join(nucleiResultsDir, "results.jsonl"), // Progressive JSONL writer
 	}
+
+	// Apply preset configuration (RateLimit, BulkSize, Concurrency, Timeout, Delay)
+	applyPresetToNucleiOptions(nucleiOptions, preset)
 
 	// Step 1.6: Validate template meanings before starting scan
 	if err := s.ValidateTemplateMeanings(nucleiOptions.TemplatesPath); err != nil {
@@ -740,23 +779,20 @@ Total available templates: %d`,
 
 // runNucleiScanWithStorage runs nuclei scan and stores results
 func (s *scanner) runNucleiScanWithStorage(targets []string, opts *NucleiOptions, resultsDir string) ([]*output.ResultEvent, error) {
-	// Run the nuclei scan
+	// Run the nuclei scan (writes to JSONL progressively)
 	results, err := s.RunNucleiScan(targets, opts)
 	if err != nil {
 		return nil, err
 	}
 
-	// Store results in nuclei-results directory
+	// Convert JSONL to JSON for backward compatibility
 	nucleiResultsDir := filepath.Join(resultsDir, "nuclei-results")
-	if err := os.MkdirAll(nucleiResultsDir, 0755); err != nil {
-		return nil, fmt.Errorf("failed to create nuclei results directory: %w", err)
-	}
+	jsonlFile := filepath.Join(nucleiResultsDir, "results.jsonl")
+	jsonFile := filepath.Join(nucleiResultsDir, "results.json")
 
-	// Save raw nuclei results as JSON
-	nucleiResultsFile := filepath.Join(nucleiResultsDir, "results.json")
-	if err := s.saveNucleiResults(results, nucleiResultsFile); err != nil {
-		// Log warning but don't fail the scan
-		fmt.Printf("⚠️  Warning: Failed to save nuclei results: %v\n", err)
+	if err := s.convertJSONLToJSON(jsonlFile, jsonFile); err != nil {
+		// Log warning but don't fail - we still have results in memory
+		fmt.Printf("⚠️  Warning: Failed to convert JSONL to JSON: %v\n", err)
 	}
 
 	return results, nil
@@ -794,6 +830,83 @@ func (s *scanner) loadExistingNucleiResults(resultsDir string) ([]*output.Result
 	}
 
 	return results, nil
+}
+
+// convertJSONLToJSON converts JSONL (JSON Lines) file to JSON array file
+func (s *scanner) convertJSONLToJSON(jsonlPath, jsonPath string) error {
+	// Check if JSONL file exists
+	if _, err := os.Stat(jsonlPath); os.IsNotExist(err) {
+		return fmt.Errorf("JSONL file not found: %s", jsonlPath)
+	}
+
+	// Open JSONL file for reading
+	jsonlFile, err := os.Open(jsonlPath)
+	if err != nil {
+		return fmt.Errorf("failed to open JSONL file: %w", err)
+	}
+	defer jsonlFile.Close()
+
+	// Read and parse each line
+	var results []*output.ResultEvent
+	scanner := bufio.NewScanner(jsonlFile)
+
+	// Increase buffer size to handle large responses (default is 64KB)
+	// Set to 10MB to accommodate large HTML responses
+	const maxScanTokenSize = 10 * 1024 * 1024 // 10MB
+	buf := make([]byte, maxScanTokenSize)
+	scanner.Buffer(buf, maxScanTokenSize)
+
+	lineNum := 0
+	var skippedLines []int
+
+	for scanner.Scan() {
+		lineNum++
+		line := scanner.Text()
+		if strings.TrimSpace(line) == "" {
+			continue // Skip empty lines
+		}
+
+		var event output.ResultEvent
+		if err := json.Unmarshal([]byte(line), &event); err != nil {
+			// Log warning but continue processing other lines
+			skippedLines = append(skippedLines, lineNum)
+
+			// Show first 100 chars to help diagnose the issue
+			preview := line
+			if len(preview) > 100 {
+				preview = preview[:100] + "..."
+			}
+			fmt.Printf("⚠️  Warning: Skipping malformed JSONL line %d: %v\n", lineNum, err)
+			fmt.Printf("    Preview: %s\n", preview)
+			continue
+		}
+
+		results = append(results, &event)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("error reading JSONL file: %w", err)
+	}
+
+	// Write results as JSON array
+	data, err := json.MarshalIndent(results, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal results: %w", err)
+	}
+
+	if err := os.WriteFile(jsonPath, data, 0644); err != nil {
+		return fmt.Errorf("failed to write JSON file: %w", err)
+	}
+
+	// Report conversion summary
+	if len(skippedLines) > 0 {
+		fmt.Printf("✓ Converted %d results from JSONL to JSON (skipped %d malformed lines: %v)\n",
+			len(results), len(skippedLines), skippedLines)
+	} else {
+		fmt.Printf("✓ Converted %d results from JSONL to JSON\n", len(results))
+	}
+
+	return nil
 }
 
 // writeJSONToResults writes the final report to results directory

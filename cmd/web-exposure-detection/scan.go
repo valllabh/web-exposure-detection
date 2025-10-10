@@ -58,6 +58,23 @@ Examples:
 			return fmt.Errorf("failed to get templates flag: %w", err)
 		}
 
+		// Get preset flag
+		presetStr, err := cmd.Flags().GetString("preset")
+		if err != nil {
+			return fmt.Errorf("failed to get preset flag: %w", err)
+		}
+
+		// Convert preset string to ScanPreset type
+		var preset webexposure.ScanPreset
+		switch presetStr {
+		case "fast":
+			preset = webexposure.PresetFast
+		case "slow":
+			preset = webexposure.PresetSlow
+		default:
+			preset = webexposure.PresetSlow // Default to slow
+		}
+
 		// Create scanner
 		scanner, err := webexposure.New()
 		if err != nil {
@@ -76,8 +93,9 @@ Examples:
 		if len(templates) > 0 {
 			fmt.Printf("Using specific templates: %v\n", templates)
 		}
+		fmt.Printf("Using preset: %s\n", presetStr)
 
-		err = scanner.ScanWithOptions(domains, keywords, templates, force)
+		err = scanner.ScanWithPreset(domains, keywords, templates, force, preset)
 		if err != nil {
 			return fmt.Errorf("scan failed: %w", err)
 		}
@@ -101,4 +119,8 @@ func init() {
 	// Add templates flag
 	scanCmd.Flags().StringSliceP("templates", "t", []string{},
 		"Specify specific Nuclei templates to use (comma-separated). If not specified, uses all templates with tech tag excluding ssl")
+
+	// Add preset flag
+	scanCmd.Flags().StringP("preset", "p", "slow",
+		"Scan speed preset: 'slow' (default, stable) or 'fast' (aggressive, faster)")
 }
