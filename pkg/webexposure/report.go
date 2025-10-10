@@ -350,7 +350,6 @@ func (rp *ResultProcessor) isTechnologyTemplate(templateID string) bool {
 		"api-server-detection":            true, // API technologies
 		"backend-framework-detection":     true, // Backend frameworks
 		"frontend-tech-detection":         true, // Frontend technologies
-		"xhr-detection-headless":          true, // API usage patterns
 		"api-gateway-proxy-lb-detection":  true, // Infrastructure technologies
 		"js-libraries-detect":             true, // JavaScript libraries
 		"sap-spartacus":                   true, // SAP technologies

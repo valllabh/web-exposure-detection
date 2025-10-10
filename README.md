@@ -30,9 +30,9 @@ web-exposure-detection scan example.com
 web-exposure-detection scan example.com test.com
 ```
 
-**Scan with SSL certificate filtering:**
+**Scan with additional business name keywords:**
 ```bash
-web-exposure-detection scan example.com --keywords "staging,prod"
+web-exposure-detection scan example.com --keywords "examplecorp,exampleinc"
 ```
 
 **Force fresh domain discovery (ignore cache):**

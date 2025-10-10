@@ -18,9 +18,11 @@ new domain discovery or vulnerability scans. Uses cached results from previous s
 
 Examples:
   web-exposure-detection report example.com
-  web-exposure-detection report domain1.com domain2.com`,
+  web-exposure-detection report domain1.com domain2.com
+  web-exposure-detection report --debug example.com`,
 	Args: cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		debug, _ := cmd.Flags().GetBool("debug")
 		// Parse domain arguments - handle both space-separated and comma-separated
 		var domains []string
 		for _, arg := range args {
@@ -51,7 +53,7 @@ Examples:
 		// Generate report from existing results
 		fmt.Printf("Regenerating report for: %v\n", domains)
 
-		err = scanner.GenerateReportFromExistingResults(domains)
+		err = scanner.GenerateReportFromExistingResults(domains, debug)
 		if err != nil {
 			return fmt.Errorf("report generation failed: %w", err)
 		}
@@ -63,4 +65,5 @@ Examples:
 
 func init() {
 	rootCmd.AddCommand(reportCmd)
+	reportCmd.Flags().Bool("debug", false, "Preserve HTML report directory (do not cleanup after PDF generation)")
 }

@@ -28,7 +28,13 @@ CLI commands are facades over pkg/webexposure SDK. See pkg/webexposure for publi
 5. HTML Cleanup
 
 ### Keywords Parameter
-For SSL certificate domain filtering (not subdomain enumeration).
+Keywords represent business/organization names used to filter domains found in SSL certificates. When scanning SSL certificates, SANs may contain domains from multiple organizations (due to shared hosting/CDNs). Keywords filter to only keep domains belonging to the target organization.
+
+**Auto-extraction**: Domain-scan SDK automatically extracts keywords from target domains (e.g., `example.com` → `example`).
+
+**Additional keywords**: Optional parameter for alternative business names/brands (e.g., `apple.com --keywords iphone,ipad,mac`).
+
+**NOT for**: Environment names (staging/prod), service types (api/admin), or subdomain prefixes. These are wrong examples.
 
 ### Report Generation
 Single entry point generateReportsFromNucleiResults() handles all formats. See docs/reporting-system.md for details.

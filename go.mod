@@ -10,7 +10,7 @@ require (
 	github.com/projectdiscovery/nuclei/v3 v3.3.5
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
-	github.com/valllabh/domain-scan v1.0.2
+	github.com/valllabh/domain-scan v1.0.3
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -373,3 +373,5 @@ require (
 	mellium.im/sasl v0.3.2 // indirect
 	moul.io/http2curl v1.0.0 // indirect
 )
+
+replace github.com/valllabh/domain-scan => /Users/vajoshi/Work/domain-scan

@@ -65,7 +65,10 @@ type Scanner interface {
 	ScanWithOptions(domains []string, keywords []string, templates []string, force bool) error
 
 	// Report generation
-	GenerateReportFromExistingResults(domains []string) error
+	GenerateReportFromExistingResults(domains []string, debug bool) error
+
+	// Domain discovery only
+	RunDiscoveryOnly(domains []string, keywords []string, force bool) error
 
 	// Progress monitoring
 	SetProgressCallback(callback ProgressCallback)
@@ -184,6 +187,7 @@ type DomainResult struct {
 type scanner struct {
 	meanings map[string]TemplateMeaning // Loaded from scan-template-meanings.json
 	progress ProgressCallback           // Optional progress callback
+	debug    bool                       // Debug mode - skips HTML cleanup when enabled
 }
 
 // SetEmbeddedFilesystems sets the embedded filesystems from main package

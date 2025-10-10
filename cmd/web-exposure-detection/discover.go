@@ -9,18 +9,19 @@ import (
 	"web-exposure-detection/pkg/webexposure"
 )
 
-// scanCmd represents the scan command
-var scanCmd = &cobra.Command{
-	Use:   "scan [domains...]",
-	Short: "Scan domains for web exposure vulnerabilities",
-	Long: `Scan one or more domains for web exposure vulnerabilities using 
-domain discovery and Nuclei templates. Generates a JSON report in the current directory.
+// discoverCmd represents the discover command
+var discoverCmd = &cobra.Command{
+	Use:   "discover [domains...]",
+	Short: "Discover domains without running vulnerability scans",
+	Long: `Discover subdomains and related domains using passive enumeration,
+certificate transparency logs, and keyword filtering. Does not run Nuclei scans.
+
+Results are cached in results/{domain}/domain-scan.json for use by scan and report commands.
 
 Examples:
-  web-exposure-detection scan example.com
-  web-exposure-detection scan example.com --keywords "examplecorp,exampleinc"
-  web-exposure-detection scan example.com --templates "openapi,swagger-api"
-  web-exposure-detection scan domain1.com domain2.com --templates "live-domain"`,
+  web-exposure-detection discover example.com
+  web-exposure-detection discover example.com --keywords "examplecorp,exampleinc"
+  web-exposure-detection discover example.com --force`,
 	Args: cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Parse domain arguments - handle both space-separated and comma-separated
@@ -52,12 +53,6 @@ Examples:
 			return fmt.Errorf("failed to get force flag: %w", err)
 		}
 
-		// Get templates flag
-		templates, err := cmd.Flags().GetStringSlice("templates")
-		if err != nil {
-			return fmt.Errorf("failed to get templates flag: %w", err)
-		}
-
 		// Create scanner
 		scanner, err := webexposure.New()
 		if err != nil {
@@ -68,37 +63,29 @@ Examples:
 		progressHandler := cli.NewCLIProgressHandler()
 		scanner.SetProgressCallback(progressHandler)
 
-		// Run scan with CLI interface
-		fmt.Printf("Starting web exposure scan for: %v\n", domains)
+		// Run discovery with CLI interface
+		fmt.Printf("Starting domain discovery for: %v\n", domains)
 		if len(keywords) > 0 {
 			fmt.Printf("Using keywords: %v\n", keywords)
 		}
-		if len(templates) > 0 {
-			fmt.Printf("Using specific templates: %v\n", templates)
-		}
 
-		err = scanner.ScanWithOptions(domains, keywords, templates, force)
+		err = scanner.RunDiscoveryOnly(domains, keywords, force)
 		if err != nil {
-			return fmt.Errorf("scan failed: %w", err)
+			return fmt.Errorf("discovery failed: %w", err)
 		}
 
-		fmt.Printf("Scan completed successfully\n")
 		return nil
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(scanCmd)
+	rootCmd.AddCommand(discoverCmd)
 
 	// Add keywords flag
-	scanCmd.Flags().StringSliceP("keywords", "k", []string{},
+	discoverCmd.Flags().StringSliceP("keywords", "k", []string{},
 		"Optional keywords for SSL certificate domain filtering (default: auto-extracted from domain names)")
 
 	// Add force flag
-	scanCmd.Flags().BoolP("force", "f", false,
-		"Force fresh domain scan by clearing cache")
-
-	// Add templates flag
-	scanCmd.Flags().StringSliceP("templates", "t", []string{},
-		"Specify specific Nuclei templates to use (comma-separated). If not specified, uses all templates with tech tag excluding ssl")
+	discoverCmd.Flags().BoolP("force", "f", false,
+		"Force fresh domain discovery by clearing cache")
 }

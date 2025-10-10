@@ -73,9 +73,9 @@
     },
     "api-host-keyword-detection": {
         "label": "API Domain Pattern",
-        "detection_template": ["API", "Domain has API keyword"],
+        "detection_template": ["API", "Domain name indicates potential API"],
         "finding_template": [
-            "Domain has API keyword",
+            "Domain name indicates potential API",
             "{{if .ExtractedResults}}{{range $i, $v := .ExtractedResults}}{{if $i}}, {{end}}{{$v}}{{end}}{{end}}"
         ]
     },

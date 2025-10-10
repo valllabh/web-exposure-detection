@@ -241,7 +241,7 @@ Web Exposure Detection SDK - Complete Implementation Plan                       
      │ // Full pipeline with report generation                                                                                                                                        │
      │ scanner := webexposure.New()                                                                                                                                                   │
      │ report, err := scanner.Scan(domains, &webexposure.ScanOptions{                                                                                                                 │
-     │     Keywords: []string{"staging", "prod"}, // Optional                                                                                                                         │
+     │     Keywords: []string{"examplecorp", "exampleinc"}, // Optional: additional business names                                                                                    │
      │     Report: &webexposure.ReportOptions{                                                                                                                                        │
      │         OutputFormat:    "json",                                                                                                                                               │
      │         IncludeMeanings: true,                                                                                                                                                 │
