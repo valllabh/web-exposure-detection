@@ -1,0 +1,598 @@
+id: frontend-tech-detection
+info:
+  name: Frontend Technology & Authentication Detection
+  author: Vallabh
+  severity: info
+  description: |
+    Detects frontend JavaScript frameworks and authentication mechanisms on web applications.
+    Frameworks: React.js, Angular, Vue.js, Svelte, Ember.js, Preact, SolidJS, Backbone.js, Alpine.js, Lit,
+    Marko, Mithril, Inferno, Hyperapp, Dojo Toolkit, Knockout.js, Meteor, Next.js, Nuxt.js, Gatsby,
+    Remix, Astro, Qwik, Fresh.
+    Authentication: Traditional forms, SSO, social login, MFA, passwordless, registration, password recovery.
+  tags: frontend,spa,js,auth,login,authentication,detection
+headless:
+  - steps:
+      - action: navigate
+        args:
+          url: "{{BaseURL}}"
+      - action: waitload
+      - action: waitstable
+    matchers:
+      - type: regex
+        part: body
+        regex:
+          # React.js
+          - (data-reactroot|__REACT_DEVTOOLS_GLOBAL_HOOK__|react-dom\/)
+          # Angular
+          - (<[^>]+(ng-app|ng-controller|ng-model)[^>]*>|ng-version=|angular\.[a-z])
+          # Vue.js
+          - (window\.__VUE__|vue\.[a-z]|data-v-)
+          # Svelte
+          - (svelte-[a-z0-9]+|__SVELTEKIT_DEV__|SvelteKit)
+          # Ember.js
+          - (Ember\.ENV|Ember\.Application|data-ember-extension)
+          # Preact
+          - (preactRender|preact\/|__PREACT_DEVTOOLS__)
+          # SolidJS
+          - (window\.__SOLID_DEVTOOLS_HOOK__|solid-js\/|SolidRoot)
+          # Backbone.js
+          - (Backbone\.(Model|View|Router|Collection))
+          # Alpine.js
+          - (<[^>]+(x-data|x-init|x-bind|x-on|x-model)[^>]*>|Alpine\.start)
+          # Lit
+          - (lit-html\/|lit-element\/|LitElement\.prototype)
+          # Marko
+          - (\$marko|\$_marko|marko-components|marko\.runtime)
+          # Mithril
+          - (m\.route\(|m\.render\(|m\.mount\()
+          # Inferno
+          - (Inferno\.createElement|Inferno\.render)
+          # Hyperapp
+          - (hyperapp\.app|h\.app\()
+          # Dojo Toolkit
+          - (dojo\.require\(|dojo\.addOnLoad\(|dojo\.version)
+          # Knockout.js
+          - (ko\.applyBindings\(|ko\.observable\()
+          # Meteor
+          - (__meteor_runtime_config__|Meteor\.is(Client|Server))
+          # Next.js
+          - (__NEXT_DATA__|next\/static\/chunks\/|window\.__NEXT_PRELOAD_READY__)
+          # Nuxt.js
+          - (window\.__NUXT__|nuxt\.config|nuxtState)
+          # Gatsby
+          - (window\.___gatsby|gatsby-config\.js|gatsby-browser\.js)
+          # Remix
+          - (__remixContext|window\.__REMIX_CONTEXT__)
+          # Astro
+          - (Astro\.fetchContent|astro\/client|astro:load)
+          # Qwik
+          - (qwik\.devtools|qwik\.hydrate|QwikCity)
+          # Fresh
+          - (window\.__FRESH_DATA__|FreshRuntime|window\.__FRESH_MANIFEST__)
+          # Basic authentication forms
+          - "(?i)<form[^>]*?(login|signin|sign-in|log-in|authenticate)"
+          - "(?i)<input[^>]+type=[\"'](email|password)[\"']"
+          - "(?i)<input[^>]+name=[\"']+(username|user-name|email|user|login|password|pwd)[\"']"
+          # Login/Signin buttons and links
+          - "(?i)(login|signin|sign.in|log.in|authenticate)"
+          - "(?i)<button[^>]*?(login|signin|authenticate)"
+          - "(?i)<a[^>]+href=[\"'][^\"']*(login|signin|sign-in|log-in|authenticate)"
+    extractors:
+      # Extractor for React.js
+      - type: regex
+        name: react
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(data-reactroot|__REACT_DEVTOOLS_GLOBAL_HOOK__|react-dom\\/)"
+      # Extractor for Angular
+      - type: regex
+        name: angular
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(ng-app|ng-controller|ng-model|ng-version=|angular\\.[a-z])"
+      # Extractor for Vue.js
+      - type: regex
+        name: vuejs
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(window\\.__VUE__|vue\\.[a-z]|data-v-)"
+      # Extractor for Svelte
+      - type: regex
+        name: svelte
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(svelte-[a-z0-9]+|__SVELTEKIT_DEV__|SvelteKit)"
+      # Extractor for Ember.js
+      - type: regex
+        name: ember
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(Ember\\.ENV|Ember\\.Application|data-ember-extension)"
+      # Extractor for Preact
+      - type: regex
+        name: preact
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(preactRender|preact\\/|__PREACT_DEVTOOLS__)"
+      # Extractor for SolidJS
+      - type: regex
+        name: solidjs
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(window\\.__SOLID_DEVTOOLS_HOOK__|solid-js/|SolidRoot)"
+      # Extractor for Backbone.js
+      - type: regex
+        name: backbone
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(Backbone.(Model|View|Router|Collection))"
+      # Extractor for Alpine.js
+      - type: regex
+        name: alpine
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(<[^>]+(x-data|x-init|x-bind|x-on|x-model)[^>]*>|Alpine\\.start)"
+      # Extractor for Lit
+      - type: regex
+        name: lit
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(lit-html\\/|lit-element\\/|LitElement\\.prototype)"
+      # Extractor for Marko
+      - type: regex
+        name: marko
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(\\$marko|\\$_marko|marko-components|marko\\.runtime)"
+      # Extractor for Mithril
+      - type: regex
+        name: mithril
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(m\\.route\\(|m\\.render\\(|m\\.mount\\()"
+      # Extractor for Inferno
+      - type: regex
+        name: inferno
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(Inferno\\.createElement|Inferno\\.render)"
+      # Extractor for Hyperapp
+      - type: regex
+        name: hyperapp
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(hyperapp\\.app|h\\.app\\()"
+      # Extractor for Dojo Toolkit
+      - type: regex
+        name: dojo
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(dojo\\.require\\(|dojo\\.addOnLoad\\(|dojo\\.version)"
+      # Extractor for Knockout.js
+      - type: regex
+        name: knockout
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(ko\\.applyBindings\\(|ko\\.observable\\()"
+      # Extractor for Meteor
+      - type: regex
+        name: meteor
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(__meteor_runtime_config__|Meteor\\.is(Client|Server))"
+      # Extractor for Next.js
+      - type: regex
+        name: nextjs
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(__NEXT_DATA__|next\\/static\\/chunks\\/|window\\.__NEXT_PRELOAD_READY__)"
+      # Extractor for Nuxt.js
+      - type: regex
+        name: nuxtjs
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(window\\.__NUXT__|nuxt\\.config|nuxtState)"
+      # Extractor for Gatsby
+      - type: regex
+        name: gatsby
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(window\\.___gatsby|gatsby-config\\.js|gatsby-browser\\.js)"
+      # Extractor for Remix
+      - type: regex
+        name: remix
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(__remixContext|window\\.__REMIX_CONTEXT__)"
+      # Extractor for Astro
+      - type: regex
+        name: astro
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(Astro\\.fetchContent|astro\\/client|astro:load)"
+      # Extractor for Qwik
+      - type: regex
+        name: qwik
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(qwik\\.devtools|qwik\\.hydrate|QwikCity)"
+      # Extractor for Fresh
+      - type: regex
+        name: fresh
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(window\\.__FRESH_DATA__|FreshRuntime|window\\.__FRESH_MANIFEST__)"
+
+      # Authentication Extractors
+      # Traditional authentication forms
+      - type: regex
+        part: body
+        name: basic_auth
+        internal: true
+        regex:
+          - "(?i)<form[^>]*?(login|signin|sign-in|log-in|authenticate)"
+          - "(?i)<input[^>]+type=[\"']password[\"']"
+          - "(?i)<input[^>]+name=[\"']+(username|user-name|email|user|login|password|pwd)[\"']"
+        group: 0
+
+      # SSO and Enterprise Authentication - Generic SAML/SSO
+      - type: regex
+        part: body
+        name: saml_sso
+        internal: true
+        regex:
+          - "(?i)(saml|sso|single.sign.on)"
+          - "(?i)href=[\"'][^\"']*saml[^\"']*[\"']"
+          - "(?i)href=[\"'][^\"']*sso[^\"']*[\"']"
+          - "(?i)action=[\"'][^\"']*(saml|sso)[^\"']*[\"']"
+        group: 0
+
+      # SSO and Enterprise Authentication - Microsoft/Azure AD
+      - type: regex
+        part: body
+        name: microsoft_auth
+        internal: true
+        regex:
+          - "(?i)(sign|log).{0,10}(in|on).{0,20}(microsoft|azure)"
+          - "(?i)(microsoft|azure).{0,20}(sign|log).{0,10}(in|on)"
+          - "(?i)(azure.ad|azuread|microsoft.365|office.365)"
+          - "(?i)href=[\"'][^\"']*login\\.microsoftonline\\.com[^\"']*[\"']"
+          - "(?i)(class|id)=[\"'][^\"']*(microsoft|azure).*(login|signin|auth|sso)[^\"']*[\"']"
+        group: 0
+
+      # SSO and Enterprise Authentication - Okta
+      - type: regex
+        part: body
+        name: okta_auth
+        internal: true
+        regex:
+          - "(?i)(sign|log).{0,10}(in|on).{0,20}okta"
+          - "(?i)okta.{0,20}(sign|log).{0,10}(in|on)"
+          - "(?i)href=[\"'][^\"']*okta\\.com[^\"']*[\"']"
+          - "(?i)(class|id)=[\"'][^\"']*okta.*(login|signin|auth|sso)[^\"']*[\"']"
+        group: 0
+
+      # SSO and Enterprise Authentication - Auth0
+      - type: regex
+        part: body
+        name: auth0_auth
+        internal: true
+        regex:
+          - "(?i)(sign|log).{0,10}(in|on).{0,20}auth0"
+          - "(?i)auth0.{0,20}(sign|log).{0,10}(in|on)"
+          - "(?i)href=[\"'][^\"']*auth0\\.com[^\"']*[\"']"
+          - "(?i)(class|id)=[\"'][^\"']*auth0.*(login|signin|auth|sso)[^\"']*[\"']"
+        group: 0
+
+      # SSO and Enterprise Authentication - OneLogin
+      - type: regex
+        part: body
+        name: onelogin_auth
+        internal: true
+        regex:
+          - "(?i)(sign|log).{0,10}(in|on).{0,20}onelogin"
+          - "(?i)onelogin.{0,20}(sign|log).{0,10}(in|on)"
+          - "(?i)href=[\"'][^\"']*onelogin\\.com[^\"']*[\"']"
+          - "(?i)(class|id)=[\"'][^\"']*onelogin.*(login|signin|auth|sso)[^\"']*[\"']"
+        group: 0
+
+      # SSO and Enterprise Authentication - Ping Identity
+      - type: regex
+        part: body
+        name: ping_auth
+        internal: true
+        regex:
+          - "(?i)(sign|log).{0,10}(in|on).{0,20}\\bping\\b"
+          - "(?i)\\bping\\b.{0,20}(identity|federate|one|id)"
+          - "(?i)href=[\"'][^\"']*pingidentity\\.com[^\"']*[\"']"
+          - "(?i)(class|id)=[\"'][^\"']*ping.*(login|signin|auth|sso)[^\"']*[\"']"
+        group: 0
+
+      # SSO and Enterprise Authentication - Keycloak
+      - type: regex
+        part: body
+        name: keycloak_auth
+        internal: true
+        regex:
+          - "(?i)(sign|log).{0,10}(in|on).{0,20}keycloak"
+          - "(?i)keycloak.{0,20}(sign|log).{0,10}(in|on)"
+          - "(?i)href=[\"'][^\"']*keycloak[^\"']*[\"']"
+          - "(?i)(class|id)=[\"'][^\"']*keycloak.*(login|signin|auth|sso)[^\"']*[\"']"
+        group: 0
+
+      # SSO and Enterprise Authentication - ADFS
+      - type: regex
+        part: body
+        name: adfs_auth
+        internal: true
+        regex:
+          - "(?i)(sign|log).{0,10}(in|on).{0,20}adfs"
+          - "(?i)adfs.{0,20}(sign|log).{0,10}(in|on)"
+          - "(?i)href=[\"'][^\"']*adfs[^\"']*[\"']"
+          - "(?i)(class|id)=[\"'][^\"']*adfs.*(login|signin|auth|sso)[^\"']*[\"']"
+        group: 0
+
+      # Social login providers - Google
+      - type: regex
+        part: body
+        name: google_auth
+        internal: true
+        regex:
+          - "(?i)(sign|log).{0,10}(in|on|up).{0,20}(with|using|via).{0,20}google"
+          - "(?i)google.{0,20}(sign|log).{0,10}(in|on|up)"
+          - "(?i)connect.{0,20}(with|via).{0,20}google"
+          - "(?i)authenticate.{0,20}(with|using|via).{0,20}google"
+          - "(?i)(class|id)=[\"'][^\"']*google.*(login|signin|auth|sso)[^\"']*[\"']"
+          - "(?i)(class|id)=[\"'][^\"']*(login|signin|auth|sso).*google[^\"']*[\"']"
+          - "(?i)href=[\"'][^\"']*accounts\\.google\\.com[^\"']*[\"']"
+        group: 0
+
+      # Social login providers - Facebook
+      - type: regex
+        part: body
+        name: facebook_auth
+        internal: true
+        regex:
+          - "(?i)(sign|log).{0,10}(in|on|up).{0,20}(with|using|via).{0,20}facebook"
+          - "(?i)facebook.{0,20}(sign|log).{0,10}(in|on|up)"
+          - "(?i)connect.{0,20}(with|via).{0,20}facebook"
+          - "(?i)authenticate.{0,20}(with|using|via).{0,20}facebook"
+          - "(?i)(class|id)=[\"'][^\"']*facebook.*(login|signin|auth|sso)[^\"']*[\"']"
+          - "(?i)(class|id)=[\"'][^\"']*(login|signin|auth|sso).*facebook[^\"']*[\"']"
+          - "(?i)href=[\"'][^\"']*facebook\\.com/dialog/oauth[^\"']*[\"']"
+        group: 0
+
+      # Social login providers - Twitter
+      - type: regex
+        part: body
+        name: twitter_auth
+        internal: true
+        regex:
+          - "(?i)(sign|log).{0,10}(in|on|up).{0,20}(with|using|via).{0,20}(twitter|x\\.com)"
+          - "(?i)(twitter|x\\.com).{0,20}(sign|log).{0,10}(in|on|up)"
+          - "(?i)connect.{0,20}(with|via).{0,20}(twitter|x\\.com)"
+          - "(?i)authenticate.{0,20}(with|using|via).{0,20}(twitter|x\\.com)"
+          - "(?i)(class|id)=[\"'][^\"']*(twitter|x\\.com).*(login|signin|auth|sso)[^\"']*[\"']"
+          - "(?i)(class|id)=[\"'][^\"']*(login|signin|auth|sso).*(twitter|x\\.com)[^\"']*[\"']"
+          - "(?i)href=[\"'][^\"']*(twitter\\.com|x\\.com).*oauth[^\"']*[\"']"
+        group: 0
+
+      # Social login providers - LinkedIn
+      - type: regex
+        part: body
+        name: linkedin_auth
+        internal: true
+        regex:
+          - "(?i)(sign|log).{0,10}(in|on|up).{0,20}(with|using|via).{0,20}linkedin"
+          - "(?i)linkedin.{0,20}(sign|log).{0,10}(in|on|up)"
+          - "(?i)connect.{0,20}(with|via).{0,20}linkedin"
+          - "(?i)authenticate.{0,20}(with|using|via).{0,20}linkedin"
+          - "(?i)(class|id)=[\"'][^\"']*linkedin.*(login|signin|auth|sso)[^\"']*[\"']"
+          - "(?i)(class|id)=[\"'][^\"']*(login|signin|auth|sso).*linkedin[^\"']*[\"']"
+          - "(?i)href=[\"'][^\"']*linkedin\\.com/oauth[^\"']*[\"']"
+        group: 0
+
+      # Social login providers - GitHub
+      - type: regex
+        part: body
+        name: github_auth
+        internal: true
+        regex:
+          - "(?i)(sign|log).{0,10}(in|on|up).{0,20}(with|using|via).{0,20}github"
+          - "(?i)github.{0,20}(sign|log).{0,10}(in|on|up)"
+          - "(?i)connect.{0,20}(with|via).{0,20}github"
+          - "(?i)authenticate.{0,20}(with|using|via).{0,20}github"
+          - "(?i)(class|id)=[\"'][^\"']*github.*(login|signin|auth|sso)[^\"']*[\"']"
+          - "(?i)(class|id)=[\"'][^\"']*(login|signin|auth|sso).*github[^\"']*[\"']"
+          - "(?i)href=[\"'][^\"']*github\\.com/(login/oauth|oauth)[^\"']*[\"']"
+        group: 0
+
+      # Social login providers - Apple
+      - type: regex
+        part: body
+        name: apple_auth
+        internal: true
+        regex:
+          - "(?i)(sign|log).{0,10}(in|on|up).{0,20}(with|using|via).{0,20}apple"
+          - "(?i)apple.{0,20}(sign|log).{0,10}(in|on|up)"
+          - "(?i)connect.{0,20}(with|via).{0,20}apple"
+          - "(?i)authenticate.{0,20}(with|using|via).{0,20}apple"
+          - "(?i)(class|id)=[\"'][^\"']*apple.*(login|signin|auth|sso)[^\"']*[\"']"
+          - "(?i)(class|id)=[\"'][^\"']*(login|signin|auth|sso).*apple[^\"']*[\"']"
+          - "(?i)href=[\"'][^\"']*appleid\\.apple\\.com/auth[^\"']*[\"']"
+        group: 0
+
+      # Multi-factor authentication
+      - type: regex
+        part: body
+        name: mfa_auth
+        internal: true
+        regex:
+          - "(?i)(multi.factor|two.factor|2fa|mfa|authenticator)"
+          - "(?i)(verification.code|security.code|auth.code)"
+          - "(?i)(sms.code|phone.verification|mobile.verification)"
+          - "(?i)(totp|time.based|google.authenticator|authy)"
+        group: 0
+
+      # Passwordless authentication
+      - type: regex
+        part: body
+        name: passwordless_auth
+        internal: true
+        regex:
+          - "(?i)(passwordless|magic.link|email.link)"
+          - "(?i)(fingerprint|biometric|face.id|touch.id)"
+          - "(?i)(webauthn|fido|yubikey|security.key)"
+        group: 0
+
+      # Registration/signup forms
+      - type: regex
+        part: body
+        name: registration
+        internal: true
+        regex:
+          - "(?i)<form[^>]*?(register|signup|sign-up|create.account)"
+          - "(?i)<a[^>]+href=[\"'][^\"']*(register|signup|sign-up|create)[^\"']*[\"']"
+          - "(?i)(register|signup|sign.up|create.account|join.now)"
+        group: 0
+
+      # Password recovery
+      - type: regex
+        part: body
+        name: password_recovery
+        internal: true
+        regex:
+          - "(?i)(forgot|forgotten|reset).{0,20}password"
+          - "(?i)password.{0,20}(forgot|forgotten|reset)"
+          - "(?i)<a[^>]+href=[\"'][^\"']*(forgot|reset|recover)[^\"']*[\"']"
+        group: 0
+
+      # DSL to return framework and auth mechanism slugs
+      - type: dsl
+        dsl:
+          - "len(react) > 0 ? 'react' : ''"
+          - "len(angular) > 0 ? 'angular' : ''"
+          - "len(vuejs) > 0 ? 'vuejs' : ''"
+          - "len(svelte) > 0 ? 'svelte' : ''"
+          - "len(ember) > 0 ? 'emberjs' : ''"
+          - "len(preact) > 0 ? 'preact' : ''"
+          - "len(solidjs) > 0 ? 'solidjs' : ''"
+          - "len(backbone) > 0 ? 'backbonejs' : ''"
+          - "len(alpine) > 0 ? 'alpinejs' : ''"
+          - "len(lit) > 0 ? 'lit' : ''"
+          - "len(marko) > 0 ? 'marko' : ''"
+          - "len(mithril) > 0 ? 'mithril' : ''"
+          - "len(inferno) > 0 ? 'inferno' : ''"
+          - "len(hyperapp) > 0 ? 'hyperapp' : ''"
+          - "len(dojo) > 0 ? 'dojo' : ''"
+          - "len(knockout) > 0 ? 'knockoutjs' : ''"
+          - "len(meteor) > 0 ? 'meteor' : ''"
+          - "len(nextjs) > 0 ? 'nextjs' : ''"
+          - "len(nuxtjs) > 0 ? 'nuxtjs' : ''"
+          - "len(gatsby) > 0 ? 'gatsby' : ''"
+          - "len(remix) > 0 ? 'remix' : ''"
+          - "len(astro) > 0 ? 'astro' : ''"
+          - "len(qwik) > 0 ? 'qwik' : ''"
+          - "len(fresh) > 0 ? 'fresh' : ''"
+          - "len(basic_auth) > 0 ? 'traditional-login-forms' : ''"
+          - "len(saml_sso) > 0 ? 'saml-sso-auth' : ''"
+          - "len(microsoft_auth) > 0 ? 'microsoft-auth' : ''"
+          - "len(okta_auth) > 0 ? 'okta-auth' : ''"
+          - "len(auth0_auth) > 0 ? 'auth0' : ''"
+          - "len(onelogin_auth) > 0 ? 'onelogin-auth' : ''"
+          - "len(ping_auth) > 0 ? 'ping-identity-auth' : ''"
+          - "len(keycloak_auth) > 0 ? 'keycloak-auth' : ''"
+          - "len(adfs_auth) > 0 ? 'adfs-auth' : ''"
+          - "len(google_auth) > 0 ? 'google-auth' : ''"
+          - "len(facebook_auth) > 0 ? 'facebook-auth' : ''"
+          - "len(twitter_auth) > 0 ? 'twitter-auth' : ''"
+          - "len(linkedin_auth) > 0 ? 'linkedin-auth' : ''"
+          - "len(github_auth) > 0 ? 'github-auth' : ''"
+          - "len(apple_auth) > 0 ? 'apple-auth' : ''"
+          - "len(mfa_auth) > 0 ? 'multi-factor-auth' : ''"
+          - "len(passwordless_auth) > 0 ? 'passwordless-auth' : ''"
+          - "len(registration) > 0 ? 'user-registration' : ''"
+          - "len(password_recovery) > 0 ? 'password-recovery' : ''"
+          - "len(angular) > 0 ? 'using-api' : ''"
+          - "len(react) > 0 ? 'using-api' : ''"
+          - "len(vuejs) > 0 ? 'using-api' : ''"
+          - "len(nextjs) > 0 ? 'using-api' : ''"
+          - "len(nuxtjs) > 0 ? 'using-api' : ''"
+          - "len(svelte) > 0 ? 'using-api' : ''"
+          - "len(saml_sso) > 0 ? 'using-enterprise-auth' : ''"
+          - "len(microsoft_auth) > 0 ? 'using-enterprise-auth' : ''"
+          - "len(okta_auth) > 0 ? 'using-enterprise-auth' : ''"
+          - "len(auth0_auth) > 0 ? 'using-enterprise-auth' : ''"
+          - "len(onelogin_auth) > 0 ? 'using-enterprise-auth' : ''"
+          - "len(ping_auth) > 0 ? 'using-enterprise-auth' : ''"
+          - "len(keycloak_auth) > 0 ? 'using-enterprise-auth' : ''"
+          - "len(adfs_auth) > 0 ? 'using-enterprise-auth' : ''"
+          - "len(google_auth) > 0 ? 'using-social-auth' : ''"
+          - "len(facebook_auth) > 0 ? 'using-social-auth' : ''"
+          - "len(twitter_auth) > 0 ? 'using-social-auth' : ''"
+          - "len(linkedin_auth) > 0 ? 'using-social-auth' : ''"
+          - "len(github_auth) > 0 ? 'using-social-auth' : ''"
+          - "len(apple_auth) > 0 ? 'using-social-auth' : ''"
+          - "len(basic_auth) > 0 ? 'using-auth' : ''"
+          - "len(saml_sso) > 0 ? 'using-auth' : ''"
+          - "len(microsoft_auth) > 0 ? 'using-auth' : ''"
+          - "len(okta_auth) > 0 ? 'using-auth' : ''"
+          - "len(auth0_auth) > 0 ? 'using-auth' : ''"
+          - "len(onelogin_auth) > 0 ? 'using-auth' : ''"
+          - "len(ping_auth) > 0 ? 'using-auth' : ''"
+          - "len(keycloak_auth) > 0 ? 'using-auth' : ''"
+          - "len(adfs_auth) > 0 ? 'using-auth' : ''"
+          - "len(google_auth) > 0 ? 'using-auth' : ''"
+          - "len(facebook_auth) > 0 ? 'using-auth' : ''"
+          - "len(twitter_auth) > 0 ? 'using-auth' : ''"
+          - "len(linkedin_auth) > 0 ? 'using-auth' : ''"
+          - "len(github_auth) > 0 ? 'using-auth' : ''"
+          - "len(apple_auth) > 0 ? 'using-auth' : ''"

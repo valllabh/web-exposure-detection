@@ -21,7 +21,6 @@
             }
             .no-print { display: none; }
             .container {
-                box-shadow: none !important;
                 border-radius: 0 !important;
                 border: none !important;
                 margin: 0 !important;
@@ -45,6 +44,21 @@
             color: #2d3748;
             background: white;
             font-size: 14px;
+        }
+
+        a {
+            color: #2563eb;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        a:hover {
+            color: #1d4ed8;
+            text-decoration: underline;
+        }
+
+        a:visited {
+            color: #7c3aed;
         }
 
         .container {
@@ -190,20 +204,13 @@
         }
 
         .stat-card {
-            background: white;
-            border: 2px solid #e9ecef;
+            background: white !important;
+            border: 1px solid #dee2e6;
             border-radius: 12px;
             padding: 20px;
             text-align: center;
             print-color-adjust: exact;
             -webkit-print-color-adjust: exact;
-        }
-
-        @media screen {
-            .stat-card {
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                border: 1px solid #e9ecef;
-            }
         }
 
         .stat-card .number {
@@ -251,8 +258,6 @@
 
         .tech-icon {
             height: 24px;
-            width: 24px;
-            object-fit: contain;
             print-color-adjust: exact;
             -webkit-print-color-adjust: exact;
             display: inline-block;
@@ -284,9 +289,10 @@
             flex-direction: column;
             align-items: center;
             padding: 12px;
-            background: white;
-            border: 2px solid #e2e8f0;
+            background: white !important;
+            border: 1px solid #dee2e6;
             border-radius: 12px;
+            overflow: hidden;
         }
         .no-tech-message {
             display: flex;
@@ -314,12 +320,6 @@
             max-width: 400px;
         }
 
-        @media screen {
-            .tech-item {
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                border: 1px solid #e2e8f0;
-            }
-        }
 
         .tech-name {
             margin-top: 8px;
@@ -330,12 +330,164 @@
             text-transform: capitalize;
         }
 
+        .tech-count-badge {
+            margin-top: 4px;
+            font-size: 9px;
+            font-weight: 600;
+            color: #3b82f6;
+            background: #eff6ff;
+            padding: 2px 8px;
+            border-radius: 8px;
+        }
+
         .tech-item.no-icon {
             justify-content: center;
         }
 
         .tech-item.no-icon .tech-name {
             margin-top: 0;
+        }
+
+        .tech-details-section {
+            margin: 30px 0;
+            page-break-before: always;
+        }
+
+        .tech-details-section h2 {
+            color: #2d3748;
+            font-size: 18px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .tech-details-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .tech-detail-card {
+            background: white !important;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .tech-detail-icon {
+            flex-shrink: 0;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tech-detail-icon img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            print-color-adjust: exact;
+        }
+
+        .tech-detail-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .tech-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tech-detail-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .tech-detail-count {
+            font-size: 14px;
+            font-weight: 600;
+            color: #6b7280;
+            background: #f3f4f6;
+            padding: 4px 12px;
+            border-radius: 8px;
+        }
+
+        .tech-detail-description {
+            font-size: 13px;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+
+        .tech-detail-labels {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .tech-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: #4f46e5;
+            background: #eef2ff;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+
+        .tech-detail-cve {
+            margin-top: 8px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .cve-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b7280;
+            margin-right: 4px;
+        }
+
+        .cve-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 20px;
+            padding: 0 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+
+        .cve-critical {
+            background: #dc2626 !important;
+        }
+
+        .cve-high {
+            background: #ea580c !important;
+        }
+
+        .cve-medium {
+            background: #f59e0b !important;
+        }
+
+        .cve-low {
+            background: #84cc16 !important;
+        }
+
+        .cve-none {
+            background: #10b981 !important;
         }
 
         .section {
@@ -351,19 +503,19 @@
 
         .findings-table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             margin: 10px 0;
-            background: white;
-            border: 2px solid #dee2e6;
+            background: white !important;
+            border: 1px solid #dee2e6 !important;
             border-radius: 12px;
             overflow: hidden;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
         }
 
-        @media screen {
-            .findings-table {
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                border: 1px solid #dee2e6;
-            }
+        .findings-table thead {
+            display: table-header-group;
         }
 
         .findings-table th {
@@ -373,9 +525,24 @@
             text-align: left;
             font-weight: 600;
             font-size: 13px;
-            border-bottom: 2px solid #dee2e6;
+            border-bottom: 1px solid #dee2e6;
             print-color-adjust: exact;
             -webkit-print-color-adjust: exact;
+        }
+
+        .findings-table thead tr:first-child th:first-child {
+            border-top-left-radius: 10px;
+        }
+
+        .findings-table thead tr:first-child th:last-child {
+            border-top-right-radius: 10px;
+        }
+
+        @media print {
+            .findings-table th {
+                border-top: 1px solid #dee2e6;
+                border-radius: 0 !important;
+            }
         }
 
         .findings-table td {
@@ -397,28 +564,37 @@
         .domain-cell {
             font-weight: 600;
             color: #2d3748;
-            min-width: 180px;
+            width: 60%;
             font-size: 13px;
         }
 
         .app-title {
-            font-weight: 600;
-            color: #2d3748;
-            font-size: 14px;
+            font-weight: 500;
+            color: #4a5568;
+            font-size: 12px;
             line-height: 1.4;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
             display: block;
             margin-bottom: 4px;
+            word-wrap: break-word;
         }
 
         .app-domain {
-            color: #4a5568;
-            font-size: 12px;
-            font-weight: 500;
+            color: #2d3748;
+            font-size: 14px;
+            font-weight: 700;
             line-height: 1.4;
-            margin-bottom: 4px;
+            margin: 0 0 6px 0;
+            word-wrap: break-word;
+            display: inline;
+        }
+
+        .app-domain a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .app-domain a:hover {
+            text-decoration: underline;
         }
 
         .app-description {
@@ -426,12 +602,13 @@
             font-size: 11px;
             font-weight: 400;
             line-height: 1.5;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            max-height: 3em;
+            word-wrap: break-word;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .findings-table td.findings-cell {
+            width: 40%;
         }
 
 
@@ -449,6 +626,17 @@
             font-size: 12px;
             color: #4a5568;
             line-height: 1.4;
+        }
+
+        .findings-list li a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .findings-list li a:hover {
+            color: #1d4ed8;
+            text-decoration: underline;
         }
 
         .status-circle {
@@ -518,15 +706,25 @@
 
         .cta-button {
             background: #3b82f6 !important;
-            color: white;
+            color: white !important;
             padding: 12px 24px;
             border-radius: 30px;
             font-size: 13px;
             font-weight: 700;
-            text-decoration: none;
+            text-decoration: none !important;
             display: inline-block;
             border: none;
             letter-spacing: 0.5px;
+            transition: background 0.2s ease;
+        }
+
+        .cta-button:hover {
+            background: #2563eb !important;
+            text-decoration: none !important;
+        }
+
+        .cta-button:visited {
+            color: white !important;
         }
 
         .qr-section {
@@ -585,30 +783,43 @@
 
         <div class="summary">
             <h2>Asset Inventory</h2>
-            <div class="stats-grid">
+            <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+                {{if gt .Summary.APIsFound 0}}
                 <div class="stat-card">
                     <span class="number">{{.Summary.APIsFound}}</span>
-                    <span class="label">API Servers</span>
+                    <span class="label">API Endpoints</span>
                 </div>
+                {{end}}
+                {{if gt .Summary.APISpecificationsFound 0}}
                 <div class="stat-card">
                     <span class="number">{{.Summary.APISpecificationsFound}}</span>
                     <span class="label">API Specifications</span>
                 </div>
+                {{end}}
+                {{if gt .Summary.WebAppsFound 0}}
                 <div class="stat-card">
                     <span class="number">{{.Summary.WebAppsFound}}</span>
                     <span class="label">Web Applications</span>
                 </div>
+                {{end}}
+                {{if gt .Summary.AIAssetsFound 0}}
+                <div class="stat-card">
+                    <span class="number">{{.Summary.AIAssetsFound}}</span>
+                    <span class="label">AI Services</span>
+                </div>
+                {{end}}
             </div>
         </div>
 
         {{if and .Technologies (gt .Technologies.Count 0)}}
         <div class="technologies">
-            <h2>Technologies Detected</h2>
+            <h2>Top Technologies Detected</h2>
             <div class="tech-grid">
                 {{range .Technologies.Technologies}}
                 <div class="tech-item">
-                    <img src="./assets/{{.}}.svg" alt="{{.}}" class="tech-icon" onerror="this.style.display='none'; this.parentNode.classList.add('no-icon')">
-                    <span class="tech-name">{{.}}</span>
+                    <img src="./assets/{{.Icon}}" alt="{{.DisplayName}}" class="tech-icon" onerror="this.style.display='none'; this.parentNode.classList.add('no-icon')">
+                    <span class="tech-name">{{.DisplayName}}</span>
+                    <span class="tech-count-badge">{{.Count}}</span>
                 </div>
                 {{end}}
             </div>
@@ -659,26 +870,97 @@
                     {{range .APIsFound}}
                     <tr>
                         <td class="domain-cell">
-                            {{if eq .Discovered "Confirmed API Endpoint"}}
-                            <span class="status-circle status-confirmed"></span>
-                            {{else}}
-                            <span class="status-circle status-potential"></span>
-                            {{end}}
-                            {{if .Title}}
-                            <span class="app-title">{{.Title}}</span>
-                            {{end}}
-                            <div class="app-domain">{{.Domain}}</div>
-                            {{if .Description}}
-                            <div class="app-description">{{.Description}}</div>
-                            {{end}}
+                            {{if eq .Discovered "Confirmed API Endpoint"}}<span class="status-circle status-confirmed"></span>{{else}}<span class="status-circle status-potential"></span>{{end}}
+                            <h3 class="app-domain"><a href="https://{{.Domain}}" target="_blank">{{.Domain}}</a></h3>
                         </td>
-                        <td>
+                        <td class="findings-cell">
                             <ul class="findings-list">
-                                {{if and (eq (len .Findings) 1) (eq (index .Findings 0) "Routing Server")}}
+                                {{if and (eq (len .FindingItems) 1) (eq (index .FindingItems 0).DisplayName "Routing Server")}}
                                 <li>Basic web service detected</li>
                                 {{else}}
-                                {{range .Findings}}
-                                <li>{{.}}</li>
+                                {{range .FindingItems}}
+                                {{if and (eq .DisplayAs "link") .Values}}
+                                    {{$name := .DisplayName}}
+                                    {{range .Values}}
+                                    <li><a href="{{.}}" target="_blank">{{$name}}</a></li>
+                                    {{end}}
+                                {{else}}
+                                <li>{{.DisplayName}}</li>
+                                {{end}}
+                                {{end}}
+                                {{end}}
+                            </ul>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        {{end}}
+
+        {{if .APISpecsFound}}
+        <div class="section">
+            <h2>API Specifications Discovered</h2>
+            <table class="findings-table">
+                <thead>
+                    <tr>
+                        <th>Application</th>
+                        <th>Discovery Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .APISpecsFound}}
+                    <tr>
+                        <td class="domain-cell">
+                            <h3 class="app-domain"><a href="https://{{.Domain}}" target="_blank">{{.Domain}}</a></h3>
+                        </td>
+                        <td class="findings-cell">
+                            <ul class="findings-list">
+                                {{range .FindingItems}}
+                                {{if and (eq .DisplayAs "link") .Values}}
+                                    {{$name := .DisplayName}}
+                                    {{range .Values}}
+                                    <li><a href="{{.}}" target="_blank">{{$name}}</a></li>
+                                    {{end}}
+                                {{else}}
+                                <li>{{.DisplayName}}</li>
+                                {{end}}
+                                {{end}}
+                            </ul>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        {{end}}
+
+        {{if .AIAssetsFound}}
+        <div class="section">
+            <h2>AI Services Discovered</h2>
+            <table class="findings-table">
+                <thead>
+                    <tr>
+                        <th>Application</th>
+                        <th>Discovery Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .AIAssetsFound}}
+                    <tr>
+                        <td class="domain-cell">
+                            <h3 class="app-domain"><a href="https://{{.Domain}}" target="_blank">{{.Domain}}</a></h3>
+                        </td>
+                        <td class="findings-cell">
+                            <ul class="findings-list">
+                                {{range .FindingItems}}
+                                {{if and (eq .DisplayAs "link") .Values}}
+                                    {{$name := .DisplayName}}
+                                    {{range .Values}}
+                                    <li><a href="{{.}}" target="_blank">{{$name}}</a></li>
+                                    {{end}}
+                                {{else}}
+                                <li>{{.DisplayName}}</li>
                                 {{end}}
                                 {{end}}
                             </ul>
@@ -704,21 +986,28 @@
                     {{range .WebAppsFound}}
                     <tr>
                         <td class="domain-cell">
+                            <h3 class="app-domain"><a href="https://{{.Domain}}" target="_blank">{{.Domain}}</a></h3>
                             {{if .Title}}
-                            <span class="app-title">{{.Title}}</span>
+                            <div class="app-title">{{.Title}}</div>
                             {{end}}
-                            <div class="app-domain">{{.Domain}}</div>
                             {{if .Description}}
                             <div class="app-description">{{.Description}}</div>
                             {{end}}
                         </td>
-                        <td>
+                        <td class="findings-cell">
                             <ul class="findings-list">
-                                {{if and (eq (len .Findings) 1) (eq (index .Findings 0) "Web Server")}}
+                                {{if and (eq (len .FindingItems) 1) (eq (index .FindingItems 0).DisplayName "Web Server")}}
                                 <li>Standard web application</li>
                                 {{else}}
-                                {{range .Findings}}
-                                <li>{{.}}</li>
+                                {{range .FindingItems}}
+                                {{if and (eq .DisplayAs "link") .Values}}
+                                    {{$name := .DisplayName}}
+                                    {{range .Values}}
+                                    <li><a href="{{.}}" target="_blank">{{$name}}</a></li>
+                                    {{end}}
+                                {{else}}
+                                <li>{{.DisplayName}}</li>
+                                {{end}}
                                 {{end}}
                                 {{end}}
                             </ul>
@@ -730,6 +1019,57 @@
         </div>
         {{end}}
 
+        {{if and .Technologies .Technologies.AllTechnologies}}
+        <div class="tech-details-section">
+            <h2>Technologies Detected</h2>
+            <div class="tech-details-list">
+                {{range .Technologies.AllTechnologies}}
+                <div class="tech-detail-card">
+                    <div class="tech-detail-icon">
+                        <img src="./assets/{{.Icon}}" alt="{{.DisplayName}}" onerror="this.style.display='none'">
+                    </div>
+                    <div class="tech-detail-content">
+                        <div class="tech-detail-header">
+                            <span class="tech-detail-name">{{.DisplayName}}</span>
+                            <span class="tech-detail-count">Used by {{.Count}} {{if eq .Count 1}}domain{{else}}domains{{end}}</span>
+                        </div>
+                        {{if .Description}}
+                        <div class="tech-detail-description">{{.Description}}</div>
+                        {{end}}
+                        {{if .Labels}}
+                        <div class="tech-detail-labels">
+                            {{range .Labels}}
+                            <span class="tech-label">{{.}}</span>
+                            {{end}}
+                        </div>
+                        {{end}}
+                        {{if .Security}}
+                        {{if .Security.CVE}}
+                        {{if gt .Security.CVE.Stats.Total 0}}
+                        <div class="tech-detail-cve">
+                            <span class="cve-label">Known CVEs:</span>
+                            {{if gt .Security.CVE.Stats.Critical 0}}
+                            <span class="cve-badge cve-critical">{{.Security.CVE.Stats.Critical}} Critical</span>
+                            {{end}}
+                            {{if gt .Security.CVE.Stats.High 0}}
+                            <span class="cve-badge cve-high">{{.Security.CVE.Stats.High}} High</span>
+                            {{end}}
+                            {{if gt .Security.CVE.Stats.Medium 0}}
+                            <span class="cve-badge cve-medium">{{.Security.CVE.Stats.Medium}} Medium</span>
+                            {{end}}
+                            {{if gt .Security.CVE.Stats.Low 0}}
+                            <span class="cve-badge cve-low">{{.Security.CVE.Stats.Low}} Low</span>
+                            {{end}}
+                        </div>
+                        {{end}}
+                        {{end}}
+                        {{end}}
+                    </div>
+                </div>
+                {{end}}
+            </div>
+        </div>
+        {{end}}
 
         <div class="footer">
             © 2025 Qualys, Inc. All rights reserved | Confidential and Proprietary Information
