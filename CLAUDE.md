@@ -16,6 +16,7 @@ Go-based CLI tool for detecting web exposure vulnerabilities. Designed for defen
 - **Architecture**: [README.md](./README.md#architecture) - SDK-first design, embedded files
 - **Reporting**: [docs/reporting-system.md](./docs/reporting-system.md) - report generation details
 - **Templates**: [docs/how-to-write-nuclei-template.md](./docs/how-to-write-nuclei-template.md)
+- **Logging**: [docs/logging.md](./docs/logging.md) - gologger strategy, levels, migration guide
 - **Reference impl**: [ref/](./ref/) directory - original bash scripts
 
 ## Important Notes
@@ -26,3 +27,4 @@ Go-based CLI tool for detecting web exposure vulnerabilities. Designed for defen
 - All templates/assets embedded in binary via embed.go
 - Results cached in ./results/{domain}/ - never use --force unless explicitly told
 - Entry point for reports: generateReportsFromNucleiResults()
+- **Logging**: Follow [docs/logging.md](./docs/logging.md) - ALWAYS use gologger (never fmt.Printf): Info for user messages, Debug for traces, Warning for non-fatal, Error for fatal

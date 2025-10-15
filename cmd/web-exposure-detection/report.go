@@ -51,14 +51,17 @@ Examples:
 			return fmt.Errorf("failed to create scanner: %w", err)
 		}
 
-		// Set up CLI progress handler for command line interface (no verbose for report command)
-		progressHandler := cli.NewCLIProgressHandler(false)
+		// Set debug flag
+		scanner.SetDebug(debug)
+
+		// Set up CLI progress handler for command line interface
+		progressHandler := cli.NewCLIProgressHandler()
 		scanner.SetProgressCallback(progressHandler)
 
 		// Generate report from existing results
-		fmt.Printf("Regenerating report for: %v\n", domains)
+		logger.Info().Msgf("Regenerating report for: %v", domains)
 		if debug {
-			fmt.Printf("Debug mode: enabled (HTML report will be preserved)\n")
+			logger.Info().Msg("Debug mode: enabled (HTML report will be preserved)")
 		}
 
 		err = scanner.GenerateReportFromExistingResults(domains, debug)
@@ -66,7 +69,7 @@ Examples:
 			return fmt.Errorf("report generation failed: %w", err)
 		}
 
-		fmt.Printf("Report generated successfully\n")
+		logger.Info().Msg("Report generated successfully")
 		return nil
 	},
 }

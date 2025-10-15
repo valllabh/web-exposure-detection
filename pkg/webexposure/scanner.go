@@ -75,6 +75,7 @@ func (a *domainScanProgressAdapter) OnEnd(result *domainscan.AssetDiscoveryResul
 
 // New creates a new Scanner instance
 func New() (Scanner, error) {
+	InitLogger(false, false) // Default to Info level
 	return &scanner{}, nil
 }
 
@@ -83,30 +84,37 @@ func (s *scanner) SetProgressCallback(callback ProgressCallback) {
 	s.progress = callback
 }
 
-// SetVerbose sets verbose mode for detailed logging
-func (s *scanner) SetVerbose(verbose bool) {
-	s.verbose = verbose
-}
-
-// SetDebug sets debug mode for debug logging
+// SetDebug sets debug mode and reconfigures logger
 func (s *scanner) SetDebug(debug bool) {
 	s.debug = debug
+	InitLogger(debug, s.silent)
+}
+
+// SetSilent sets silent mode and reconfigures logger
+func (s *scanner) SetSilent(silent bool) {
+	s.silent = silent
+	InitLogger(s.debug, silent)
 }
 
 // extractEmbeddedTemplates extracts embedded scan-templates to a temporary directory
 func (s *scanner) extractEmbeddedTemplates() (string, error) {
+	logger := GetLogger()
+
 	// Create temporary directory for templates
 	tempDir, err := os.MkdirTemp("", "scan-templates-*")
 	if err != nil {
+		logger.Error().Msgf("Failed to create temp directory: %v", err)
 		return "", fmt.Errorf("failed to create temp directory: %w", err)
 	}
 
 	// Extract embedded scan-templates to temp directory
 	if err := extractEmbeddedDirectory(scanTemplatesFS, "scan-templates", tempDir); err != nil {
 		os.RemoveAll(tempDir) // Clean up on error
+		logger.Error().Msgf("Failed to extract embedded templates: %v", err)
 		return "", fmt.Errorf("failed to extract embedded templates: %w", err)
 	}
 
+	logger.Debug().Msgf("Extracted embedded templates to %s", tempDir)
 	return tempDir, nil
 }
 
@@ -199,6 +207,8 @@ func (s *scanner) ScanWithOptions(domains []string, keywords []string, templates
 
 // ScanWithPreset performs the complete scan pipeline with preset configuration
 func (s *scanner) ScanWithPreset(domains []string, keywords []string, templates []string, force bool, preset ScanPreset, skipDiscovery bool) error {
+	logger := GetLogger()
+
 	if len(domains) == 0 {
 		return fmt.Errorf("no domains provided")
 	}
@@ -216,14 +226,19 @@ func (s *scanner) ScanWithPreset(domains []string, keywords []string, templates 
 		return fmt.Errorf("no valid domains provided after cleaning")
 	}
 
+	logger.Debug().Msgf("Normalized %d domains: %v", len(normalizedDomains), normalizedDomains)
+
 	// Step 1: Extract embedded scan-templates to temporary directory
 	tempTemplatesDir, err := s.extractEmbeddedTemplates()
 	if err != nil {
+		logger.Error().Msgf("Failed to extract templates: %v", err)
 		return fmt.Errorf("failed to extract embedded templates: %w", err)
 	}
+	logger.Debug().Msgf("Extracted templates to %s", tempTemplatesDir)
 
 	// Step 1.5: Validate specific templates early to fail fast
 	if len(templates) > 0 {
+		logger.Debug().Msgf("Validating %d specific templates", len(templates))
 		if err := s.validateSpecificTemplates(templates, tempTemplatesDir); err != nil {
 			return fmt.Errorf("template validation failed: %w", err)
 		}
@@ -236,22 +251,26 @@ func (s *scanner) ScanWithPreset(domains []string, keywords []string, templates 
 	if err := os.MkdirAll(resultsDir, 0755); err != nil {
 		return fmt.Errorf("failed to create results directory: %w", err)
 	}
+	logger.Debug().Msgf("Created results directory: %s", resultsDir)
 
 	// Step 2: Domain Discovery with caching or skip if flag is set
 	var discoveredURLs []string
 	if skipDiscovery {
+		logger.Info().Msg("Skipping domain discovery (--skip-discovery enabled)")
 		// Skip discovery and create domain-scan.json with provided domains only
 		discoveredURLs, err = s.createDirectDomainList(normalizedDomains, resultsDir)
 		if err != nil {
 			return fmt.Errorf("failed to create domain list: %w", err)
 		}
 	} else {
+		logger.Info().Msgf("Running domain discovery for %d domains", len(normalizedDomains))
 		// Run domain discovery with caching
 		discoveredURLs, err = s.discoverDomainsWithCache(normalizedDomains, keywords, resultsDir, force)
 		if err != nil {
 			return fmt.Errorf("domain discovery failed: %w", err)
 		}
 	}
+	logger.Info().Msgf("Discovered %d URLs", len(discoveredURLs))
 
 	// Prepare nuclei results directory
 	nucleiResultsDir := filepath.Join(resultsDir, "nuclei-results")
@@ -271,7 +290,8 @@ func (s *scanner) ScanWithPreset(domains []string, keywords []string, templates 
 		FollowHostRedirects: true,
 		ShowMatchLine:       true,
 		ResultsWriter:       filepath.Join(nucleiResultsDir, "results.jsonl"), // Progressive JSONL writer
-		Verbose:             s.verbose,
+		Debug:               s.debug,
+		Silent:              s.silent,
 	}
 
 	// Apply preset configuration (RateLimit, BulkSize, Concurrency, Timeout, Delay)
@@ -282,13 +302,17 @@ func (s *scanner) ScanWithPreset(domains []string, keywords []string, templates 
 	if err != nil {
 		return fmt.Errorf("nuclei scanning failed: %w", err)
 	}
+	logger.Info().Msgf("Nuclei scan complete: %d results", len(nucleiResults))
 
 	// Step 3: Hand off to report generation with nuclei results
+	logger.Info().Msg("Generating reports from Nuclei results")
 	return s.generateReportsFromNucleiResults(nucleiResults, targetDomain, resultsDir)
 }
 
 // RunDiscoveryOnly performs domain discovery and stores results without running Nuclei scan
 func (s *scanner) RunDiscoveryOnly(domains []string, keywords []string, force bool) error {
+	logger := GetLogger()
+
 	if len(domains) == 0 {
 		return fmt.Errorf("no domains provided")
 	}
@@ -320,16 +344,18 @@ func (s *scanner) RunDiscoveryOnly(domains []string, keywords []string, force bo
 		return fmt.Errorf("domain discovery failed: %w", err)
 	}
 
-	fmt.Printf("\nDiscovery completed successfully!\n")
-	fmt.Printf("Total domains discovered: %d\n", len(discoveredURLs))
-	fmt.Printf("Results saved to: %s/domain-scan.json\n", resultsDir)
+	logger.Info().Msg("Discovery completed successfully!")
+	logger.Info().Msgf("Total domains discovered: %d", len(discoveredURLs))
+	logger.Info().Msgf("Results saved to: %s/domain-scan.json", resultsDir)
 
 	return nil
 }
 
 // GenerateReportFromExistingResults regenerates report from existing Nuclei results
 func (s *scanner) GenerateReportFromExistingResults(domains []string, debug bool) error {
+	logger := GetLogger()
 	s.debug = debug
+
 	if len(domains) == 0 {
 		return fmt.Errorf("no domains provided")
 	}
@@ -348,6 +374,7 @@ func (s *scanner) GenerateReportFromExistingResults(domains []string, debug bool
 	}
 
 	targetDomain := normalizedDomains[0] // Use first domain as primary target
+	logger.Debug().Msgf("Normalized domain: %s, results directory: results/%s", targetDomain, targetDomain)
 
 	// Create results directory structure (same as ScanWithOptions)
 	resultsDir := filepath.Join("results", targetDomain)
@@ -357,12 +384,15 @@ func (s *scanner) GenerateReportFromExistingResults(domains []string, debug bool
 	}
 
 	// Step 1: Load existing Nuclei results (already grouped)
+	logger.Info().Msgf("Loading existing Nuclei results from %s", resultsDir)
 	groupedResults, err := s.loadExistingNucleiResults(resultsDir)
 	if err != nil {
+		logger.Error().Msgf("Failed to load existing results: %v", err)
 		return fmt.Errorf("failed to load existing nuclei results: %w", err)
 	}
 
 	// Step 3: Generate report from grouped results
+	logger.Info().Msgf("Generating report from %d grouped results", len(groupedResults.Domains))
 	report, err := s.GenerateReport(groupedResults, targetDomain)
 	if err != nil {
 		return fmt.Errorf("report generation failed: %w", err)
@@ -375,13 +405,18 @@ func (s *scanner) GenerateReportFromExistingResults(domains []string, debug bool
 // generateReportsFromNucleiResults handles complete report generation orchestration
 // This is the single entry point for all report generation (JSON + HTML + PDF)
 func (s *scanner) generateReportsFromNucleiResults(nucleiResults []*output.ResultEvent, targetDomain, resultsDir string) error {
+	logger := GetLogger()
+
 	// Step 1: Aggregate Results
+	logger.Debug().Msgf("Aggregating %d Nuclei result events", len(nucleiResults))
 	groupedResults, err := s.AggregateResults(nucleiResults)
 	if err != nil {
 		return fmt.Errorf("result aggregation failed: %w", err)
 	}
+	logger.Debug().Msgf("Aggregated into %d hosts", len(groupedResults.Domains))
 
 	// Step 2: Generate Report Structure
+	logger.Debug().Msgf("Generated report structure for %s", targetDomain)
 	report, err := s.GenerateReport(groupedResults, targetDomain)
 	if err != nil {
 		return fmt.Errorf("report generation failed: %w", err)
@@ -393,6 +428,8 @@ func (s *scanner) generateReportsFromNucleiResults(nucleiResults []*output.Resul
 
 // writeAndGenerateFormats writes JSON report and generates HTML/PDF
 func (s *scanner) writeAndGenerateFormats(report *ExposureReport, resultsDir string) error {
+	logger := GetLogger()
+
 	// Write JSON to results directory
 	err := s.writeJSONToResults(report, resultsDir)
 	if err != nil {
@@ -403,7 +440,7 @@ func (s *scanner) writeAndGenerateFormats(report *ExposureReport, resultsDir str
 	err = s.generateHTMLReport(report, resultsDir)
 	if err != nil {
 		// Log warning but don't fail the entire process
-		fmt.Printf("⚠️  Warning: Failed to generate HTML report: %v\n", err)
+		logger.Warning().Msgf("Failed to generate HTML report: %v", err)
 	} else {
 		// Generate PDF from HTML
 		htmlPath := filepath.Join(resultsDir, "report", "index.html")
@@ -412,17 +449,17 @@ func (s *scanner) writeAndGenerateFormats(report *ExposureReport, resultsDir str
 		err = s.generatePDF(htmlPath, pdfPath)
 		if err != nil {
 			// Log warning but don't fail the entire process
-			fmt.Printf("⚠️  Warning: Failed to generate PDF report: %v\n", err)
+			logger.Warning().Msgf("Failed to generate PDF report: %v", err)
 		} else {
 			// Clean up HTML report directory after successful PDF generation (skip if debug mode)
 			if !s.debug {
 				reportDir := filepath.Join(resultsDir, "report")
 				if err := os.RemoveAll(reportDir); err != nil {
 					// Log warning but don't fail - this is just cleanup
-					fmt.Printf("⚠️  Warning: Failed to cleanup HTML report directory: %v\n", err)
+					logger.Warning().Msgf("Failed to cleanup HTML report directory: %v", err)
 				}
 			} else {
-				fmt.Printf("Debug mode: HTML report preserved at %s\n", filepath.Join(resultsDir, "report"))
+				logger.Debug().Msgf("HTML report preserved at %s", filepath.Join(resultsDir, "report"))
 			}
 		}
 	}
@@ -577,10 +614,12 @@ func (s *scanner) WriteJSONReport(report *ExposureReport, filename string) error
 
 // discoverTemplateFiles finds all template files in the given directory
 func (s *scanner) discoverTemplateFiles(templatesPath string) ([]string, error) {
+	logger := GetLogger()
 	var templateFiles []string
 
 	err := filepath.Walk(templatesPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
+			logger.Error().Msgf("Error walking path %s: %v", path, err)
 			return err
 		}
 
@@ -593,16 +632,19 @@ func (s *scanner) discoverTemplateFiles(templatesPath string) ([]string, error) 
 		return nil
 	})
 
+	logger.Debug().Msgf("Discovered %d template files in %s", len(templateFiles), templatesPath)
 	return templateFiles, err
 }
 
 // extractTemplateIDs extracts template IDs from YAML files
 func (s *scanner) extractTemplateIDs(templateFiles []string) ([]string, error) {
+	logger := GetLogger()
 	var templateIDs []string
 
 	for _, filePath := range templateFiles {
 		data, err := os.ReadFile(filePath)
 		if err != nil {
+			logger.Warning().Msgf("Failed to read template file %s: %v", filePath, err)
 			return nil, fmt.Errorf("failed to read template file %s: %w", filePath, err)
 		}
 
@@ -621,11 +663,15 @@ func (s *scanner) extractTemplateIDs(templateFiles []string) ([]string, error) {
 		}
 	}
 
+	logger.Debug().Msgf("Extracted %d template IDs from %d files", len(templateIDs), len(templateFiles))
 	return templateIDs, nil
 }
 
 // validateSpecificTemplates validates that the specified templates exist in the templates directory
 func (s *scanner) validateSpecificTemplates(templates []string, templatesPath string) error {
+	logger := GetLogger()
+	logger.Debug().Msgf("Validating %d specific templates against available templates", len(templates))
+
 	// Get all available template IDs
 	templateFiles, err := s.discoverTemplateFiles(templatesPath)
 	if err != nil {
@@ -636,6 +682,7 @@ func (s *scanner) validateSpecificTemplates(templates []string, templatesPath st
 	if err != nil {
 		return fmt.Errorf("failed to extract template IDs: %w", err)
 	}
+	logger.Debug().Msgf("Found %d available templates", len(availableTemplates))
 
 	// Create a set of available templates for fast lookup
 	availableSet := make(map[string]bool)
@@ -653,6 +700,7 @@ func (s *scanner) validateSpecificTemplates(templates []string, templatesPath st
 
 	// Return error if any templates are invalid
 	if len(invalidTemplates) > 0 {
+		logger.Error().Msgf("Template validation failed: %d invalid templates", len(invalidTemplates))
 		return fmt.Errorf(`
 Template validation failed: %d specified templates not found in %s
 
@@ -675,9 +723,13 @@ Total available templates: %d`,
 
 // runNucleiScanWithStorage runs nuclei scan and stores results
 func (s *scanner) runNucleiScanWithStorage(targets []string, opts *NucleiOptions, resultsDir string) ([]*output.ResultEvent, error) {
+	logger := GetLogger()
+	logger.Info().Msgf("Running Nuclei scan on %d targets", len(targets))
+
 	// Run the nuclei scan (writes to JSONL progressively)
 	results, err := s.RunNucleiScan(targets, opts)
 	if err != nil {
+		logger.Error().Msgf("Nuclei scan failed: %v", err)
 		return nil, err
 	}
 
@@ -688,7 +740,9 @@ func (s *scanner) runNucleiScanWithStorage(targets []string, opts *NucleiOptions
 
 	if err := s.convertJSONLToJSON(jsonlFile, jsonFile); err != nil {
 		// Log warning but don't fail - we still have results in memory
-		fmt.Printf("⚠️  Warning: Failed to convert JSONL to JSON: %v\n", err)
+		logger.Warning().Msgf("Failed to convert JSONL to JSON: %v", err)
+	} else {
+		logger.Info().Msg("JSONL results converted to JSON format")
 	}
 
 	return results, nil
@@ -696,22 +750,28 @@ func (s *scanner) runNucleiScanWithStorage(targets []string, opts *NucleiOptions
 
 // loadExistingNucleiResults loads existing nuclei results from JSON file and aggregates them
 func (s *scanner) loadExistingNucleiResults(resultsDir string) (*GroupedResults, error) {
+	logger := GetLogger()
+	logger.Debug().Msgf("Loading Nuclei results from %s", resultsDir)
+
 	nucleiResultsFile := filepath.Join(resultsDir, "nuclei-results", "results.json")
 
 	// Check if the results file exists
 	if _, err := os.Stat(nucleiResultsFile); os.IsNotExist(err) {
+		logger.Error().Msgf("Nuclei results file not found: %s", nucleiResultsFile)
 		return nil, fmt.Errorf("nuclei results file not found: %s", nucleiResultsFile)
 	}
 
 	// Read the JSON file
 	data, err := os.ReadFile(nucleiResultsFile)
 	if err != nil {
+		logger.Error().Msgf("Failed to read results file: %v", err)
 		return nil, fmt.Errorf("failed to read nuclei results file: %w", err)
 	}
 
 	// Unmarshal to StoredResult array
 	var storedResults []*StoredResult
 	if err := json.Unmarshal(data, &storedResults); err != nil {
+		logger.Error().Msgf("Failed to unmarshal results: %v", err)
 		return nil, fmt.Errorf("failed to unmarshal nuclei results: %w", err)
 	}
 
@@ -724,6 +784,7 @@ func (s *scanner) loadExistingNucleiResults(resultsDir string) (*GroupedResults,
 		grouped[result.Host][result.TemplateID] = result
 	}
 
+	logger.Info().Msgf("Loaded %d hosts from existing results", len(grouped))
 	return &GroupedResults{Domains: grouped}, nil
 }
 
@@ -776,8 +837,11 @@ func consolidateResultsByHost(results []*StoredResult) []*StoredResult {
 
 // convertJSONLToJSON converts JSONL (JSON Lines) file to JSON array file
 func (s *scanner) convertJSONLToJSON(jsonlPath, jsonPath string) error {
+	logger := GetLogger()
+
 	// Check if JSONL file exists
 	if _, err := os.Stat(jsonlPath); os.IsNotExist(err) {
+		logger.Error().Msgf("JSONL file not found: %s", jsonlPath)
 		return fmt.Errorf("JSONL file not found: %s", jsonlPath)
 	}
 
@@ -819,8 +883,8 @@ func (s *scanner) convertJSONLToJSON(jsonlPath, jsonPath string) error {
 			if len(preview) > 100 {
 				preview = preview[:100] + "..."
 			}
-			fmt.Printf("⚠️  Warning: Skipping malformed JSONL line %d: %v\n", lineNum, err)
-			fmt.Printf("    Preview: %s\n", preview)
+			logger.Warning().Msgf("Skipping malformed JSONL line %d: %v", lineNum, err)
+			logger.Debug().Msgf("Preview: %s", preview)
 			continue
 		}
 
@@ -848,10 +912,10 @@ func (s *scanner) convertJSONLToJSON(jsonlPath, jsonPath string) error {
 
 	// Report conversion summary
 	if len(skippedLines) > 0 {
-		fmt.Printf("✓ Converted %d results from JSONL to JSON (%d hosts, skipped %d malformed lines: %v)\n",
+		logger.Info().Msgf("Converted %d results from JSONL to JSON (%d hosts, skipped %d malformed lines: %v)",
 			len(consolidatedResults), len(consolidatedResults), len(skippedLines), skippedLines)
 	} else {
-		fmt.Printf("✓ Converted %d results from JSONL to JSON (%d hosts)\n",
+		logger.Info().Msgf("Converted %d results from JSONL to JSON (%d hosts)",
 			len(consolidatedResults), len(consolidatedResults))
 	}
 
@@ -860,17 +924,24 @@ func (s *scanner) convertJSONLToJSON(jsonlPath, jsonPath string) error {
 
 // writeJSONToResults writes the final report to results directory
 func (s *scanner) writeJSONToResults(report *ExposureReport, resultsDir string) error {
+	logger := GetLogger()
+	logger.Debug().Msgf("Writing JSON report to %s", resultsDir)
+
 	filename := filepath.Join(resultsDir, "web-exposure-result.json")
 
 	data, err := json.MarshalIndent(report, "", "  ")
 	if err != nil {
+		logger.Error().Msgf("Failed to marshal report: %v", err)
 		return fmt.Errorf("failed to marshal report: %w", err)
 	}
 
 	err = os.WriteFile(filename, data, 0644)
 	if err != nil {
+		logger.Error().Msgf("Failed to write report file: %v", err)
 		return fmt.Errorf("failed to write report file: %w", err)
 	}
+
+	logger.Info().Msgf("JSON report saved to %s", filename)
 
 	// Notify progress callback if set
 	if s.progress != nil {

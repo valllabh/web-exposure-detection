@@ -9,6 +9,8 @@ import (
 	"web-exposure-detection/pkg/webexposure"
 )
 
+var logger = webexposure.GetLogger()
+
 // scanCmd represents the scan command
 var scanCmd = &cobra.Command{
 	Use:   "scan [domains...]",
@@ -75,16 +77,16 @@ Examples:
 			preset = webexposure.PresetSlow // Default to slow
 		}
 
-		// Get verbose flag
-		verbose, err := cmd.Flags().GetBool("verbose")
-		if err != nil {
-			return fmt.Errorf("failed to get verbose flag: %w", err)
-		}
-
 		// Get debug flag
 		debug, err := cmd.Flags().GetBool("debug")
 		if err != nil {
 			return fmt.Errorf("failed to get debug flag: %w", err)
+		}
+
+		// Get silent flag
+		silent, err := cmd.Flags().GetBool("silent")
+		if err != nil {
+			return fmt.Errorf("failed to get silent flag: %w", err)
 		}
 
 		// Get skip-discovery flag
@@ -99,39 +101,39 @@ Examples:
 			return fmt.Errorf("failed to create scanner: %w", err)
 		}
 
+		// Set debug and silent flags on scanner
+		scanner.SetDebug(debug)
+		scanner.SetSilent(silent)
+
 		// Set up CLI progress handler for command line interface
-		progressHandler := cli.NewCLIProgressHandler(verbose)
+		progressHandler := cli.NewCLIProgressHandler()
 		scanner.SetProgressCallback(progressHandler)
 
 		// Run scan with CLI interface
-		fmt.Printf("Starting web exposure scan for: %v\n", domains)
+		logger.Info().Msgf("Starting web exposure scan for: %v", domains)
 		if len(domainKeywords) > 0 {
-			fmt.Printf("Using domain keywords: %v\n", domainKeywords)
+			logger.Info().Msgf("Using domain keywords: %v", domainKeywords)
 		}
 		if len(templates) > 0 {
-			fmt.Printf("Using specific templates: %v\n", templates)
+			logger.Info().Msgf("Using specific templates: %v", templates)
 		}
-		fmt.Printf("Using preset: %s\n", presetStr)
-		if verbose {
-			fmt.Printf("Verbose mode: enabled\n")
-		}
+		logger.Info().Msgf("Using preset: %s", presetStr)
 		if debug {
-			fmt.Printf("Debug mode: enabled\n")
+			logger.Info().Msg("Debug mode: enabled")
+		}
+		if silent {
+			logger.Info().Msg("Silent mode: enabled")
 		}
 		if skipDiscovery {
-			fmt.Printf("Skip discovery: enabled (will scan only provided domains)\n")
+			logger.Info().Msg("Skip discovery: enabled (will scan only provided domains)")
 		}
-
-		// Set verbose and debug flags on scanner
-		scanner.SetVerbose(verbose)
-		scanner.SetDebug(debug)
 
 		err = scanner.ScanWithPreset(domains, domainKeywords, templates, force, preset, skipDiscovery)
 		if err != nil {
 			return fmt.Errorf("scan failed: %w", err)
 		}
 
-		fmt.Printf("Scan completed successfully\n")
+		logger.Info().Msg("Scan completed successfully")
 		return nil
 	},
 }
@@ -155,9 +157,9 @@ func init() {
 	scanCmd.Flags().StringP("preset", "p", "slow",
 		"Scan speed preset: 'slow' (default, stable) or 'fast' (aggressive, faster)")
 
-	// Add verbose flag
-	scanCmd.Flags().BoolP("verbose", "v", false,
-		"Enable verbose output for detailed scan progress")
+	// Add silent flag
+	scanCmd.Flags().BoolP("silent", "s", false,
+		"Enable silent mode (suppress info messages, show warnings and errors only)")
 
 	// Add skip-discovery flag
 	scanCmd.Flags().Bool("skip-discovery", false,

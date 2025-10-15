@@ -21,7 +21,8 @@ type NucleiOptions struct {
 	Timeout             int    // Timeout per request in seconds
 	Delay               int    // Delay between requests in seconds
 	ResultsWriter       string // Path to write results progressively (JSONL format)
-	Verbose             bool   // Enable verbose output
+	Debug               bool   // Enable debug mode (passed to Nuclei SDK)
+	Silent              bool   // Enable silent mode (passed to Nuclei SDK)
 }
 
 // StoredResult is a minimal result structure for persistent storage

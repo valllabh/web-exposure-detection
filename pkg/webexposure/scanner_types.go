@@ -33,8 +33,8 @@ type Scanner interface {
 
 	// Progress monitoring
 	SetProgressCallback(callback ProgressCallback)
-	SetVerbose(verbose bool)
 	SetDebug(debug bool)
+	SetSilent(silent bool)
 
 	// Individual pipeline steps
 	DiscoverDomains(domains []string, keywords []string) ([]string, error)
@@ -64,5 +64,5 @@ const (
 type scanner struct {
 	progress ProgressCallback // Optional progress callback
 	debug    bool             // Debug mode - skips HTML cleanup when enabled
-	verbose  bool             // Verbose mode - enables detailed logging
+	silent   bool             // Silent mode - suppresses info messages
 }

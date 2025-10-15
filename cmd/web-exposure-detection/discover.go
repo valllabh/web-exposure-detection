@@ -59,26 +59,33 @@ Examples:
 			return fmt.Errorf("failed to get debug flag: %w", err)
 		}
 
+		// Get silent flag
+		silent, err := cmd.Flags().GetBool("silent")
+		if err != nil {
+			return fmt.Errorf("failed to get silent flag: %w", err)
+		}
+
 		// Create scanner
 		scanner, err := webexposure.New()
 		if err != nil {
 			return fmt.Errorf("failed to create scanner: %w", err)
 		}
 
-		// Set up CLI progress handler for command line interface (no verbose for discover command)
-		progressHandler := cli.NewCLIProgressHandler(false)
+		// Set debug and silent flags on scanner
+		scanner.SetDebug(debug)
+		scanner.SetSilent(silent)
+
+		// Set up CLI progress handler for command line interface
+		progressHandler := cli.NewCLIProgressHandler()
 		scanner.SetProgressCallback(progressHandler)
 
-		// Set debug flag on scanner
-		scanner.SetDebug(debug)
-
 		// Run discovery with CLI interface
-		fmt.Printf("Starting domain discovery for: %v\n", domains)
+		logger.Info().Msgf("Starting domain discovery for: %v", domains)
 		if len(domainKeywords) > 0 {
-			fmt.Printf("Using domain keywords: %v\n", domainKeywords)
+			logger.Info().Msgf("Using domain keywords: %v", domainKeywords)
 		}
 		if debug {
-			fmt.Printf("Debug mode: enabled\n")
+			logger.Info().Msg("Debug mode: enabled")
 		}
 
 		err = scanner.RunDiscoveryOnly(domains, domainKeywords, force)
@@ -100,4 +107,8 @@ func init() {
 	// Add force flag
 	discoverCmd.Flags().BoolP("force", "f", false,
 		"Force fresh domain discovery by clearing cache")
+
+	// Add silent flag
+	discoverCmd.Flags().BoolP("silent", "s", false,
+		"Enable silent mode (suppress info messages, show warnings and errors only)")
 }

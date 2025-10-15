@@ -9,6 +9,9 @@ import (
 
 // GenerateReport creates an exposure report from grouped Nuclei results
 func (s *scanner) GenerateReport(grouped *GroupedResults, targetDomain string) (*ExposureReport, error) {
+	logger := GetLogger()
+	logger.Debug().Msgf("Processing %d domains for report generation", len(grouped.Domains))
+
 	// Use the new ResultProcessor for efficient single-pass processing
 	processor := NewResultProcessor()
 
@@ -24,6 +27,10 @@ func (s *scanner) GenerateReport(grouped *GroupedResults, targetDomain string) (
 		Timestamp:    time.Now(),
 	}
 
+	logger.Info().Msgf("Report generated successfully for %s: %d apps, %d APIs, %d API specs, %d AI assets",
+		targetDomain, report.Summary.TotalApps, report.Summary.APIsFound,
+		report.Summary.APISpecificationsFound, report.Summary.AIAssetsFound)
+
 	return report, nil
 }
 
@@ -38,6 +45,9 @@ func NewResultProcessor() *ResultProcessor {
 
 // ProcessAllDomains processes all domains in a single pass
 func (rp *ResultProcessor) ProcessAllDomains(grouped *GroupedResults) *ExposureReport {
+	logger := GetLogger()
+	logger.Debug().Msgf("Processing %d domains in single pass", len(grouped.Domains))
+
 	// Reset state
 	rp.apis = nil
 	rp.apiSpecs = nil
@@ -53,12 +63,18 @@ func (rp *ResultProcessor) ProcessAllDomains(grouped *GroupedResults) *ExposureR
 		rp.processDomain(domain, templates)
 	}
 
+	logger.Debug().Msgf("Completed processing: %d technologies detected, %d domains processed",
+		len(rp.technologies), len(grouped.Domains))
+
 	// Build final report
 	return rp.buildReport()
 }
 
 // processDomain processes a single domain's results
 func (rp *ResultProcessor) processDomain(domain string, templates map[string]*StoredResult) {
+	logger := GetLogger()
+	logger.Debug().Msgf("Processing domain: %s with %d templates", domain, len(templates))
+
 	domainResult := &DomainResult{
 		Domain:       domain,
 		Findings:     make(map[string]bool),
@@ -128,6 +144,9 @@ func (rp *ResultProcessor) processDomain(domain string, templates map[string]*St
 	// Step 3: Classify and add to collections
 	rp.classifyAndAdd(domainResult, templates)
 
+	logger.Debug().Msgf("Domain %s classified as: %s with %d findings",
+		domain, domainResult.Discovered, len(domainResult.Findings))
+
 	// Update global summary
 	rp.updateSummary(domainResult)
 }
@@ -167,6 +186,7 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *DomainResult, templates 
 
 	// Add to WebApp collection if it has webapp classification
 	if webAppClassification != "" {
+		logger := GetLogger()
 		webappFindings := rp.filterFindingsByClassification(findings, findingsMap, "webapp")
 		cleanedFindings := rp.cleanFindingsArray(webappFindings)
 
@@ -179,6 +199,7 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *DomainResult, templates 
 			finalFindings = cleanedFindings
 		}
 
+		logger.Debug().Msgf("Adding %s to WebApp collection: %s", domainResult.Domain, webAppClassification)
 		rp.webApps = append(rp.webApps, &Discovery{
 			Domain:       domainResult.Domain,
 			Title:        domainResult.Title,
@@ -191,6 +212,7 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *DomainResult, templates 
 
 	// Add to API collection if it has api classification
 	if apiClassification != "" {
+		logger := GetLogger()
 		apiFindings := rp.filterFindingsByClassification(findings, findingsMap, "api")
 		cleanedFindings := rp.cleanFindingsArray(apiFindings)
 
@@ -204,6 +226,7 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *DomainResult, templates 
 			finalMap, finalFindings = buildTechFindings("api")
 		}
 
+		logger.Debug().Msgf("Adding %s to API collection: %s", domainResult.Domain, apiClassification)
 		rp.apis = append(rp.apis, &Discovery{
 			Domain:       domainResult.Domain,
 			Title:        domainResult.Title,
@@ -218,6 +241,7 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *DomainResult, templates 
 
 	// Add to API Spec collection if it has api-spec classification
 	if apiSpecClassification != "" {
+		logger := GetLogger()
 		apiSpecFindings := rp.filterFindingsByClassification(findings, findingsMap, "api-spec")
 		cleanedFindings := rp.cleanFindingsArray(apiSpecFindings)
 
@@ -230,6 +254,7 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *DomainResult, templates 
 			finalFindings = cleanedFindings
 		}
 
+		logger.Debug().Msgf("Adding %s to API Spec collection: %s", domainResult.Domain, apiSpecClassification)
 		rp.apiSpecs = append(rp.apiSpecs, &Discovery{
 			Domain:       domainResult.Domain,
 			Title:        domainResult.Title,
@@ -244,6 +269,7 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *DomainResult, templates 
 
 	// Add to AI collection if it has ai classification
 	if aiClassification != "" {
+		logger := GetLogger()
 		aiFindings := rp.filterFindingsByClassification(findings, findingsMap, "ai")
 		cleanedFindings := rp.cleanFindingsArray(aiFindings)
 
@@ -256,6 +282,7 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *DomainResult, templates 
 			finalFindings = cleanedFindings
 		}
 
+		logger.Debug().Msgf("Adding %s to AI collection: %s", domainResult.Domain, aiClassification)
 		rp.aiAssets = append(rp.aiAssets, &Discovery{
 			Domain:       domainResult.Domain,
 			Title:        domainResult.Title,
@@ -289,6 +316,8 @@ func (rp *ResultProcessor) extractFindingsWithSlugs(findings map[string]bool) *f
 			displayNameToSlug[displayName] = slug
 		} else {
 			// Fallback for items without slugs (shouldn't happen)
+			logger := GetLogger()
+			logger.Warning().Msgf("Finding without slug detected: %s (using fallback)", combined)
 			displayNames = append(displayNames, combined)
 			displayNameToSlug[combined] = strings.ToLower(strings.ReplaceAll(combined, " ", "-"))
 		}
@@ -303,10 +332,12 @@ func (rp *ResultProcessor) extractFindingsWithSlugs(findings map[string]bool) *f
 
 // buildFindingItems creates FindingItem array from display names
 func (rp *ResultProcessor) buildFindingItems(displayNames []string, findingsMap *findingsWithSlugs, templates map[string]*StoredResult) []*FindingItem {
+	logger := GetLogger()
 	items := make([]*FindingItem, 0, len(displayNames))
 	for _, displayName := range displayNames {
 		slug, exists := findingsMap.displayNameToSlug[displayName]
 		if !exists {
+			logger.Debug().Msgf("Slug not found for display name %s, using fallback", displayName)
 			slug = strings.ToLower(strings.ReplaceAll(displayName, " ", "-"))
 		}
 		item := NewFindingItem(slug)
@@ -352,6 +383,10 @@ func (rp *ResultProcessor) updateSummary(domainResult *DomainResult) {
 
 // buildReport constructs the final report
 func (rp *ResultProcessor) buildReport() *ExposureReport {
+	logger := GetLogger()
+	logger.Debug().Msgf("Building final report: %d APIs, %d API specs, %d AI assets, %d web apps",
+		len(rp.apis), len(rp.apiSpecs), len(rp.aiAssets), len(rp.webApps))
+
 	// Sort results
 	sort.Slice(rp.apis, func(i, j int) bool {
 		return rp.apis[i].Domain < rp.apis[j].Domain
@@ -415,6 +450,9 @@ func (rp *ResultProcessor) buildReport() *ExposureReport {
 	rp.summary.AIAssetsFound = len(rp.aiAssets)
 	rp.summary.WebAppsFound = len(rp.webApps)
 	rp.summary.TotalApps = rp.summary.APIsFound + rp.summary.AIAssetsFound + rp.summary.WebAppsFound
+
+	logger.Debug().Msgf("Summary calculated: %d total apps, %d live domains, %d detections",
+		rp.summary.TotalApps, rp.summary.LiveExposedDomains, rp.summary.TotalDetections)
 
 	return &ExposureReport{
 		Summary: rp.summary,

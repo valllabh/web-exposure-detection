@@ -18,6 +18,9 @@ Technical documentation for web-exposure-detection.
 ### Nuclei Templates
 [how-to-write-nuclei-template.md](./how-to-write-nuclei-template.md) - DSL patterns, hierarchical keys, findings.json integration, CVE statistics
 
+### Logging System
+[logging.md](./logging.md) - Logging strategy, levels, gologger usage, migration guide, best practices
+
 ### Security & Supply Chain
 
 - [SECURITY.md](./SECURITY.md) - Security scanning tools (gosec, Trivy, Nancy, CodeQL, golangci-lint)

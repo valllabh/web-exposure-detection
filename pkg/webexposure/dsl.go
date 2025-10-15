@@ -13,13 +13,16 @@ import (
 // init registers custom DSL functions globally before any other package initialization
 // This MUST run before nuclei package is initialized to ensure custom functions are available
 func init() {
+	logger := GetLogger()
+
 	// Register to_value_group function: to_value_group(key, values...) -> <f><k>key</k><vg><v>base64(val)</v>...</vg></f>
-	_ = dsl.AddFunction(dsl.NewWithPositionalArgs(
+	err := dsl.AddFunction(dsl.NewWithPositionalArgs(
 		"to_value_group",
 		-1,    // Accept variable number of arguments
 		false, // Not cacheable
 		func(args ...interface{}) (interface{}, error) {
 			if len(args) < 1 {
+				GetLogger().Debug().Msg("to_value_group called with no key, returning empty")
 				return "", nil // Empty result if no key provided
 			}
 
@@ -31,6 +34,7 @@ func init() {
 
 			// If no values provided, return empty
 			if len(values) == 0 {
+				GetLogger().Debug().Msgf("to_value_group called with key '%s' but no values, returning empty", key)
 				return "", nil
 			}
 
@@ -73,9 +77,17 @@ func init() {
 			vgroup.WriteString("</vg>")
 
 			// Return complete finding structure - key is plain text, values are base64
-			return fmt.Sprintf("<f><k>%s</k>%s</f>", key, vgroup.String()), nil
+			result := fmt.Sprintf("<f><k>%s</k>%s</f>", key, vgroup.String())
+			GetLogger().Debug().Msgf("to_value_group: generated finding for key '%s' with %d values", key, len(values))
+			return result, nil
 		},
 	))
+
+	if err != nil {
+		logger.Error().Msgf("Failed to register DSL function to_value_group: %v", err)
+	} else {
+		logger.Debug().Msg("Registered custom DSL function: to_value_group")
+	}
 
 	// Update Nuclei's HelperFunctions to include our custom function
 	// This is what Nuclei uses when compiling DSL expressions in templates

@@ -10,13 +10,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/projectdiscovery/gologger"
 	nuclei "github.com/projectdiscovery/nuclei/v3/lib"
 	"github.com/projectdiscovery/nuclei/v3/pkg/output"
 )
 
 // NewStoredResult creates StoredResult from output.ResultEvent
 func NewStoredResult(event *output.ResultEvent) *StoredResult {
+	logger := GetLogger()
+
 	result := &StoredResult{
 		Host:        event.Host,
 		TemplateID:  event.TemplateID,
@@ -24,15 +25,15 @@ func NewStoredResult(event *output.ResultEvent) *StoredResult {
 	}
 
 	// VERBOSE: Log ExtractedResults to debug
-	gologger.Debug().Msgf("NewStoredResult: Host=%s, TemplateID=%s, MatcherName=%s, ExtractedResults=%d items",
+	logger.Debug().Msgf("NewStoredResult: Host=%s, TemplateID=%s, MatcherName=%s, ExtractedResults=%d items",
 		event.Host, event.TemplateID, event.MatcherName, len(event.ExtractedResults))
 	for i, extracted := range event.ExtractedResults {
-		gologger.Debug().Msgf("  ExtractedResults[%d]: %q", i, extracted)
+		logger.Debug().Msgf("  ExtractedResults[%d]: %q", i, extracted)
 	}
 
 	// Parse ExtractedResults - all templates now use generic <f><k></k><vg><v></v></vg></f> format
 	if len(event.ExtractedResults) == 0 {
-		gologger.Debug().Msg("No ExtractedResults, returning minimal result")
+		logger.Debug().Msg("No ExtractedResults, returning minimal result")
 		return result
 	}
 
@@ -40,12 +41,12 @@ func NewStoredResult(event *output.ResultEvent) *StoredResult {
 	findingsMap := make(map[string][]string)
 
 	for i, extractedStr := range event.ExtractedResults {
-		gologger.Debug().Msgf("Processing extraction[%d]: %q", i, extractedStr)
+		logger.Debug().Msgf("Processing extraction[%d]: %q", i, extractedStr)
 
 		// Parse the <f> block
 		var finding FindingXML
 		if err := xml.Unmarshal([]byte(extractedStr), &finding); err != nil {
-			gologger.Warning().Msgf("Failed to unmarshal FindingXML[%d]: %v, raw: %q", i, err, extractedStr)
+			logger.Warning().Msgf("Failed to unmarshal FindingXML[%d]: %v, raw: %q", i, err, extractedStr)
 			continue
 		}
 
@@ -57,7 +58,7 @@ func NewStoredResult(event *output.ResultEvent) *StoredResult {
 		for _, encodedVal := range finding.ValueGroup.Values {
 			valBytes, err := base64.StdEncoding.DecodeString(encodedVal)
 			if err != nil {
-				gologger.Warning().Msgf("Failed to decode value for key %q: %v", key, err)
+				logger.Warning().Msgf("Failed to decode value for key %q: %v", key, err)
 				continue
 			}
 			values = append(values, string(valBytes))
@@ -66,12 +67,12 @@ func NewStoredResult(event *output.ResultEvent) *StoredResult {
 		// Store in map
 		if len(values) > 0 {
 			findingsMap[key] = values
-			gologger.Debug().Msgf("Decoded finding: key=%q, values=%v", key, values)
+			logger.Debug().Msgf("Decoded finding: key=%q, values=%v", key, values)
 		}
 	}
 
 	result.Findings = findingsMap
-	gologger.Info().Msgf("Parsed %d findings for %s (template: %s)",
+	logger.Info().Msgf("Parsed %d findings for %s (template: %s)",
 		len(findingsMap), event.Host, event.TemplateID)
 
 	return result
@@ -79,6 +80,8 @@ func NewStoredResult(event *output.ResultEvent) *StoredResult {
 
 // ExecuteNucleiScanWithCallback executes Nuclei scan with callback handling for results
 func ExecuteNucleiScanWithCallback(ne *nuclei.NucleiEngine, opts *NucleiOptions, progress ProgressCallback) ([]*output.ResultEvent, error) {
+	logger := GetLogger()
+
 	// Open progressive results writer if configured
 	var progressiveWriter *os.File
 	var jsonlWriter *bufio.Writer
@@ -94,6 +97,7 @@ func ExecuteNucleiScanWithCallback(ne *nuclei.NucleiEngine, opts *NucleiOptions,
 		// Use larger buffer (1MB) to reduce syscalls for large results
 		jsonlWriter = bufio.NewWriterSize(progressiveWriter, 1024*1024)
 		defer jsonlWriter.Flush()
+		logger.Info().Msgf("Writing progressive results to: %s", opts.ResultsWriter)
 	}
 
 	// Execute scan with progress tracking
@@ -103,6 +107,8 @@ func ExecuteNucleiScanWithCallback(ne *nuclei.NucleiEngine, opts *NucleiOptions,
 	var currentHost string
 	var lastProgressUpdate int
 	var hostStartTimes = make(map[string]time.Time)
+
+	logger.Debug().Msg("Starting Nuclei execution callback handler")
 
 	err := ne.ExecuteWithCallback(func(event *output.ResultEvent) {
 		if event == nil {
@@ -117,7 +123,7 @@ func ExecuteNucleiScanWithCallback(ne *nuclei.NucleiEngine, opts *NucleiOptions,
 			if currentHost != "" && progress != nil {
 				if startTime, exists := hostStartTimes[currentHost]; exists {
 					duration := time.Since(startTime)
-					fmt.Printf("Completed %s (%v)\n", currentHost, duration.Round(100*time.Millisecond))
+					logger.Info().Msgf("Completed %s (%v)", currentHost, duration.Round(100*time.Millisecond))
 				}
 			}
 
@@ -125,7 +131,7 @@ func ExecuteNucleiScanWithCallback(ne *nuclei.NucleiEngine, opts *NucleiOptions,
 			hostStartTimes[currentHost] = time.Now()
 
 			if progress != nil {
-				fmt.Printf("Testing %s\n", currentHost)
+				logger.Info().Msgf("Testing %s", currentHost)
 			}
 		}
 
@@ -161,7 +167,7 @@ func ExecuteNucleiScanWithCallback(ne *nuclei.NucleiEngine, opts *NucleiOptions,
 
 			jsonData, err := json.Marshal(event)
 			if err != nil {
-				fmt.Printf("⚠️  Warning: Failed to marshal result for %s: %v\n", event.Host, err)
+				logger.Warning().Msgf("Failed to marshal result for %s: %v", event.Host, err)
 				return // Skip this result
 			}
 
@@ -172,19 +178,19 @@ func ExecuteNucleiScanWithCallback(ne *nuclei.NucleiEngine, opts *NucleiOptions,
 			n, err := jsonlWriter.Write(jsonData)
 			if err != nil {
 				jsonlMutex.Unlock()
-				fmt.Printf("⚠️  Warning: Failed to write result for %s: %v\n", event.Host, err)
+				logger.Warning().Msgf("Failed to write result for %s: %v", event.Host, err)
 				return // Skip this result
 			}
 			if n != len(jsonData) {
 				jsonlMutex.Unlock()
-				fmt.Printf("⚠️  Warning: Partial write for %s (%d/%d bytes)\n", event.Host, n, len(jsonData))
+				logger.Warning().Msgf("Partial write for %s (%d/%d bytes)", event.Host, n, len(jsonData))
 				return // Skip this result
 			}
 
 			// Write newline
 			if _, err := jsonlWriter.WriteString("\n"); err != nil {
 				jsonlMutex.Unlock()
-				fmt.Printf("⚠️  Warning: Failed to write newline for %s: %v\n", event.Host, err)
+				logger.Warning().Msgf("Failed to write newline for %s: %v", event.Host, err)
 				return // Skip this result
 			}
 
@@ -193,7 +199,7 @@ func ExecuteNucleiScanWithCallback(ne *nuclei.NucleiEngine, opts *NucleiOptions,
 			jsonlWriteCount++
 			if jsonlWriteCount%10 == 0 {
 				if err := jsonlWriter.Flush(); err != nil {
-					fmt.Printf("⚠️  Warning: Failed to flush for %s: %v\n", event.Host, err)
+					logger.Warning().Msgf("Failed to flush for %s: %v", event.Host, err)
 				}
 			}
 
@@ -202,11 +208,12 @@ func ExecuteNucleiScanWithCallback(ne *nuclei.NucleiEngine, opts *NucleiOptions,
 
 		// Show findings as they're discovered
 		if progress != nil {
-			fmt.Printf("Found: %s on %s\n", event.Info.Name, event.Host)
+			logger.Info().Msgf("Found: %s on %s", event.Info.Name, event.Host)
 		}
 	})
 
 	if err != nil {
+		logger.Error().Msgf("Nuclei execution failed: %v", err)
 		return nil, fmt.Errorf("nuclei execution failed: %w", err)
 	}
 
@@ -214,7 +221,7 @@ func ExecuteNucleiScanWithCallback(ne *nuclei.NucleiEngine, opts *NucleiOptions,
 	if currentHost != "" && progress != nil {
 		if startTime, exists := hostStartTimes[currentHost]; exists {
 			duration := time.Since(startTime)
-			fmt.Printf("Completed %s (%v)\n", currentHost, duration.Round(100*time.Millisecond))
+			logger.Info().Msgf("Completed %s (%v)", currentHost, duration.Round(100*time.Millisecond))
 		}
 	}
 
@@ -222,6 +229,8 @@ func ExecuteNucleiScanWithCallback(ne *nuclei.NucleiEngine, opts *NucleiOptions,
 	if progress != nil {
 		progress.OnNucleiScanComplete(testCount, len(results))
 	}
+
+	logger.Info().Msgf("Nuclei scan complete: %d tests performed, %d findings", testCount, len(results))
 
 	return results, nil
 }

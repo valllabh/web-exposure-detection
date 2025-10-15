@@ -15,6 +15,9 @@ import (
 
 // generatePDF generates a PDF from HTML using rod library
 func (s *scanner) generatePDF(htmlPath, pdfPath string) error {
+	logger := GetLogger()
+	logger.Debug().Msg("Initializing headless browser for PDF generation")
+
 	launcher := launcher.New().Headless(true)
 	defer launcher.Cleanup()
 	url := launcher.MustLaunch()
@@ -23,10 +26,12 @@ func (s *scanner) generatePDF(htmlPath, pdfPath string) error {
 
 	absPath, err := filepath.Abs(htmlPath)
 	if err != nil {
+		logger.Error().Msgf("Failed to get absolute path for HTML file: %v", err)
 		return fmt.Errorf("failed to get absolute path: %w", err)
 	}
 
 	fileURL := "file://" + absPath
+	logger.Debug().Msgf("Loading HTML from: %s", fileURL)
 	page := browser.MustPage(fileURL)
 	defer page.MustClose()
 
@@ -50,18 +55,22 @@ func (s *scanner) generatePDF(htmlPath, pdfPath string) error {
 		PreferCSSPageSize:       true,
 	})
 	if err != nil {
+		logger.Error().Msgf("Failed to generate PDF from HTML: %v", err)
 		return fmt.Errorf("failed to generate PDF: %w", err)
 	}
 
 	pdfBytes, err := io.ReadAll(pdfData)
 	if err != nil {
+		logger.Error().Msgf("Failed to read PDF data stream: %v", err)
 		return fmt.Errorf("failed to read PDF data: %w", err)
 	}
 
 	err = os.WriteFile(pdfPath, pdfBytes, 0644)
 	if err != nil {
+		logger.Error().Msgf("Failed to write PDF file to %s: %v", pdfPath, err)
 		return fmt.Errorf("failed to write PDF file: %w", err)
 	}
 
+	logger.Info().Msgf("PDF report generated successfully: %s", pdfPath)
 	return nil
 }
