@@ -48,6 +48,29 @@ archives:
 
 checksum:
   name_template: "checksums.txt"
+  algorithm: sha256
+
+# SBOM generation for supply chain security
+sboms:
+  - id: default
+    artifacts: archive
+    documents:
+      - "{{ .ProjectName }}_{{ .Version }}_sbom.spdx.json"
+
+# Sign artifacts for verification
+signs:
+  - cmd: cosign
+    env:
+      - COSIGN_EXPERIMENTAL=1
+    certificate: "${artifact}.pem"
+    args:
+      - sign-blob
+      - "--yes"
+      - "--output-certificate=${certificate}"
+      - "--output-signature=${signature}"
+      - "${artifact}"
+    artifacts: all
+    output: true
 
 snapshot:
   version_template: "{{ incpatch .Version }}-next"

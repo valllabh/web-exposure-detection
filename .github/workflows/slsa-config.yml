@@ -1,0 +1,34 @@
+# SLSA Build Configuration
+version: 1
+
+# Build targets for different platforms
+goos:
+  - linux
+  - darwin
+  - windows
+
+goarch:
+  - amd64
+  - arm64
+
+# Build flags
+flags:
+  - -trimpath
+  - -mod=readonly
+
+# Build environment variables
+env:
+  - CGO_ENABLED=0
+
+# Binary name
+binary: web-exposure-detection
+
+# Main package path
+main: .
+
+# LDFLAGS for version injection
+ldflags:
+  - "-s -w"
+  - "-X main.version={{ .Env.VERSION }}"
+  - "-X main.commit={{ .Env.GITHUB_SHA }}"
+  - "-X main.date={{ .Env.BUILD_DATE }}"

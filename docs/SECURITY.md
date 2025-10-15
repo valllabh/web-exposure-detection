@@ -184,6 +184,16 @@ For security vulnerabilities:
 3. Include: Description, impact, reproduction steps
 4. Expected response: Within 48 hours
 
+## Supply Chain Security
+
+This project implements SLSA Level 3 compliance for supply chain security:
+- Build provenance generation
+- Artifact signing with cosign
+- SBOM generation
+- OpenSSF Scorecard monitoring
+
+See [SLSA.md](./SLSA.md) for complete supply chain security documentation.
+
 ## Resources
 
 - [gosec Documentation](https://github.com/securego/gosec)
@@ -191,3 +201,5 @@ For security vulnerabilities:
 - [Nancy Documentation](https://github.com/sonatype-nexus-community/nancy)
 - [CodeQL Documentation](https://codeql.github.com/)
 - [OWASP Go Security](https://owasp.org/www-project-go-secure-coding-practices-guide/)
+- [SLSA Framework](https://slsa.dev/)
+- [OpenSSF Scorecard](https://github.com/ossf/scorecard)
