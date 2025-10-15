@@ -1,4 +1,4 @@
-.PHONY: build test test-unit test-integration test-e2e test-validation test-all test-targets clean deps lint run help list-templates update-cve-stats
+.PHONY: build test test-unit test-integration test-e2e test-validation test-all test-targets clean deps lint run help list-templates update-cve-stats security sec-gosec sec-trivy sec-nancy sec-all
 
 # Binary name
 BINARY_NAME=web-exposure-detection
@@ -189,6 +189,42 @@ update-cve-stats:
 	fi
 	@python3 scripts/update-findings-cve/update-cve-stats.py
 
+# Security scanning
+security: sec-all
+
+# Run gosec security scanner
+sec-gosec:
+	@echo "Running gosec security scanner..."
+	@if ! command -v gosec >/dev/null 2>&1; then \
+		echo "Installing gosec..."; \
+		go install github.com/securego/gosec/v2/cmd/gosec@latest; \
+	fi
+	@gosec -fmt=json -out=gosec-report.json ./...
+	@gosec ./...
+
+# Run Trivy vulnerability scanner
+sec-trivy:
+	@echo "Running Trivy vulnerability scanner..."
+	@if ! command -v trivy >/dev/null 2>&1; then \
+		echo "❌ trivy not installed. Install from: https://github.com/aquasecurity/trivy"; \
+		exit 1; \
+	fi
+	@trivy fs --security-checks vuln,config --severity HIGH,CRITICAL .
+
+# Run Nancy dependency scanner
+sec-nancy:
+	@echo "Running Nancy dependency scanner..."
+	@if ! command -v nancy >/dev/null 2>&1; then \
+		echo "Installing nancy..."; \
+		go install github.com/sonatype-nexus-community/nancy@latest; \
+	fi
+	@go list -json -deps ./... | nancy sleuth
+
+# Run all security scans
+sec-all: sec-gosec sec-nancy
+	@echo "✅ All security scans completed"
+	@echo "Note: Install trivy to run vulnerability scanning (sec-trivy)"
+
 # Show help
 help:
 	@echo "Available targets:"
@@ -226,4 +262,13 @@ help:
 	@echo "  lint               - Run code formatters and linters"
 	@echo "  clean              - Clean build artifacts"
 	@echo "  update-cve-stats   - Update CVE statistics for findings.json"
+	@echo ""
+	@echo "Security Analysis:"
+	@echo "  security           - Run all security scans (alias for sec-all)"
+	@echo "  sec-gosec          - Run gosec security scanner"
+	@echo "  sec-trivy          - Run Trivy vulnerability scanner"
+	@echo "  sec-nancy          - Run Nancy dependency scanner"
+	@echo "  sec-all            - Run all security scans"
+	@echo ""
+	@echo "Help:"
 	@echo "  help               - Show this help message"

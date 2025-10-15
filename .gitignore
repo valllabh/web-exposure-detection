@@ -57,3 +57,7 @@ temp/
 ref/
 
 results/*
+# Security scan reports
+gosec-report.json
+trivy-results.sarif
+nancy-report.txt
