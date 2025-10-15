@@ -1,22 +1,25 @@
 id: api-server-detection
 info:
-  name: API Server Detected
+  name: API Server Detection
   author: Vallabh
   severity: info
-  description: |
-    Detects signs of API Server
-  tags: http,api
+  description: Detects API servers by checking content-type headers for JSON/XML responses
+  tags: api,json,xml,rest,detection
+
 http:
   - method: GET
     path:
       - "{{BaseURL}}"
-    redirects: true
-    max-redirects: 10
-    matchers-condition: or
-    matchers:
-      # detect if api resonse is of type application
-      - type: word
+    extractors:
+      - type: kval
+        name: content_type
         part: header
-        words:
-          - "application/json"
-          - "application/xml"
+        internal: true
+        kval:
+          - content_type
+      - type: dsl
+        dsl:
+          - 'contains(tolower(content_type), "application/json") ? to_value_group("api.server.json", "json") : ""'
+      - type: dsl
+        dsl:
+          - 'contains(tolower(content_type), "application/xml") ? to_value_group("api.server.xml", "xml") : ""'

@@ -244,3 +244,32 @@ func extractDomainFromURL(url string) string {
 	}
 	return domain
 }
+
+// createDirectDomainList creates a domain-scan.json with provided domains (skips discovery)
+func (s *scanner) createDirectDomainList(domains []string, resultsDir string) ([]string, error) {
+	cacheFile := filepath.Join(resultsDir, "domain-scan.json")
+
+	// Convert domains to HTTPS URLs (default assumption)
+	var urls []string
+	for _, domain := range domains {
+		httpsURL := "https://" + domain
+		urls = append(urls, httpsURL)
+	}
+
+	// Save to cache file
+	if err := s.saveDomainsToCache(urls, cacheFile); err != nil {
+		return nil, fmt.Errorf("failed to save domain list: %w", err)
+	}
+
+	// Notify progress callback if set
+	if s.progress != nil {
+		s.progress.OnDomainDiscoveryStart(domains, []string{})
+		s.progress.OnDomainDiscoveryComplete(len(urls), len(domains), 0)
+	}
+
+	fmt.Printf("\nSkipped discovery - using provided domains only\n")
+	fmt.Printf("Total domains: %d\n", len(urls))
+	fmt.Printf("Results saved to: %s\n", cacheFile)
+
+	return urls, nil
+}

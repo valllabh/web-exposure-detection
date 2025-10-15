@@ -71,29 +71,11 @@ func (a *domainScanProgressAdapter) OnEnd(result *domainscan.AssetDiscoveryResul
 	// when we process the final results
 }
 
-//go:embed scan-template-meanings.json
-var templateMeanings embed.FS
-
 // scanTemplatesFS will be set from main package
-var scanTemplatesFS embed.FS
 
 // New creates a new Scanner instance
 func New() (Scanner, error) {
-	s := &scanner{
-		meanings: make(map[string]TemplateMeaning),
-	}
-
-	// Load meanings from scan-template-meanings.json
-	err := s.loadMeanings()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load template meanings: %w", err)
-	}
-
-	if len(s.meanings) == 0 {
-		return nil, fmt.Errorf("no template meanings loaded from scan-template-meanings.json")
-	}
-
-	return s, nil
+	return &scanner{}, nil
 }
 
 // SetProgressCallback sets an optional progress callback for UI updates
@@ -101,15 +83,14 @@ func (s *scanner) SetProgressCallback(callback ProgressCallback) {
 	s.progress = callback
 }
 
-// loadMeanings loads the embedded scan-template-meanings.json file
-func (s *scanner) loadMeanings() error {
-	data, err := templateMeanings.ReadFile("scan-template-meanings.json")
-	if err != nil {
-		// File doesn't exist in embed, continue without meanings
-		return nil
-	}
+// SetVerbose sets verbose mode for detailed logging
+func (s *scanner) SetVerbose(verbose bool) {
+	s.verbose = verbose
+}
 
-	return json.Unmarshal(data, &s.meanings)
+// SetDebug sets debug mode for debug logging
+func (s *scanner) SetDebug(debug bool) {
+	s.debug = debug
 }
 
 // extractEmbeddedTemplates extracts embedded scan-templates to a temporary directory
@@ -184,18 +165,18 @@ func applyPresetToNucleiOptions(opts *NucleiOptions, preset ScanPreset) {
 	switch preset {
 	case PresetFast:
 		// Fast preset: Aggressive scanning for speed
-		opts.RateLimit = 50      // High request rate
-		opts.BulkSize = 10       // Larger bulk requests
-		opts.Concurrency = 10    // High concurrency
-		opts.Timeout = 30        // Shorter timeout
-		opts.Delay = 0           // No delay between requests
+		opts.RateLimit = 50   // High request rate
+		opts.BulkSize = 10    // Larger bulk requests
+		opts.Concurrency = 10 // High concurrency
+		opts.Timeout = 30     // Shorter timeout
+		opts.Delay = 0        // No delay between requests
 	case PresetSlow:
 		// Slow preset: Conservative scanning for stability (default)
-		opts.RateLimit = 15      // Moderate request rate
-		opts.BulkSize = 5        // Smaller bulk requests
-		opts.Concurrency = 3     // Low concurrency
-		opts.Timeout = 60        // Longer timeout for slow responses
-		opts.Delay = 2           // 2 second delay between requests
+		opts.RateLimit = 15  // Moderate request rate
+		opts.BulkSize = 5    // Smaller bulk requests
+		opts.Concurrency = 3 // Low concurrency
+		opts.Timeout = 60    // Longer timeout for slow responses
+		opts.Delay = 2       // 2 second delay between requests
 	default:
 		// Default to slow preset
 		opts.RateLimit = 15
@@ -213,11 +194,11 @@ func (s *scanner) Scan(domains []string, keywords []string) error {
 
 // ScanWithOptions performs the complete scan pipeline with caching support
 func (s *scanner) ScanWithOptions(domains []string, keywords []string, templates []string, force bool) error {
-	return s.ScanWithPreset(domains, keywords, templates, force, PresetSlow)
+	return s.ScanWithPreset(domains, keywords, templates, force, PresetSlow, false)
 }
 
 // ScanWithPreset performs the complete scan pipeline with preset configuration
-func (s *scanner) ScanWithPreset(domains []string, keywords []string, templates []string, force bool, preset ScanPreset) error {
+func (s *scanner) ScanWithPreset(domains []string, keywords []string, templates []string, force bool, preset ScanPreset, skipDiscovery bool) error {
 	if len(domains) == 0 {
 		return fmt.Errorf("no domains provided")
 	}
@@ -256,10 +237,20 @@ func (s *scanner) ScanWithPreset(domains []string, keywords []string, templates 
 		return fmt.Errorf("failed to create results directory: %w", err)
 	}
 
-	// Step 2: Domain Discovery with caching (using original method for now)
-	discoveredURLs, err := s.discoverDomainsWithCache(normalizedDomains, keywords, resultsDir, force)
-	if err != nil {
-		return fmt.Errorf("domain discovery failed: %w", err)
+	// Step 2: Domain Discovery with caching or skip if flag is set
+	var discoveredURLs []string
+	if skipDiscovery {
+		// Skip discovery and create domain-scan.json with provided domains only
+		discoveredURLs, err = s.createDirectDomainList(normalizedDomains, resultsDir)
+		if err != nil {
+			return fmt.Errorf("failed to create domain list: %w", err)
+		}
+	} else {
+		// Run domain discovery with caching
+		discoveredURLs, err = s.discoverDomainsWithCache(normalizedDomains, keywords, resultsDir, force)
+		if err != nil {
+			return fmt.Errorf("domain discovery failed: %w", err)
+		}
 	}
 
 	// Prepare nuclei results directory
@@ -275,20 +266,16 @@ func (s *scanner) ScanWithPreset(domains []string, keywords []string, templates 
 		IncludeTags:         []string{},
 		ExcludeTags:         []string{"ssl"},
 		Headless:            true,
-		OmitTemplate:        true,
-		OmitResponse:        true, // Omit large response/request bodies to reduce file size
+		OmitTemplate:        false, // Keep template info to get ExtractedResults
+		OmitResponse:        false, // Keep response to get ExtractedResults
 		FollowHostRedirects: true,
 		ShowMatchLine:       true,
 		ResultsWriter:       filepath.Join(nucleiResultsDir, "results.jsonl"), // Progressive JSONL writer
+		Verbose:             s.verbose,
 	}
 
 	// Apply preset configuration (RateLimit, BulkSize, Concurrency, Timeout, Delay)
 	applyPresetToNucleiOptions(nucleiOptions, preset)
-
-	// Step 1.6: Validate template meanings before starting scan
-	if err := s.ValidateTemplateMeanings(nucleiOptions.TemplatesPath); err != nil {
-		return fmt.Errorf("template validation failed: %w", err)
-	}
 
 	// Step 2: Nuclei Scanning with result storage
 	nucleiResults, err := s.runNucleiScanWithStorage(discoveredURLs, nucleiOptions, resultsDir)
@@ -369,28 +356,20 @@ func (s *scanner) GenerateReportFromExistingResults(domains []string, debug bool
 		return fmt.Errorf("failed to create results directory: %w", err)
 	}
 
-	// Step 1.5: Extract embedded scan-templates to temporary directory
-	tempTemplatesDir2, err := s.extractEmbeddedTemplates()
-	if err != nil {
-		return fmt.Errorf("failed to extract embedded templates: %w", err)
-	}
-
-	// Step 2: Validate template meanings
-	nucleiOptions := &NucleiOptions{
-		TemplatesPath: tempTemplatesDir2,
-	}
-	if err := s.ValidateTemplateMeanings(nucleiOptions.TemplatesPath); err != nil {
-		return fmt.Errorf("template validation failed: %w", err)
-	}
-
-	// Step 2: Load existing Nuclei results
-	nucleiResults, err := s.loadExistingNucleiResults(resultsDir)
+	// Step 1: Load existing Nuclei results (already grouped)
+	groupedResults, err := s.loadExistingNucleiResults(resultsDir)
 	if err != nil {
 		return fmt.Errorf("failed to load existing nuclei results: %w", err)
 	}
 
-	// Step 3: Hand off to report generation with nuclei results
-	return s.generateReportsFromNucleiResults(nucleiResults, targetDomain, resultsDir)
+	// Step 3: Generate report from grouped results
+	report, err := s.GenerateReport(groupedResults, targetDomain)
+	if err != nil {
+		return fmt.Errorf("report generation failed: %w", err)
+	}
+
+	// Write JSON and generate HTML/PDF
+	return s.writeAndGenerateFormats(report, resultsDir)
 }
 
 // generateReportsFromNucleiResults handles complete report generation orchestration
@@ -408,19 +387,25 @@ func (s *scanner) generateReportsFromNucleiResults(nucleiResults []*output.Resul
 		return fmt.Errorf("report generation failed: %w", err)
 	}
 
-	// Step 3: Write JSON to results directory
-	err = s.writeJSONToResults(report, resultsDir)
+	// Step 3: Write JSON and generate HTML/PDF
+	return s.writeAndGenerateFormats(report, resultsDir)
+}
+
+// writeAndGenerateFormats writes JSON report and generates HTML/PDF
+func (s *scanner) writeAndGenerateFormats(report *ExposureReport, resultsDir string) error {
+	// Write JSON to results directory
+	err := s.writeJSONToResults(report, resultsDir)
 	if err != nil {
 		return err
 	}
 
-	// Step 4: Generate HTML report
+	// Generate HTML report
 	err = s.generateHTMLReport(report, resultsDir)
 	if err != nil {
 		// Log warning but don't fail the entire process
 		fmt.Printf("⚠️  Warning: Failed to generate HTML report: %v\n", err)
 	} else {
-		// Step 5: Generate PDF from HTML
+		// Generate PDF from HTML
 		htmlPath := filepath.Join(resultsDir, "report", "index.html")
 		pdfPath := filepath.Join(resultsDir, report.ReportMetadata.TargetDomain+"-web-exposure-report.pdf")
 
@@ -429,7 +414,7 @@ func (s *scanner) generateReportsFromNucleiResults(nucleiResults []*output.Resul
 			// Log warning but don't fail the entire process
 			fmt.Printf("⚠️  Warning: Failed to generate PDF report: %v\n", err)
 		} else {
-			// Step 6: Clean up HTML report directory after successful PDF generation (skip if debug mode)
+			// Clean up HTML report directory after successful PDF generation (skip if debug mode)
 			if !s.debug {
 				reportDir := filepath.Join(resultsDir, "report")
 				if err := os.RemoveAll(reportDir); err != nil {
@@ -489,38 +474,55 @@ func (s *scanner) RunNucleiScanWithProtocol(targets map[string]*domainscan.Domai
 	return s.RunNucleiScan(urls, opts)
 }
 
-// Helper functions for domain processing
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
+// mergeStoredResults merges two StoredResult objects from same [Host][TemplateID]
+func mergeStoredResults(existing, newResult *StoredResult) *StoredResult {
+	// Start with existing result
+	merged := &StoredResult{
+		Host:        existing.Host,
+		TemplateID:  existing.TemplateID,
+		MatcherName: existing.MatcherName,
 	}
-	return false
+
+	// If newResult has non-empty MatcherName, use it
+	if newResult.MatcherName != "" {
+		merged.MatcherName = newResult.MatcherName
+	}
+
+	// Merge Findings maps
+	merged.Findings = make(map[string][]string)
+
+	// Copy existing findings
+	for k, v := range existing.Findings {
+		merged.Findings[k] = v
+	}
+
+	// Merge new findings (new values overwrite existing)
+	for k, v := range newResult.Findings {
+		merged.Findings[k] = v
+	}
+
+	return merged
 }
 
-func removeDuplicates(slice []string) []string {
-	keys := make(map[string]bool)
-	var result []string
-
-	for _, item := range slice {
-		if !keys[item] {
-			keys[item] = true
-			result = append(result, item)
-		}
-	}
-	return result
-}
-
-// AggregateResults replicates the jq logic from run-result-aggr.sh
+// AggregateResults converts output.ResultEvent to StoredResult and groups by domain/template
 func (s *scanner) AggregateResults(results []*output.ResultEvent) (*GroupedResults, error) {
-	grouped := make(map[string]map[string]*output.ResultEvent)
+	grouped := make(map[string]map[string]*StoredResult)
 
 	for _, result := range results {
 		if grouped[result.Host] == nil {
-			grouped[result.Host] = make(map[string]*output.ResultEvent)
+			grouped[result.Host] = make(map[string]*StoredResult)
 		}
-		grouped[result.Host][result.TemplateID] = result
+
+		// Check if we already have a result for this [Host][TemplateID]
+		existingResult := grouped[result.Host][result.TemplateID]
+		if existingResult != nil {
+			// Merge the new result with existing result
+			mergedResult := mergeStoredResults(existingResult, NewStoredResult(result))
+			grouped[result.Host][result.TemplateID] = mergedResult
+		} else {
+			// First result for this [Host][TemplateID]
+			grouped[result.Host][result.TemplateID] = NewStoredResult(result)
+		}
 	}
 
 	return &GroupedResults{Domains: grouped}, nil
@@ -569,114 +571,8 @@ func (s *scanner) NormalizeAndClean(input string) []string {
 	return result
 }
 
-func (s *scanner) ClassifyAsAPI(templates map[string]*output.ResultEvent) (string, string) {
-	// Create a temporary ResultProcessor to use its classification logic
-	processor := NewResultProcessor(s.meanings)
-
-	// Process templates to get findings
-	var allFindings []string
-
-	for templateID, event := range templates {
-		meaning, exists := s.meanings[templateID]
-		if !exists {
-			continue
-		}
-
-		findings := meaning.FindingTemplate.Process(event)
-		allFindings = append(allFindings, findings...)
-	}
-
-	discovered := processor.classifyAsAPI(templates, allFindings)
-	findingsText := processor.cleanFindings(allFindings)
-
-	return discovered, findingsText
-}
-
-func (s *scanner) ClassifyAsWebApp(templates map[string]*output.ResultEvent) (string, string, []string) {
-	// Create a temporary ResultProcessor to use its classification logic
-	processor := NewResultProcessor(s.meanings)
-
-	// Process templates to get detections, findings, and technologies
-	var allDetections []string
-	var allFindings []string
-	var technologies []string
-
-	for templateID, event := range templates {
-		meaning, exists := s.meanings[templateID]
-		if !exists {
-			continue
-		}
-
-		detections := meaning.DetectionTemplate.Process(event)
-		allDetections = append(allDetections, detections...)
-
-		findings := meaning.FindingTemplate.Process(event)
-		allFindings = append(allFindings, findings...)
-
-		// Extract technologies from specific templates
-		if processor.isTechnologyTemplate(templateID) && event.ExtractedResults != nil {
-			for _, tech := range event.ExtractedResults {
-				if tech != "" {
-					technologies = append(technologies, tech)
-				}
-			}
-		}
-	}
-
-	discovered := processor.classifyAsWebApp(templates)
-	findingsText := processor.cleanFindings(allFindings)
-
-	return discovered, findingsText, technologies
-}
-
 func (s *scanner) WriteJSONReport(report *ExposureReport, filename string) error {
 	return s.writeJSONReport(report, filename)
-}
-
-// ValidateTemplateMeanings checks that all scan templates have corresponding meanings
-func (s *scanner) ValidateTemplateMeanings(templatesPath string) error {
-	// 1. Discover all template files in scan-templates directory
-	templateFiles, err := s.discoverTemplateFiles(templatesPath)
-	if err != nil {
-		return fmt.Errorf("failed to discover template files in %s: %w", templatesPath, err)
-	}
-
-	if len(templateFiles) == 0 {
-		return fmt.Errorf("no template files found in %s", templatesPath)
-	}
-
-	// 2. Extract template IDs from each template file
-	templateIDs, err := s.extractTemplateIDs(templateFiles)
-	if err != nil {
-		return fmt.Errorf("failed to extract template IDs: %w", err)
-	}
-
-	// 3. Check that each template ID has a meaning
-	var missingMeanings []string
-	for _, templateID := range templateIDs {
-		if _, exists := s.meanings[templateID]; !exists {
-			missingMeanings = append(missingMeanings, templateID)
-		}
-	}
-
-	// 4. Return error if any meanings are missing
-	if len(missingMeanings) > 0 {
-		return fmt.Errorf(`
-Template validation failed: %d templates missing meanings in scan-template-meanings.json
-
-Missing meanings for:
-- %s
-
-Please add meanings for these templates before running scan.
-Total templates found: %d
-Templates with meanings: %d`,
-			len(missingMeanings),
-			strings.Join(missingMeanings, "\n- "),
-			len(templateIDs),
-			len(templateIDs)-len(missingMeanings))
-	}
-
-	return nil
 }
 
 // discoverTemplateFiles finds all template files in the given directory
@@ -798,18 +694,8 @@ func (s *scanner) runNucleiScanWithStorage(targets []string, opts *NucleiOptions
 	return results, nil
 }
 
-// saveNucleiResults saves nuclei results to JSON file
-func (s *scanner) saveNucleiResults(results []*output.ResultEvent, filename string) error {
-	data, err := json.MarshalIndent(results, "", "  ")
-	if err != nil {
-		return err
-	}
-
-	return os.WriteFile(filename, data, 0644)
-}
-
-// loadExistingNucleiResults loads existing nuclei results from JSON file
-func (s *scanner) loadExistingNucleiResults(resultsDir string) ([]*output.ResultEvent, error) {
+// loadExistingNucleiResults loads existing nuclei results from JSON file and aggregates them
+func (s *scanner) loadExistingNucleiResults(resultsDir string) (*GroupedResults, error) {
 	nucleiResultsFile := filepath.Join(resultsDir, "nuclei-results", "results.json")
 
 	// Check if the results file exists
@@ -823,13 +709,69 @@ func (s *scanner) loadExistingNucleiResults(resultsDir string) ([]*output.Result
 		return nil, fmt.Errorf("failed to read nuclei results file: %w", err)
 	}
 
-	// Unmarshal the JSON data
-	var results []*output.ResultEvent
-	if err := json.Unmarshal(data, &results); err != nil {
+	// Unmarshal to StoredResult array
+	var storedResults []*StoredResult
+	if err := json.Unmarshal(data, &storedResults); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal nuclei results: %w", err)
 	}
 
-	return results, nil
+	// Group by domain and template
+	grouped := make(map[string]map[string]*StoredResult)
+	for _, result := range storedResults {
+		if grouped[result.Host] == nil {
+			grouped[result.Host] = make(map[string]*StoredResult)
+		}
+		grouped[result.Host][result.TemplateID] = result
+	}
+
+	return &GroupedResults{Domains: grouped}, nil
+}
+
+// consolidateResultsByHost merges all template results for the same host into a single entry
+func consolidateResultsByHost(results []*StoredResult) []*StoredResult {
+	// Group by host
+	hostMap := make(map[string]*StoredResult)
+
+	for _, result := range results {
+		existing, exists := hostMap[result.Host]
+		if !exists {
+			// First result for this host - create consolidated entry with all findings
+			hostMap[result.Host] = &StoredResult{
+				Host:     result.Host,
+				Findings: make(map[string][]string),
+			}
+			existing = hostMap[result.Host]
+		}
+
+		// Merge findings from this template into consolidated entry
+		for key, values := range result.Findings {
+			// If key already exists, append values (avoid duplicates)
+			if existingValues, ok := existing.Findings[key]; ok {
+				// Deduplicate values
+				valueSet := make(map[string]bool)
+				for _, v := range existingValues {
+					valueSet[v] = true
+				}
+				for _, v := range values {
+					if !valueSet[v] {
+						existing.Findings[key] = append(existing.Findings[key], v)
+						valueSet[v] = true
+					}
+				}
+			} else {
+				// New key, just copy values
+				existing.Findings[key] = values
+			}
+		}
+	}
+
+	// Convert map back to slice
+	consolidated := make([]*StoredResult, 0, len(hostMap))
+	for _, result := range hostMap {
+		consolidated = append(consolidated, result)
+	}
+
+	return consolidated
 }
 
 // convertJSONLToJSON converts JSONL (JSON Lines) file to JSON array file
@@ -847,7 +789,7 @@ func (s *scanner) convertJSONLToJSON(jsonlPath, jsonPath string) error {
 	defer jsonlFile.Close()
 
 	// Read and parse each line
-	var results []*output.ResultEvent
+	var results []*StoredResult
 	scanner := bufio.NewScanner(jsonlFile)
 
 	// Increase buffer size to handle large responses (default is 64KB)
@@ -866,6 +808,7 @@ func (s *scanner) convertJSONLToJSON(jsonlPath, jsonPath string) error {
 			continue // Skip empty lines
 		}
 
+		// Unmarshal to output.ResultEvent (JSONL contains full Nuclei events)
 		var event output.ResultEvent
 		if err := json.Unmarshal([]byte(line), &event); err != nil {
 			// Log warning but continue processing other lines
@@ -881,15 +824,20 @@ func (s *scanner) convertJSONLToJSON(jsonlPath, jsonPath string) error {
 			continue
 		}
 
-		results = append(results, &event)
+		// Convert to StoredResult (this does XML parsing of extracted-results)
+		stored := NewStoredResult(&event)
+		results = append(results, stored)
 	}
 
 	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("error reading JSONL file: %w", err)
 	}
 
-	// Write results as JSON array
-	data, err := json.MarshalIndent(results, "", "  ")
+	// Consolidate results: merge all templates for the same host into one entry
+	consolidatedResults := consolidateResultsByHost(results)
+
+	// Write consolidated results as JSON array
+	data, err := json.MarshalIndent(consolidatedResults, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal results: %w", err)
 	}
@@ -900,10 +848,11 @@ func (s *scanner) convertJSONLToJSON(jsonlPath, jsonPath string) error {
 
 	// Report conversion summary
 	if len(skippedLines) > 0 {
-		fmt.Printf("✓ Converted %d results from JSONL to JSON (skipped %d malformed lines: %v)\n",
-			len(results), len(skippedLines), skippedLines)
+		fmt.Printf("✓ Converted %d results from JSONL to JSON (%d hosts, skipped %d malformed lines: %v)\n",
+			len(consolidatedResults), len(consolidatedResults), len(skippedLines), skippedLines)
 	} else {
-		fmt.Printf("✓ Converted %d results from JSONL to JSON\n", len(results))
+		fmt.Printf("✓ Converted %d results from JSONL to JSON (%d hosts)\n",
+			len(consolidatedResults), len(consolidatedResults))
 	}
 
 	return nil

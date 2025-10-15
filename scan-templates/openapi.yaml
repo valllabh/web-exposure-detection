@@ -1,0 +1,108 @@
+id: openapi
+info:
+  name: OpenAPI Specification - Detect
+  author: pdteam,ynnirc
+  severity: info
+  description: OpenAPI specification was detected.
+  reference:
+    - https://www.openapis.org/
+  tags: exposure,api,openapi
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}{{paths}}"
+    redirects: true
+    max-redirects: 10
+    payloads:
+      paths:
+        # JSON files - OpenAPI 3.x spec files
+        - "/openapi.json"
+        - "/api/openapi.json"
+        - "/api/v1/openapi.json"
+        - "/api/v2/openapi.json"
+        - "/api/v3/openapi.json"
+        - "/v1/openapi.json"
+        - "/v2/openapi.json"
+        - "/v3/openapi.json"
+        - "/api-docs/openapi.json"
+        - "/api/api-docs/openapi.json"
+        - "/api/spec/openapi.json"
+        - "/openapi/openapi.json"
+        - "/docs/openapi.json"
+        - "/api/docs/openapi.json"
+        - "/specification/openapi.json"
+        - "/api/specification/openapi.json"
+        - "/.well-known/openapi.json"
+        - "/public/openapi.json"
+        # YAML files - OpenAPI 3.x spec files
+        - "/openapi.yaml"
+        - "/openapi.yml"
+        - "/api/openapi.yaml"
+        - "/api/openapi.yml"
+        - "/api/v1/openapi.yaml"
+        - "/api/v2/openapi.yaml"
+        - "/api/v3/openapi.yaml"
+        - "/v1/openapi.yaml"
+        - "/v2/openapi.yaml"
+        - "/v3/openapi.yaml"
+        - "/api-docs/openapi.yaml"
+        - "/api/api-docs/openapi.yaml"
+        - "/api/spec/openapi.yaml"
+        - "/openapi/openapi.yaml"
+        - "/docs/openapi.yaml"
+        - "/api/docs/openapi.yaml"
+        - "/specification/openapi.yaml"
+        - "/api/specification/openapi.yaml"
+        - "/.well-known/openapi.yaml"
+        - "/public/openapi.yaml"
+    headers:
+      Accept: "application/json, application/yaml, text/html, */*"
+    stop-at-first-match: true
+    matchers-condition: or
+    matchers:
+      # Match OpenAPI 3.x JSON format
+      - type: regex
+        name: openapi_json_spec
+        part: body
+        regex:
+          - '(?i)"openapi"\s*:\s*"3\.'
+      # Match OpenAPI 3.x YAML format
+      - type: regex
+        name: openapi_yaml_spec
+        part: body
+        regex:
+          - '(?i)^openapi:\s*[''"]?3\.'
+      # Match OpenAPI UI tools (Redoc, RapiDoc)
+      - type: regex
+        name: openapi_ui
+        part: body
+        regex:
+          - '(?i)(redoc|rapidoc|<redoc|<rapi-doc)'
+      # Match Swagger UI serving OpenAPI 3.x
+      - type: word
+        name: swagger_ui_openapi
+        part: body
+        words:
+          - 'swagger-ui'
+          - 'openapi'
+        condition: and
+    extractors:
+      - type: regex
+        name: openapi_version
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - '(?i)"openapi"\s*:\s*"([^"]+)"'
+          - '(?i)^openapi:\s*[''"]?([0-9.]+)'
+      - type: regex
+        name: openapi_title
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - '(?i)"title"\s*:\s*"([^"]+)"'
+          - '(?i)^title:\s*[''"]?([^''"\n]+)'
+      - type: dsl
+        dsl:
+          - 'len(openapi_version) > 0 ? to_value_group("api.spec.openapi", matched) : to_value_group("api.spec.openapi", matched)'

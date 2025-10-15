@@ -22,7 +22,12 @@ Examples:
   web-exposure-detection report --debug example.com`,
 	Args: cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		debug, _ := cmd.Flags().GetBool("debug")
+		// Get debug flag
+		debug, err := cmd.Flags().GetBool("debug")
+		if err != nil {
+			return fmt.Errorf("failed to get debug flag: %w", err)
+		}
+
 		// Parse domain arguments - handle both space-separated and comma-separated
 		var domains []string
 		for _, arg := range args {
@@ -46,12 +51,15 @@ Examples:
 			return fmt.Errorf("failed to create scanner: %w", err)
 		}
 
-		// Set up CLI progress handler for command line interface
-		progressHandler := cli.NewCLIProgressHandler()
+		// Set up CLI progress handler for command line interface (no verbose for report command)
+		progressHandler := cli.NewCLIProgressHandler(false)
 		scanner.SetProgressCallback(progressHandler)
 
 		// Generate report from existing results
 		fmt.Printf("Regenerating report for: %v\n", domains)
+		if debug {
+			fmt.Printf("Debug mode: enabled (HTML report will be preserved)\n")
+		}
 
 		err = scanner.GenerateReportFromExistingResults(domains, debug)
 		if err != nil {
@@ -65,5 +73,4 @@ Examples:
 
 func init() {
 	rootCmd.AddCommand(reportCmd)
-	reportCmd.Flags().Bool("debug", false, "Preserve HTML report directory (do not cleanup after PDF generation)")
 }

@@ -75,6 +75,24 @@ Examples:
 			preset = webexposure.PresetSlow // Default to slow
 		}
 
+		// Get verbose flag
+		verbose, err := cmd.Flags().GetBool("verbose")
+		if err != nil {
+			return fmt.Errorf("failed to get verbose flag: %w", err)
+		}
+
+		// Get debug flag
+		debug, err := cmd.Flags().GetBool("debug")
+		if err != nil {
+			return fmt.Errorf("failed to get debug flag: %w", err)
+		}
+
+		// Get skip-discovery flag
+		skipDiscovery, err := cmd.Flags().GetBool("skip-discovery")
+		if err != nil {
+			return fmt.Errorf("failed to get skip-discovery flag: %w", err)
+		}
+
 		// Create scanner
 		scanner, err := webexposure.New()
 		if err != nil {
@@ -82,7 +100,7 @@ Examples:
 		}
 
 		// Set up CLI progress handler for command line interface
-		progressHandler := cli.NewCLIProgressHandler()
+		progressHandler := cli.NewCLIProgressHandler(verbose)
 		scanner.SetProgressCallback(progressHandler)
 
 		// Run scan with CLI interface
@@ -94,8 +112,21 @@ Examples:
 			fmt.Printf("Using specific templates: %v\n", templates)
 		}
 		fmt.Printf("Using preset: %s\n", presetStr)
+		if verbose {
+			fmt.Printf("Verbose mode: enabled\n")
+		}
+		if debug {
+			fmt.Printf("Debug mode: enabled\n")
+		}
+		if skipDiscovery {
+			fmt.Printf("Skip discovery: enabled (will scan only provided domains)\n")
+		}
 
-		err = scanner.ScanWithPreset(domains, keywords, templates, force, preset)
+		// Set verbose and debug flags on scanner
+		scanner.SetVerbose(verbose)
+		scanner.SetDebug(debug)
+
+		err = scanner.ScanWithPreset(domains, keywords, templates, force, preset, skipDiscovery)
 		if err != nil {
 			return fmt.Errorf("scan failed: %w", err)
 		}
@@ -123,4 +154,12 @@ func init() {
 	// Add preset flag
 	scanCmd.Flags().StringP("preset", "p", "slow",
 		"Scan speed preset: 'slow' (default, stable) or 'fast' (aggressive, faster)")
+
+	// Add verbose flag
+	scanCmd.Flags().BoolP("verbose", "v", false,
+		"Enable verbose output for detailed scan progress")
+
+	// Add skip-discovery flag
+	scanCmd.Flags().Bool("skip-discovery", false,
+		"Skip domain discovery and scan only the provided domain(s)")
 }

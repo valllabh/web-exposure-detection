@@ -384,7 +384,7 @@ I want technology information extracted and normalized,
 so that I can understand the technical landscape of discovered services.
 
 #### Acceptance Criteria
-1. Technology extraction uses scan-template-meanings.json for mapping
+1. Technology extraction uses findings.json for display metadata mapping
 2. Framework detection identifies specific versions where available
 3. Web server identification includes nginx, Apache, IIS variants
 4. Technology normalization handles case variations and aliases

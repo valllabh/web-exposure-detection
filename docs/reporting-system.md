@@ -64,11 +64,11 @@ Nuclei Results → AggregateResults() → GenerateReport() → Multi-Format Outp
 **Key Files:**
 - `pkg/webexposure/scanner.go` - Scanning logic + report orchestration
 - `pkg/webexposure/report.go` - Report structure generation
-- `pkg/webexposure/report-html.go` - HTML report generation with embedded templates
-- `pkg/webexposure/report-pdf.go` - PDF generation from HTML
-- `pkg/webexposure/types.go` - Data structures and interfaces
+- `pkg/webexposure/report_html.go` - HTML report generation with embedded templates
+- `pkg/webexposure/report_pdf.go` - PDF generation from HTML
+- `pkg/webexposure/scanner_types.go` - Data structures and interfaces
+- `pkg/webexposure/findings.json` - Finding metadata (display names, icons, classifications)
 - `embed.go` - Embedded scan-templates and templates filesystems
-- `scan-template-meanings.json` - Template configuration with DSL (embedded)
 
 ### Result Processing Architecture
 
@@ -80,103 +80,140 @@ func (rp *ResultProcessor) ProcessAllDomains(grouped *GroupedResults) *ExposureR
 ```
 
 **Processing Steps:**
-1. **Result Aggregation** (`scanner.go:518`) - Groups results by `domain+template`
-2. **Template Processing** - Applies DSL templates to extract findings
-3. **Classification** - Categorizes domains as APIs or Web Apps
+1. **Result Aggregation** - Groups results by `domain+template`
+2. **Finding Extraction** - Extracts findings from Nuclei results (already populated by templates)
+3. **Classification** - Categorizes domains as APIs, Web Apps, AI Assets, or API Specs
 4. **Technology Extraction** - Normalizes and deduplicates technologies
 5. **Report Generation** - Builds final JSON structure
 
-## Template DSL System
+## Findings System
 
-### Template Types
+### How Findings Work
 
-The system uses Go `text/template` with Sprig functions to process Nuclei `ResultEvent` objects:
+Nuclei templates emit structured findings using `to_value_group()` DSL function:
 
-**Detection Templates** - Categorize findings:
-```json
-"detection_template": ["Web App", "Web Server"]
+```yaml
+extractors:
+  - type: dsl
+    dsl:
+      - 'len(nginx) > 0 ? to_value_group("gateway.nginx", nginx) : ""'
 ```
 
-**Finding Templates** - Generate human-readable descriptions:
-```json
-"finding_template": [
-    "Web Server",
-    "{{if .ExtractedResults}}{{range $i, $v := .ExtractedResults}}{{if $i}}, {{end}}{{$v}}{{end}}{{end}}"
-]
-```
-
-### Template Configuration
-
-Each template in `scan-template-meanings.json` defines:
-
+This creates a findings map with hierarchical keys:
 ```json
 {
-    "template-id": {
-        "label": "Human-readable name",
-        "detection_template": ["Category", "Specific detection"],
-        "finding_template": ["Finding description", "{{DSL expression}}"]
-    }
+  "host": "example.com",
+  "template-id": "api-gateway-detection",
+  "findings": {
+    "gateway.nginx": ["nginx/1.21.0"]
+  }
 }
 ```
 
-### DSL Context
+### Finding Metadata
 
-Templates receive Nuclei `ResultEvent` objects with access to:
-- `.ExtractedResults` - Array of extracted values
-- `.Matched` - Matched content/URL
-- `.Host` - Target host
-- `.TemplateID` - Template identifier
+`findings.json` contains all display metadata for each finding slug:
+
+```json
+{
+  "gateway.nginx": {
+    "slug": "gateway.nginx",
+    "display_name": "Nginx",
+    "icon": "nginx.svg",
+    "classification": ["gateway", "webapp", "~api"],
+    "show_in_tech": true,
+    "display_as": "tag"
+  }
+}
+```
+
+**Fields:**
+- `slug` - Hierarchical key matching template output
+- `display_name` - Human-readable name for UI
+- `icon` - SVG icon filename
+- `classification` - Tags for filtering (prefix `~` means display-only, not for classification)
+- `show_in_tech` - Show in technologies section
+- `display_as` - Rendering style: `tag` or `link`
 
 ## Classification Logic
 
-### API Classification Rules (Updated)
+### API Classification Rules
 
-The classification system enforces **mutual exclusivity** between APIs and Web Apps with strict priority rules:
+APIs are classified into two categories based on detection confidence:
 
-**Backend/Frontend Technology Override:**
-- Any domain with `backend-framework-detection` OR `frontend-tech-detection` is **always classified as WebApp**
-- This takes absolute precedence over all API indicators including JSON/XML serving
+#### Confirmed API Endpoint
 
-**API Server Detection:**
-- Domains serving JSON/XML (`api-server-detection`) are classified as **"Confirmed API Endpoint"**
-- Only applies if no backend/frontend tech is present
+A domain is classified as **"Confirmed API Endpoint"** when it serves structured data:
 
-**API Specification Detection:**
-- API specs (`openapi`, `swagger-api`, `wadl-api`, `wsdl-api`) are classified as **"Potential API Endpoint"** (not "Confirmed")
-- Only applies if no backend/frontend tech is present
+- Detection of `api.server.json` (JSON API detection)
+- OR detection of `api.server.xml` (XML API detection)
 
-**API Keyword/Routing Detection:**
-- Domains with `api-host-keyword-detection` are classified as **"Potential API Endpoint"**
-- **Blank-root exclusion:** Domains with ONLY `blank-root-server-detection` (no other API indicators) are NOT classified as APIs
-- This prevents false positives like "client-uat-p.ssga.com"
+**Rationale:** Domains actively serving JSON or XML responses demonstrate confirmed API behavior through response content analysis.
+
+**Priority:** If both `api.domain_pattern` and `api.server.json`/`api.server.xml` are present, the domain is still classified as **Confirmed API Endpoint** (server detection takes precedence).
+
+#### Potential API Endpoint
+
+A domain is classified as **"Potential API Endpoint"** when only domain naming patterns suggest API usage:
+
+- Detection of `api.domain_pattern` only (API keyword in domain name)
+- WITHOUT `api.server.json` or `api.server.xml`
+
+**Rationale:** Domain naming conventions (e.g., api.example.com, example.com/api) suggest API usage but require response content confirmation.
+
+#### Classification Logic Implementation
+
+```go
+func (rp *ResultProcessor) classifyAsAPI(templates map[string]*StoredResult) string {
+    hasServerDetection := false
+    hasDomainPattern := false
+
+    for _, template := range templates {
+        if template.Findings != nil {
+            for slug := range template.Findings {
+                if slug == "api.server.json" || slug == "api.server.xml" {
+                    hasServerDetection = true
+                }
+                if slug == "api.domain_pattern" {
+                    hasDomainPattern = true
+                }
+            }
+        }
+    }
+
+    if hasServerDetection {
+        return "Confirmed API Endpoint"
+    }
+    if hasDomainPattern {
+        return "Potential API Endpoint"
+    }
+    return ""
+}
+```
 
 ### Web App Classification
 
 Web applications are identified by:
-- **Backend/Frontend frameworks:** Always classified as WebApp regardless of other indicators
-- **Web indicators without API server:** `website-host-detection`, `xhr-detection-headless`, etc.
-- **JSON/XML exclusion:** Domains serving JSON/XML are APIs unless backend/frontend tech is present
+- **Backend/Frontend frameworks:** Classified as WebApp
+- **Web indicators:** `website-host-detection`, `xhr-detection-headless`, etc.
 
 ### Classification Priority Order
 
-1. **Backend/Frontend tech present** → WebApp (overrides everything)
-2. **JSON/XML serving without backend/frontend** → Confirmed API
-3. **API specs without backend/frontend** → Potential API
-4. **Other web indicators without JSON/XML** → WebApp
-5. **API keywords without backend/frontend** → Potential API (excluding blank-root-only)
+1. **JSON/XML serving** → Confirmed API Endpoint
+2. **API domain pattern only** → Potential API Endpoint
+3. **Backend/Frontend tech present** → WebApp
+4. **Other web indicators** → WebApp
 
 ### Discovery Details Updates
 
-**"Routing Server" Removal:**
-- `blank-root-server-detection` template now has empty `finding_template`
-- "Routing Server" no longer appears in discovery details
+**Blank Root Detection:**
+- `blank-root-server-detection` template detects routing servers and blank pages
+- Results stored in `server.blank_root_status` finding key
+- Filtered from display in final reports
 
 **SPA Framework API Usage:**
-- Frontend frameworks (Angular, React, Vue, Next.js, Nuxt, Svelte) automatically add "Using APIs" to findings
-- Updated via DSL expression in `frontend-tech-detection` template:
-```json
-"{{if .ExtractedResults}}{{range $v := .ExtractedResults}}{{if or (contains (lower $v) \"angular\") (contains (lower $v) \"react\") (contains (lower $v) \"vue\") (contains (lower $v) \"next.js\") (contains (lower $v) \"nuxt\") (contains (lower $v) \"svelte\")}}Using APIs{{end}}{{end}}{{end}}"
-```
+- Frontend frameworks (Angular, React, Vue, Next.js, Nuxt, Svelte) indicate API usage
+- Frontend technologies classified with "webapp" in findings.json
 
 ### UI Status Indicators
 
@@ -288,14 +325,10 @@ The system applies cleanup rules to findings:
 
 ### Adding New Templates
 
-1. Add template to `scan-templates/` directory
-2. Define meanings in `scan-template-meanings.json`
-3. Add to technology templates list if needed (`report.go:299`)
-4. Update classification logic if new categories required
-
-### Custom DSL Functions
-
-The template system supports all Sprig functions plus standard Go template functions for complex processing needs.
+1. Add Nuclei template to `scan-templates/` directory with `to_value_group()` DSL extractors
+2. Add finding metadata to `findings.json` with matching slug
+3. Update classification logic in `report.go` if new categories required
+4. Add SVG icon to `templates/assets/` if needed
 
 ## Report Format Details
 
@@ -353,10 +386,10 @@ The template system supports all Sprig functions plus standard Go template funct
 The system uses Go's `embed` package to include all external files in the binary:
 
 **Embedded in Binary:**
-- ✅ `scan-templates/` - 14 Nuclei YAML templates
+- ✅ `scan-templates/` - Nuclei YAML templates
 - ✅ `templates/report.html` - HTML report template
-- ✅ `templates/assets/` - 17 SVG technology icons + logo
-- ✅ `scan-template-meanings.json` - Template processing configuration
+- ✅ `templates/assets/` - SVG technology icons + logo
+- ✅ `pkg/webexposure/findings.json` - Finding metadata (display names, icons, classifications)
 
 **Runtime Process:**
 1. **Scan Templates:** Extracted to temporary directory for Nuclei
@@ -402,5 +435,4 @@ The system uses graceful degradation:
 The scanner exposes testing methods:
 - `CountIssues()` - Count domains matching template keys
 - `NormalizeAndClean()` - Apply bash regex transformations
-- `ClassifyAsAPI()` / `ClassifyAsWebApp()` - Direct classification testing
 - `WriteJSONReport()` - Direct JSON report writing for testing

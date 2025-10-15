@@ -1,4 +1,4 @@
-.PHONY: build test test-unit test-integration test-e2e test-validation test-all test-targets clean deps lint run help list-templates
+.PHONY: build test test-unit test-integration test-e2e test-validation test-all test-targets clean deps lint run help list-templates update-cve-stats
 
 # Binary name
 BINARY_NAME=web-exposure-detection
@@ -181,6 +181,14 @@ list-templates:
 	@echo "Usage: make test-template TEMPLATE=<template-name>"
 	@echo "Example: make test-template TEMPLATE=api-host-detection"
 
+# Update CVE statistics for findings.json
+update-cve-stats:
+	@if ! command -v cvemap >/dev/null 2>&1; then \
+		echo "❌ cvemap not installed. Install from: https://github.com/projectdiscovery/cvemap"; \
+		exit 1; \
+	fi
+	@python3 scripts/update-findings-cve/update-cve-stats.py
+
 # Show help
 help:
 	@echo "Available targets:"
@@ -217,4 +225,5 @@ help:
 	@echo "  deps               - Download and tidy dependencies"
 	@echo "  lint               - Run code formatters and linters"
 	@echo "  clean              - Clean build artifacts"
+	@echo "  update-cve-stats   - Update CVE statistics for findings.json"
 	@echo "  help               - Show this help message"

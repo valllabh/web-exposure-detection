@@ -1,0 +1,127 @@
+id: swagger-api
+info:
+  name: Swagger 2.0 API Specification - Detect
+  author: pdteam,c-sh0
+  severity: info
+  description: Swagger 2.0 API specification was detected.
+  reference:
+    - https://swagger.io/specification/v2/
+  tags: exposure,api,swagger
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}{{paths}}"
+    redirects: true
+    max-redirects: 10
+    payloads:
+      paths:
+        # JSON files first (most likely to be actual API specs)
+        - "/swagger.json"
+        - "/api/swagger.json"
+        - "/api-docs/swagger.json"
+        - "/api/api-docs/swagger.json"
+        - "/api/swagger-ui/swagger.json"
+        - "/api/apidocs/swagger.json"
+        - "/swagger/v1/swagger.json"
+        - "/api/v1/swagger-ui/swagger.json"
+        - "/api/spec/swagger.json"
+        - "/api/doc.json"
+        - "/api/swagger_doc.json"
+        # YAML files (also likely to be actual API specs)
+        - "/swagger.yaml"
+        - "/api/swagger.yaml"
+        - "/api/swagger.yml"
+        - "/api-docs/swagger.yaml"
+        - "/api/api-docs/swagger.yaml"
+        - "/api/swagger-ui/swagger.yaml"
+        - "/api/apidocs/swagger.yaml"
+        - "/swagger/v1/swagger.yaml"
+        - "/api/v1/swagger-ui/swagger.yaml"
+        - "/api/spec/swagger.yaml"
+        # HTML files (Swagger UI pages)
+        - "/swagger-ui.html"
+        - "/swagger/index.html"
+        - "/swagger/swagger-ui.html"
+        - "/swagger/ui/index"
+        - "/api/swagger-ui.html"
+        - "/api/index.html"
+        - "/api/swagger/index.html"
+        - "/api/swagger/swagger-ui.html"
+        - "/api/swagger/static/index.html"
+        - "/api/swagger/ui/index"
+        - "/api/docs/index.html"
+        - "/webjars/swagger-ui/index.html"
+        # JS files (less priority)
+        - "/swagger-ui.js"
+        - "/swagger/swagger-ui.js"
+        - "/swagger-ui/swagger-ui.js"
+        - "/swagger/ui/swagger-ui.js"
+        - "/swagger-ui/springfox.js"
+        - "/swagger-ui/swagger-ui-standalone-preset.js"
+        - "/swagger-ui/swagger-ui/swagger-ui-bundle.js"
+        - "/webjars/swagger-ui/swagger-ui-bundle.js"
+        # API docs endpoints (lowest priority)
+        - "/api-docs"
+        - "/api/api-docs"
+        - "/api/apidocs"
+        - "/api/swagger-ui/api-docs"
+        - "/swagger-resources/restservices/v2/api-docs"
+        - "/api/swagger-resources/restservices/v2/api-docs"
+        - "/api/swagger-resources"
+        - "/api/swagger"
+        - "/api/doc"
+        - "/api/docs/"
+        - "/api/__swagger__/"
+        - "/api/_swagger_/"
+        - "/__swagger__/"
+        - "/_swagger_/"
+        - "/swagger"
+        - "/api-doc"
+        - "/apidocs"
+        - "/api_docs"
+    headers:
+      Accept: "application/json, application/yaml, text/html, */*"
+    stop-at-first-match: true
+    matchers-condition: or
+    matchers:
+      # Match Swagger 2.0 JSON format
+      - type: regex
+        name: swagger_json_spec
+        part: body
+        regex:
+          - '(?i)"swagger"\s*:\s*"2\.'
+      # Match Swagger 2.0 YAML format
+      - type: regex
+        name: swagger_yaml_spec
+        part: body
+        regex:
+          - '(?i)^swagger:\s*[''"]?2\.'
+          - '(?m)^swagger:\s*[''"]?2\.'
+      # Match Swagger UI pages
+      - type: word
+        name: swagger_ui
+        part: body
+        words:
+          - 'swagger-ui'
+          - 'SwaggerUIBundle'
+        condition: or
+    extractors:
+      - type: regex
+        name: swagger_version
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - '(?i)"swagger"\s*:\s*"([^"]+)"'
+          - '(?i)^swagger:\s*[''"]?([0-9.]+)'
+      - type: regex
+        name: swagger_title
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - '(?i)"title"\s*:\s*"([^"]+)"'
+          - '(?i)^title:\s*[''"]?([^''"\n]+)'
+      - type: dsl
+        dsl:
+          - 'len(swagger_version) > 0 ? to_value_group("api.spec.swagger", matched) : to_value_group("api.spec.swagger", matched)'

@@ -21,7 +21,6 @@ func (s *scanner) generatePDF(htmlPath, pdfPath string) error {
 	browser := rod.New().ControlURL(url).MustConnect()
 	defer browser.MustClose()
 
-	// Convert to absolute path and use file:// URL for proper asset loading
 	absPath, err := filepath.Abs(htmlPath)
 	if err != nil {
 		return fmt.Errorf("failed to get absolute path: %w", err)
@@ -38,14 +37,17 @@ func (s *scanner) generatePDF(htmlPath, pdfPath string) error {
 	page.MustWaitLoad()
 
 	pdfData, err := page.PDF(&proto.PagePrintToPDF{
-		PaperWidth:      func() *float64 { f := 8.27; return &f }(),
-		PaperHeight:     func() *float64 { f := 11.69; return &f }(),
-		MarginTop:       func() *float64 { f := 0.39; return &f }(),
-		MarginBottom:    func() *float64 { f := 0.39; return &f }(),
-		MarginLeft:      func() *float64 { f := 0.39; return &f }(),
-		MarginRight:     func() *float64 { f := 0.39; return &f }(),
-		PrintBackground: true,
-		Scale:           func() *float64 { f := 1.0; return &f }(),
+		PaperWidth:              func() *float64 { f := 8.27; return &f }(),
+		PaperHeight:             func() *float64 { f := 11.69; return &f }(),
+		MarginTop:               func() *float64 { f := 0.39; return &f }(),
+		MarginBottom:            func() *float64 { f := 0.39; return &f }(),
+		MarginLeft:              func() *float64 { f := 0.39; return &f }(),
+		MarginRight:             func() *float64 { f := 0.39; return &f }(),
+		PrintBackground:         true,
+		Scale:                   func() *float64 { f := 1.0; return &f }(),
+		GenerateTaggedPDF:       true,
+		GenerateDocumentOutline: true,
+		PreferCSSPageSize:       true,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to generate PDF: %w", err)

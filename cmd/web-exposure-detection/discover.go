@@ -53,20 +53,32 @@ Examples:
 			return fmt.Errorf("failed to get force flag: %w", err)
 		}
 
+		// Get debug flag
+		debug, err := cmd.Flags().GetBool("debug")
+		if err != nil {
+			return fmt.Errorf("failed to get debug flag: %w", err)
+		}
+
 		// Create scanner
 		scanner, err := webexposure.New()
 		if err != nil {
 			return fmt.Errorf("failed to create scanner: %w", err)
 		}
 
-		// Set up CLI progress handler for command line interface
-		progressHandler := cli.NewCLIProgressHandler()
+		// Set up CLI progress handler for command line interface (no verbose for discover command)
+		progressHandler := cli.NewCLIProgressHandler(false)
 		scanner.SetProgressCallback(progressHandler)
+
+		// Set debug flag on scanner
+		scanner.SetDebug(debug)
 
 		// Run discovery with CLI interface
 		fmt.Printf("Starting domain discovery for: %v\n", domains)
 		if len(keywords) > 0 {
 			fmt.Printf("Using keywords: %v\n", keywords)
+		}
+		if debug {
+			fmt.Printf("Debug mode: enabled\n")
 		}
 
 		err = scanner.RunDiscoveryOnly(domains, keywords, force)

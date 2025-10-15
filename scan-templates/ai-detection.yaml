@@ -1,0 +1,337 @@
+id: ai-detection
+info:
+  name: AI Services - Detect
+  author: valllabh
+  severity: info
+  description: Detects AI API endpoints, MCP servers, and vector databases
+  reference:
+    - https://platform.openai.com/docs/api-reference
+    - https://docs.anthropic.com/en/api/messages
+    - https://modelcontextprotocol.io/
+    - https://github.com/ollama/ollama/blob/main/docs/api.md
+    - https://docs.pinecone.io/reference/api
+    - https://weaviate.io/developers/weaviate/api/rest
+    - https://qdrant.tech/documentation/
+    - https://milvus.io/api-reference/restful/v2.4.x/About.md
+    - https://docs.trychroma.com/reference/py-api
+  classification:
+    cvss-metrics: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N
+    cvss-score: 0
+    cwe-id: CWE-200
+  metadata:
+    max-request: 58
+  tags: exposure,api,ai
+
+http:
+  # MCP Server detection - JSON-RPC 2.0
+  - method: POST
+    path:
+      - "{{BaseURL}}"
+      - "{{BaseURL}}/mcp"
+      - "{{BaseURL}}/mcp/"
+      - "{{BaseURL}}/.well-known/mcp"
+      - "{{BaseURL}}/api/mcp"
+    headers:
+      Accept: application/json, text/event-stream
+      Content-Type: application/json
+    payloads:
+      method:
+        - tools/list
+        - resources/list
+        - prompts/list
+        - rpc.discover
+    attack: pitchfork
+    body: |
+      {
+        "jsonrpc": "2.0",
+        "method": "{{method}}",
+        "params": {},
+        "id": 1
+      }
+    extractors:
+      - type: regex
+        name: mcp_jsonrpc
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - '(?i)("jsonrpc"\s*:\s*"2\.0"|"result"\s*:\s*\{|"tools"\s*:\s*\[|"resources"\s*:\s*\[)'
+      - type: dsl
+        dsl:
+          - 'len(mcp_jsonrpc) > 0 ? to_value_group("api.ai.mcp_server", host + path) : ""'
+
+  # OpenAI-compatible endpoints detection
+  - method: GET
+    path:
+      - "{{BaseURL}}{{paths}}"
+    redirects: true
+    max-redirects: 10
+    payloads:
+      paths:
+        - "/v1/models"
+        - "/api/v1/models"
+        - "/proxy/v1/models"
+        - "/gateway/v1/models"
+        - "/ai/v1/models"
+        - "/llm/v1/models"
+    headers:
+      Accept: application/json
+    extractors:
+      - type: regex
+        name: openai_response
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - '(?i)("object"\s*:\s*"(list|model)"|"id"\s*:\s*"(gpt-|text-)|"owned_by"\s*:\s*"openai)'
+      - type: dsl
+        dsl:
+          - 'len(openai_response) > 0 ? to_value_group("api.ai.openai_endpoint", host + path) : ""'
+
+  # Ollama server detection
+  - method: GET
+    path:
+      - "{{BaseURL}}{{paths}}"
+    redirects: true
+    max-redirects: 10
+    payloads:
+      paths:
+        - "/api/tags"
+        - "/api/version"
+        - "/api/ps"
+    headers:
+      Accept: application/json
+    extractors:
+      - type: regex
+        name: ollama_response
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - '(?i)("name"\s*:\s*"(llama|mistral|codellama|phi)|"family"\s*:\s*"(llama|mistral))'
+      - type: dsl
+        dsl:
+          - 'len(ollama_response) > 0 ? to_value_group("api.ai.ollama_server", host + path) : ""'
+
+
+  # Pinecone vector database detection
+  - method: GET
+    path:
+      - "{{BaseURL}}{{paths}}"
+    redirects: true
+    max-redirects: 10
+    payloads:
+      paths:
+        - "/describe_index_stats"
+        - "/vectors/query"
+        - "/vectors/fetch"
+        - "/indexes"
+    headers:
+      Accept: application/json
+    extractors:
+      - type: regex
+        name: pinecone_response
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - '(?i)("namespaces"|"dimension"|"indexFullness"|"totalVectorCount")\s*:'
+      - type: dsl
+        dsl:
+          - 'len(pinecone_response) > 0 ? to_value_group("api.ai.vector_db.pinecone", host + path) : ""'
+
+
+  # Weaviate vector database detection
+  - method: GET
+    path:
+      - "{{BaseURL}}{{paths}}"
+    redirects: true
+    max-redirects: 10
+    payloads:
+      paths:
+        - "/v1/schema"
+        - "/v1/meta"
+        - "/v1/.well-known/ready"
+        - "/v1/.well-known/live"
+    headers:
+      Accept: application/json
+    extractors:
+      - type: regex
+        name: weaviate_response
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - '(?i)("classes"|"vectorizer"|"moduleConfig"|"weaviate"|"vectorIndexType")\s*:'
+      - type: dsl
+        dsl:
+          - 'len(weaviate_response) > 0 ? to_value_group("api.ai.vector_db.weaviate", host + path) : ""'
+
+
+  # Qdrant vector database detection
+  - method: GET
+    path:
+      - "{{BaseURL}}{{paths}}"
+    redirects: true
+    max-redirects: 10
+    payloads:
+      paths:
+        - "/collections"
+        - "/cluster"
+        - "/telemetry"
+    headers:
+      Accept: application/json
+    extractors:
+      - type: regex
+        name: qdrant_response
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - '(?i)("collections"|"points_count"|"segments_count"|"payload_schema"|"optimizer_status")\s*:'
+      - type: dsl
+        dsl:
+          - 'len(qdrant_response) > 0 ? to_value_group("api.ai.vector_db.qdrant", host + path) : ""'
+
+
+  # Milvus vector database detection
+  - method: GET
+    path:
+      - "{{BaseURL}}{{paths}}"
+    redirects: true
+    max-redirects: 10
+    payloads:
+      paths:
+        - "/v1/vector/collections"
+        - "/api/v1/health"
+    headers:
+      Accept: application/json
+    extractors:
+      - type: regex
+        name: milvus_response
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - '(?i)("milvus"|"collection_name"|"schema"|"autoID")\s*:'
+      - type: dsl
+        dsl:
+          - 'len(milvus_response) > 0 ? to_value_group("api.ai.vector_db.milvus", host + path) : ""'
+
+
+  # ChromaDB vector database detection
+  - method: GET
+    path:
+      - "{{BaseURL}}{{paths}}"
+    redirects: true
+    max-redirects: 10
+    payloads:
+      paths:
+        - "/api/v1"
+        - "/api/v1/collections"
+        - "/api/v1/heartbeat"
+        - "/api/v1/version"
+    headers:
+      Accept: application/json
+    extractors:
+      - type: regex
+        name: chroma_response
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - '(?i)("chroma"|"heartbeat"|"nanosecond heartbeat")'
+      - type: dsl
+        dsl:
+          - 'len(chroma_response) > 0 ? to_value_group("api.ai.vector_db.chroma", host + path) : ""'
+
+
+  # Anthropic endpoint detection
+  - method: POST
+    path:
+      - "{{BaseURL}}{{paths}}"
+    payloads:
+      paths:
+        - "/v1/messages"
+        - "/api/v1/messages"
+        - "/v1/complete"
+        - "/api/v1/complete"
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+      anthropic-version: "2023-06-01"
+    body: '{}'
+    redirects: true
+    max-redirects: 10
+    extractors:
+      - type: regex
+        name: anthropic_error
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - '(?i)("type"\s*:\s*"error"|"max_tokens")'
+      - type: dsl
+        dsl:
+          - 'len(anthropic_error) > 0 ? to_value_group("api.ai.anthropic_endpoint", host + path) : ""'
+
+
+  # OpenAI POST detection
+  - method: POST
+    path:
+      - "{{BaseURL}}{{paths}}"
+    payloads:
+      paths:
+        - "/v1/chat/completions"
+        - "/v1/completions"
+        - "/api/v1/chat/completions"
+        - "/api/v1/completions"
+        - "/v1/embeddings"
+        - "/proxy/v1/chat/completions"
+        - "/gateway/v1/chat/completions"
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    body: '{}'
+    redirects: true
+    max-redirects: 10
+    extractors:
+      - type: regex
+        name: openai_post_error
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - '(?i)"error".*("model"|"messages"|"prompt")'
+      - type: dsl
+        dsl:
+          - 'len(openai_post_error) > 0 ? to_value_group("api.ai.openai_endpoint", host + path) : ""'
+
+  # Ollama POST detection
+  - method: POST
+    path:
+      - "{{BaseURL}}{{paths}}"
+    payloads:
+      paths:
+        - "/api/generate"
+        - "/api/chat"
+        - "/api/embeddings"
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    body: '{}'
+    redirects: true
+    max-redirects: 10
+    extractors:
+      - type: regex
+        name: ollama_post_error
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - '(?i)("error".*("model"|"prompt"))'
+      - type: dsl
+        dsl:
+          - 'len(ollama_post_error) > 0 ? to_value_group("api.ai.ollama_server", host + path) : ""'
+
+

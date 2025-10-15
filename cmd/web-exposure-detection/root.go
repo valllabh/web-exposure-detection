@@ -28,6 +28,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.web-exposure-detection.yaml)")
+	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Enable debug logging")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 

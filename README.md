@@ -60,3 +60,27 @@ web-exposure-detection scan --help
 ```
 
 For detailed documentation see [docs/](./docs/).
+
+## Development
+
+### Build from source
+
+```bash
+make build
+make test
+```
+
+### Update CVE statistics
+
+Update CVE data for all findings:
+```bash
+make update-cve-stats
+```
+
+See [CVE Statistics](docs/how-to-write-nuclei-template.md#cve-statistics) for details.
+
+### Commands
+
+```bash
+make help  # Show all available commands
+```

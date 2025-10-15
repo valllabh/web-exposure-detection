@@ -1,0 +1,134 @@
+id: postman-collection
+info:
+  name: Postman Collection - Detect
+  author: valllabh
+  severity: info
+  description: Postman API collection was detected.
+  reference:
+    - https://learning.postman.com/docs/collections/collections-overview/
+    - https://medium.com/@utkarshporwal24/exposed-postman-collections-ed6086b96ba5
+  tags: exposure,api,postman
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}{{paths}}"
+    redirects: true
+    max-redirects: 10
+    payloads:
+      paths:
+        # Root level - most common
+        - "/postman.json"
+        - "/postman_collection.json"
+        - "/collection.json"
+        - "/api-collection.json"
+        # Docs directories
+        - "/docs/postman.json"
+        - "/docs/postman_collection.json"
+        - "/docs/collection.json"
+        - "/documentation/postman.json"
+        - "/documentation/collection.json"
+        # API directories
+        - "/api/postman.json"
+        - "/api/postman_collection.json"
+        - "/api/collection.json"
+        - "/api/docs/postman.json"
+        - "/api/docs/collection.json"
+        - "/api/v1/postman.json"
+        - "/api/v2/postman.json"
+        - "/api/v3/postman.json"
+        # Collections directories
+        - "/collections/postman.json"
+        - "/collections/api.json"
+        - "/postman/collection.json"
+        - "/postman-collection.json"
+        - "/.postman/collection.json"
+        # Public/static directories
+        - "/public/postman.json"
+        - "/public/collection.json"
+        - "/static/postman.json"
+        - "/static/collection.json"
+        # Versioned collections
+        - "/v1/postman.json"
+        - "/v2/postman.json"
+        - "/v3/postman.json"
+        - "/v1/collection.json"
+        - "/v2/collection.json"
+        - "/v3/collection.json"
+        # Assets/resources directories
+        - "/assets/postman.json"
+        - "/assets/collection.json"
+        - "/resources/postman.json"
+        - "/resources/collection.json"
+        # Export directories
+        - "/export/postman.json"
+        - "/export/collection.json"
+        - "/exports/postman.json"
+        - "/exports/collection.json"
+        # Dev/test/staging specific
+        - "/dev/postman.json"
+        - "/test/postman.json"
+        - "/staging/postman.json"
+        # Well-known directory
+        - "/.well-known/postman.json"
+        - "/.well-known/api-collection.json"
+        # Common naming variations
+        - "/postman-api.json"
+        - "/api-postman.json"
+        - "/rest-collection.json"
+        - "/api-endpoints.json"
+    headers:
+      Accept: "application/json, application/vnd.postman.collection+json, */*"
+    stop-at-first-match: true
+    matchers-condition: or
+    matchers:
+      # Match Postman Collection v2.x format
+      - type: regex
+        name: postman_v2_collection
+        part: body
+        regex:
+          - '(?i)"schema"\s*:\s*"https://schema\.getpostman\.com/json/collection/v2'
+      # Match Postman Collection v2.1 format (most common)
+      - type: regex
+        name: postman_v21_collection
+        part: body
+        regex:
+          - '(?i)"schema"\s*:\s*"https://schema\.getpostman\.com/json/collection/v2\.1'
+      # Match Postman Collection structure (info + item)
+      - type: word
+        name: postman_collection_structure
+        part: body
+        words:
+          - '"info"'
+          - '"item"'
+        condition: and
+      # Match content-type header for Postman
+      - type: regex
+        name: postman_content_type
+        part: header
+        regex:
+          - '(?i)content-type:\s*application/(json|vnd\.postman\.'
+    extractors:
+      - type: regex
+        name: postman_schema
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - '(?i)"schema"\s*:\s*"([^"]+)"'
+      - type: regex
+        name: postman_name
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - '(?i)"info"\s*:\s*\{[^}]*"name"\s*:\s*"([^"]+)"'
+      - type: regex
+        name: postman_description
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - '(?i)"info"\s*:\s*\{[^}]*"description"\s*:\s*"([^"]+)"'
+      - type: dsl
+        dsl:
+          - 'len(postman_schema) > 0 ? to_value_group("api.spec.postman", matched) : to_value_group("api.spec.postman", matched)'

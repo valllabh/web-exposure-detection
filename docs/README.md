@@ -48,6 +48,17 @@ The tool implements a complete scan pipeline with embedded dependencies:
 - **Classification Logic** - Enhanced API vs WebApp detection
 - **Release Process** - Automated cross-platform builds
 
+## Development Tools
+
+### CVE Statistics
+
+Update CVE statistics for all findings:
+```bash
+make update-cve-stats
+```
+
+See [how-to-write-nuclei-template.md](./how-to-write-nuclei-template.md#cve-statistics) for details.
+
 ## Status: Production Ready ✅
 
 The tool is currently production-ready with:
@@ -56,3 +67,4 @@ The tool is currently production-ready with:
 - ✅ Automated release pipeline
 - ✅ Multi-format report generation
 - ✅ Cross-platform compatibility
+- ✅ CVE statistics integration

@@ -17,66 +17,6 @@ headless:
           url: "{{BaseURL}}"
       - action: waitload
       - action: waitstable
-    matchers:
-      - type: regex
-        part: body
-        regex:
-          # React.js
-          - (data-reactroot|__REACT_DEVTOOLS_GLOBAL_HOOK__|react-dom\/)
-          # Angular
-          - (<[^>]+(ng-app|ng-controller|ng-model)[^>]*>|ng-version=|angular\.[a-z])
-          # Vue.js
-          - (window\.__VUE__|vue\.[a-z]|data-v-)
-          # Svelte
-          - (svelte-[a-z0-9]+|__SVELTEKIT_DEV__|SvelteKit)
-          # Ember.js
-          - (Ember\.ENV|Ember\.Application|data-ember-extension)
-          # Preact
-          - (preactRender|preact\/|__PREACT_DEVTOOLS__)
-          # SolidJS
-          - (window\.__SOLID_DEVTOOLS_HOOK__|solid-js\/|SolidRoot)
-          # Backbone.js
-          - (Backbone\.(Model|View|Router|Collection))
-          # Alpine.js
-          - (<[^>]+(x-data|x-init|x-bind|x-on|x-model)[^>]*>|Alpine\.start)
-          # Lit
-          - (lit-html\/|lit-element\/|LitElement\.prototype)
-          # Marko
-          - (\$marko|\$_marko|marko-components|marko\.runtime)
-          # Mithril
-          - (m\.route\(|m\.render\(|m\.mount\()
-          # Inferno
-          - (Inferno\.createElement|Inferno\.render)
-          # Hyperapp
-          - (hyperapp\.app|h\.app\()
-          # Dojo Toolkit
-          - (dojo\.require\(|dojo\.addOnLoad\(|dojo\.version)
-          # Knockout.js
-          - (ko\.applyBindings\(|ko\.observable\()
-          # Meteor
-          - (__meteor_runtime_config__|Meteor\.is(Client|Server))
-          # Next.js
-          - (__NEXT_DATA__|next\/static\/chunks\/|window\.__NEXT_PRELOAD_READY__)
-          # Nuxt.js
-          - (window\.__NUXT__|nuxt\.config|nuxtState)
-          # Gatsby
-          - (window\.___gatsby|gatsby-config\.js|gatsby-browser\.js)
-          # Remix
-          - (__remixContext|window\.__REMIX_CONTEXT__)
-          # Astro
-          - (Astro\.fetchContent|astro\/client|astro:load)
-          # Qwik
-          - (qwik\.devtools|qwik\.hydrate|QwikCity)
-          # Fresh
-          - (window\.__FRESH_DATA__|FreshRuntime|window\.__FRESH_MANIFEST__)
-          # Basic authentication forms
-          - "(?i)<form[^>]*?(login|signin|sign-in|log-in|authenticate)"
-          - "(?i)<input[^>]+type=[\"'](email|password)[\"']"
-          - "(?i)<input[^>]+name=[\"']+(username|user-name|email|user|login|password|pwd)[\"']"
-          # Login/Signin buttons and links
-          - "(?i)(login|signin|sign.in|log.in|authenticate)"
-          - "(?i)<button[^>]*?(login|signin|authenticate)"
-          - "(?i)<a[^>]+href=[\"'][^\"']*(login|signin|sign-in|log-in|authenticate)"
     extractors:
       # Extractor for React.js
       - type: regex
@@ -344,18 +284,6 @@ headless:
           - "(?i)(class|id)=[\"'][^\"']*onelogin.*(login|signin|auth|sso)[^\"']*[\"']"
         group: 0
 
-      # SSO and Enterprise Authentication - Ping Identity
-      - type: regex
-        part: body
-        name: ping_auth
-        internal: true
-        regex:
-          - "(?i)(sign|log).{0,10}(in|on).{0,20}\\bping\\b"
-          - "(?i)\\bping\\b.{0,20}(identity|federate|one|id)"
-          - "(?i)href=[\"'][^\"']*pingidentity\\.com[^\"']*[\"']"
-          - "(?i)(class|id)=[\"'][^\"']*ping.*(login|signin|auth|sso)[^\"']*[\"']"
-        group: 0
-
       # SSO and Enterprise Authentication - Keycloak
       - type: regex
         part: body
@@ -515,84 +443,564 @@ headless:
           - "(?i)<a[^>]+href=[\"'][^\"']*(forgot|reset|recover)[^\"']*[\"']"
         group: 0
 
-      # DSL to return framework and auth mechanism slugs
+      # Blank root status - check directly in body
+      - type: dsl
+        name: blank_root_status
+        internal: true
+        dsl:
+          - 'contains(body, "Apache2 Default Page")'
+          - 'contains(body, "Welcome to nginx")'
+          - 'contains(body, "IIS Windows Server")'
+          - 'contains(body, "It works!")'
+          - 'contains(body, "Test Page")'
+          - 'contains(body, "Default Web Site Page")'
+
+      # Backend Framework Detection - CMS Platforms
+      - type: regex
+        name: wordpress
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(wp-content|wp-includes|wp-admin)"
+      - type: regex
+        name: drupal
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(Drupal.settings|data-drupal-selector)"
+      - type: regex
+        name: joomla
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(/media/system/js/|/components/com_|joomla)"
+      - type: regex
+        name: typo3
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(typo3|fe_typo_user)"
+
+      # Backend Framework Detection - E-commerce Platforms
+      - type: regex
+        name: shopify
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(cdn.shopify.com|Shopify.designMode|window.checkoutConfig)"
+      - type: regex
+        name: magento
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(Mage\\.Cookies|/skin/frontend/|adminhtml)"
+      - type: regex
+        name: woocommerce
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(/wp-content/plugins/woocommerce/|woocommerce)"
+      - type: regex
+        name: prestashop
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(/modules/prestashop|PrestaShop)"
+      - type: regex
+        name: bigcommerce
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(bigcommerce\\.com|stencil-utils\\.js)"
+      - type: regex
+        name: opencart
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(/catalog/view/theme/|OCSESSID)"
+
+      # Backend Framework Detection - Site Builders
+      - type: regex
+        name: wix
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(static\\.wixstatic\\.com|wix-)"
+      - type: regex
+        name: squarespace
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(static1\\.squarespace\\.com|squarespace-|sqsp-)"
+
+      # Backend Framework Detection - Backend Frameworks
+      - type: regex
+        name: laravel
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(laravel_token|laravel_session)"
+      - type: regex
+        name: django
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(csrfmiddlewaretoken|django)"
+      - type: regex
+        name: aspnet
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(__VIEWSTATE|__EVENTVALIDATION|ASP\\.NET)"
+      - type: regex
+        name: rails
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(authenticity_token|rails|action_dispatch|actionpack)"
+          - "(?i)data-csrf-token"
+          - "(?i)_rails_session"
+      - type: regex
+        name: express_backend
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(X-Powered-By: Express)"
+      - type: regex
+        name: jsp
+        part: cookie
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(JSESSIONID)"
+      - type: regex
+        name: php
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(X-Powered-By.*PHP|PHPSESSID)"
+      - type: regex
+        name: spring
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(X-Application-Context)"
+      - type: regex
+        name: ghost
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(ghost-sdk\\.js|data-ghost)"
+      - type: regex
+        name: kentico
+        part: body
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(/CMSPages/|CMSPreferredCulture)"
+
+      # API Server Framework Detection
+      - type: regex
+        name: fastapi
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(server.*uvicorn|server.*hypercorn)"
+      - type: regex
+        name: flask
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(X-Powered-By.*Flask|server.*werkzeug)"
+      - type: regex
+        name: gin
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)X-Gin"
+      - type: regex
+        name: koa
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)X-Powered-By.*Koa"
+      - type: regex
+        name: nestjs
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)X-Powered-By.*NestJS"
+
+      # Infrastructure Detection - API Gateway/Proxy/Load Balancer
+      - type: regex
+        name: kong
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(kong|openresty)"
+      - type: regex
+        name: envoy
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(envoy|istio)"
+      - type: regex
+        name: akamai
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(akamai|edgegrid)"
+      - type: regex
+        name: traefik
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(traefik|traefik-proxy)"
+      - type: regex
+        name: cloudflare
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(cloudflare|cf-ray)"
+      - type: regex
+        name: nginx
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(nginx)"
+      - type: regex
+        name: haproxy
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(haproxy|haproxy-proxy)"
+      - type: regex
+        name: zuul
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(zuul|zuul-proxy)"
+      - type: regex
+        name: apigee
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)(apigee|apigee-proxy)"
+
+      # Page title extraction
+      - type: regex
+        part: body
+        name: page_title
+        internal: true
+        regex:
+          - "<title[^>]*>([^<]+)</title>"
+        group: 1
+
+      # Page description extraction
+      - type: regex
+        part: body
+        name: page_description
+        internal: true
+        regex:
+          - "(?i)<meta[^>]+name=[\"']description[\"'][^>]+content=[\"']([^\"']+)[\"']"
+          - "(?i)<meta[^>]+content=[\"']([^\"']+)[\"'][^>]+name=[\"']description[\"']"
+        group: 1
+
+      # DSL extractors - each extractor returns its own finding using to_value_group
+      # Frontend frameworks
       - type: dsl
         dsl:
-          - "len(react) > 0 ? 'react' : ''"
-          - "len(angular) > 0 ? 'angular' : ''"
-          - "len(vuejs) > 0 ? 'vuejs' : ''"
-          - "len(svelte) > 0 ? 'svelte' : ''"
-          - "len(ember) > 0 ? 'emberjs' : ''"
-          - "len(preact) > 0 ? 'preact' : ''"
-          - "len(solidjs) > 0 ? 'solidjs' : ''"
-          - "len(backbone) > 0 ? 'backbonejs' : ''"
-          - "len(alpine) > 0 ? 'alpinejs' : ''"
-          - "len(lit) > 0 ? 'lit' : ''"
-          - "len(marko) > 0 ? 'marko' : ''"
-          - "len(mithril) > 0 ? 'mithril' : ''"
-          - "len(inferno) > 0 ? 'inferno' : ''"
-          - "len(hyperapp) > 0 ? 'hyperapp' : ''"
-          - "len(dojo) > 0 ? 'dojo' : ''"
-          - "len(knockout) > 0 ? 'knockoutjs' : ''"
-          - "len(meteor) > 0 ? 'meteor' : ''"
-          - "len(nextjs) > 0 ? 'nextjs' : ''"
-          - "len(nuxtjs) > 0 ? 'nuxtjs' : ''"
-          - "len(gatsby) > 0 ? 'gatsby' : ''"
-          - "len(remix) > 0 ? 'remix' : ''"
-          - "len(astro) > 0 ? 'astro' : ''"
-          - "len(qwik) > 0 ? 'qwik' : ''"
-          - "len(fresh) > 0 ? 'fresh' : ''"
-          - "len(basic_auth) > 0 ? 'traditional-login-forms' : ''"
-          - "len(saml_sso) > 0 ? 'saml-sso-auth' : ''"
-          - "len(microsoft_auth) > 0 ? 'microsoft-auth' : ''"
-          - "len(okta_auth) > 0 ? 'okta-auth' : ''"
-          - "len(auth0_auth) > 0 ? 'auth0' : ''"
-          - "len(onelogin_auth) > 0 ? 'onelogin-auth' : ''"
-          - "len(ping_auth) > 0 ? 'ping-identity-auth' : ''"
-          - "len(keycloak_auth) > 0 ? 'keycloak-auth' : ''"
-          - "len(adfs_auth) > 0 ? 'adfs-auth' : ''"
-          - "len(google_auth) > 0 ? 'google-auth' : ''"
-          - "len(facebook_auth) > 0 ? 'facebook-auth' : ''"
-          - "len(twitter_auth) > 0 ? 'twitter-auth' : ''"
-          - "len(linkedin_auth) > 0 ? 'linkedin-auth' : ''"
-          - "len(github_auth) > 0 ? 'github-auth' : ''"
-          - "len(apple_auth) > 0 ? 'apple-auth' : ''"
-          - "len(mfa_auth) > 0 ? 'multi-factor-auth' : ''"
-          - "len(passwordless_auth) > 0 ? 'passwordless-auth' : ''"
-          - "len(registration) > 0 ? 'user-registration' : ''"
-          - "len(password_recovery) > 0 ? 'password-recovery' : ''"
-          - "len(angular) > 0 ? 'using-api' : ''"
-          - "len(react) > 0 ? 'using-api' : ''"
-          - "len(vuejs) > 0 ? 'using-api' : ''"
-          - "len(nextjs) > 0 ? 'using-api' : ''"
-          - "len(nuxtjs) > 0 ? 'using-api' : ''"
-          - "len(svelte) > 0 ? 'using-api' : ''"
-          - "len(saml_sso) > 0 ? 'using-enterprise-auth' : ''"
-          - "len(microsoft_auth) > 0 ? 'using-enterprise-auth' : ''"
-          - "len(okta_auth) > 0 ? 'using-enterprise-auth' : ''"
-          - "len(auth0_auth) > 0 ? 'using-enterprise-auth' : ''"
-          - "len(onelogin_auth) > 0 ? 'using-enterprise-auth' : ''"
-          - "len(ping_auth) > 0 ? 'using-enterprise-auth' : ''"
-          - "len(keycloak_auth) > 0 ? 'using-enterprise-auth' : ''"
-          - "len(adfs_auth) > 0 ? 'using-enterprise-auth' : ''"
-          - "len(google_auth) > 0 ? 'using-social-auth' : ''"
-          - "len(facebook_auth) > 0 ? 'using-social-auth' : ''"
-          - "len(twitter_auth) > 0 ? 'using-social-auth' : ''"
-          - "len(linkedin_auth) > 0 ? 'using-social-auth' : ''"
-          - "len(github_auth) > 0 ? 'using-social-auth' : ''"
-          - "len(apple_auth) > 0 ? 'using-social-auth' : ''"
-          - "len(basic_auth) > 0 ? 'using-auth' : ''"
-          - "len(saml_sso) > 0 ? 'using-auth' : ''"
-          - "len(microsoft_auth) > 0 ? 'using-auth' : ''"
-          - "len(okta_auth) > 0 ? 'using-auth' : ''"
-          - "len(auth0_auth) > 0 ? 'using-auth' : ''"
-          - "len(onelogin_auth) > 0 ? 'using-auth' : ''"
-          - "len(ping_auth) > 0 ? 'using-auth' : ''"
-          - "len(keycloak_auth) > 0 ? 'using-auth' : ''"
-          - "len(adfs_auth) > 0 ? 'using-auth' : ''"
-          - "len(google_auth) > 0 ? 'using-auth' : ''"
-          - "len(facebook_auth) > 0 ? 'using-auth' : ''"
-          - "len(twitter_auth) > 0 ? 'using-auth' : ''"
-          - "len(linkedin_auth) > 0 ? 'using-auth' : ''"
-          - "len(github_auth) > 0 ? 'using-auth' : ''"
-          - "len(apple_auth) > 0 ? 'using-auth' : ''"
+          - 'len(react) > 0 ? to_value_group("frontend.react", react) : ""'
+      - type: dsl
+        dsl:
+          - 'len(angular) > 0 ? to_value_group("frontend.angular", angular) : ""'
+      - type: dsl
+        dsl:
+          - 'len(vuejs) > 0 ? to_value_group("frontend.vuejs", vuejs) : ""'
+      - type: dsl
+        dsl:
+          - 'len(svelte) > 0 ? to_value_group("frontend.svelte", svelte) : ""'
+      - type: dsl
+        dsl:
+          - 'len(ember) > 0 ? to_value_group("frontend.ember", ember) : ""'
+      - type: dsl
+        dsl:
+          - 'len(preact) > 0 ? to_value_group("frontend.preact", preact) : ""'
+      - type: dsl
+        dsl:
+          - 'len(solidjs) > 0 ? to_value_group("frontend.solidjs", solidjs) : ""'
+      - type: dsl
+        dsl:
+          - 'len(backbone) > 0 ? to_value_group("frontend.backbone", backbone) : ""'
+      - type: dsl
+        dsl:
+          - 'len(alpine) > 0 ? to_value_group("frontend.alpine", alpine) : ""'
+      - type: dsl
+        dsl:
+          - 'len(lit) > 0 ? to_value_group("frontend.lit", lit) : ""'
+      - type: dsl
+        dsl:
+          - 'len(marko) > 0 ? to_value_group("frontend.marko", marko) : ""'
+      - type: dsl
+        dsl:
+          - 'len(mithril) > 0 ? to_value_group("frontend.mithril", mithril) : ""'
+      - type: dsl
+        dsl:
+          - 'len(inferno) > 0 ? to_value_group("frontend.inferno", inferno) : ""'
+      - type: dsl
+        dsl:
+          - 'len(hyperapp) > 0 ? to_value_group("frontend.hyperapp", hyperapp) : ""'
+      - type: dsl
+        dsl:
+          - 'len(dojo) > 0 ? to_value_group("frontend.dojo", dojo) : ""'
+      - type: dsl
+        dsl:
+          - 'len(knockout) > 0 ? to_value_group("frontend.knockout", knockout) : ""'
+      - type: dsl
+        dsl:
+          - 'len(meteor) > 0 ? to_value_group("frontend.meteor", meteor) : ""'
+      - type: dsl
+        dsl:
+          - 'len(nextjs) > 0 ? to_value_group("frontend.nextjs", nextjs) : ""'
+      - type: dsl
+        dsl:
+          - 'len(nuxtjs) > 0 ? to_value_group("frontend.nuxtjs", nuxtjs) : ""'
+      - type: dsl
+        dsl:
+          - 'len(gatsby) > 0 ? to_value_group("frontend.gatsby", gatsby) : ""'
+      - type: dsl
+        dsl:
+          - 'len(remix) > 0 ? to_value_group("frontend.remix", remix) : ""'
+      - type: dsl
+        dsl:
+          - 'len(astro) > 0 ? to_value_group("frontend.astro", astro) : ""'
+      - type: dsl
+        dsl:
+          - 'len(qwik) > 0 ? to_value_group("frontend.qwik", qwik) : ""'
+      - type: dsl
+        dsl:
+          - 'len(fresh) > 0 ? to_value_group("frontend.fresh", fresh) : ""'
+
+      # Authentication
+      - type: dsl
+        dsl:
+          - 'len(basic_auth) > 0 ? to_value_group("auth.traditional.basic_auth", basic_auth) : ""'
+      - type: dsl
+        dsl:
+          - 'len(saml_sso) > 0 ? to_value_group("auth.enterprise.saml_sso", saml_sso) : ""'
+      - type: dsl
+        dsl:
+          - 'len(microsoft_auth) > 0 ? to_value_group("auth.enterprise.microsoft", microsoft_auth) : ""'
+      - type: dsl
+        dsl:
+          - 'len(okta_auth) > 0 ? to_value_group("auth.enterprise.okta", okta_auth) : ""'
+      - type: dsl
+        dsl:
+          - 'len(auth0_auth) > 0 ? to_value_group("auth.enterprise.auth0", auth0_auth) : ""'
+      - type: dsl
+        dsl:
+          - 'len(onelogin_auth) > 0 ? to_value_group("auth.enterprise.onelogin", onelogin_auth) : ""'
+      - type: dsl
+        dsl:
+          - 'len(keycloak_auth) > 0 ? to_value_group("auth.enterprise.keycloak", keycloak_auth) : ""'
+      - type: dsl
+        dsl:
+          - 'len(adfs_auth) > 0 ? to_value_group("auth.enterprise.adfs", adfs_auth) : ""'
+      - type: dsl
+        dsl:
+          - 'len(google_auth) > 0 ? to_value_group("auth.social.google", google_auth) : ""'
+      - type: dsl
+        dsl:
+          - 'len(facebook_auth) > 0 ? to_value_group("auth.social.facebook", facebook_auth) : ""'
+      - type: dsl
+        dsl:
+          - 'len(twitter_auth) > 0 ? to_value_group("auth.social.twitter", twitter_auth) : ""'
+      - type: dsl
+        dsl:
+          - 'len(linkedin_auth) > 0 ? to_value_group("auth.social.linkedin", linkedin_auth) : ""'
+      - type: dsl
+        dsl:
+          - 'len(github_auth) > 0 ? to_value_group("auth.social.github", github_auth) : ""'
+      - type: dsl
+        dsl:
+          - 'len(apple_auth) > 0 ? to_value_group("auth.social.apple", apple_auth) : ""'
+      - type: dsl
+        dsl:
+          - 'len(mfa_auth) > 0 ? to_value_group("auth.mfa", mfa_auth) : ""'
+      - type: dsl
+        dsl:
+          - 'len(passwordless_auth) > 0 ? to_value_group("auth.passwordless", passwordless_auth) : ""'
+      - type: dsl
+        dsl:
+          - 'len(registration) > 0 ? to_value_group("auth.traditional.registration", registration) : ""'
+      - type: dsl
+        dsl:
+          - 'len(password_recovery) > 0 ? to_value_group("auth.traditional.password_recovery", password_recovery) : ""'
+
+      # Blank root status
+      - type: dsl
+        dsl:
+          - 'len(blank_root_status) > 0 ? to_value_group("server.blank_root_status", blank_root_status) : ""'
+
+      # Backend frameworks - CMS
+      - type: dsl
+        dsl:
+          - 'len(wordpress) > 0 ? to_value_group("backend.cms.wordpress", wordpress) : ""'
+      - type: dsl
+        dsl:
+          - 'len(drupal) > 0 ? to_value_group("backend.cms.drupal", drupal) : ""'
+      - type: dsl
+        dsl:
+          - 'len(joomla) > 0 ? to_value_group("backend.cms.joomla", joomla) : ""'
+      - type: dsl
+        dsl:
+          - 'len(typo3) > 0 ? to_value_group("backend.cms.typo3", typo3) : ""'
+      - type: dsl
+        dsl:
+          - 'len(ghost) > 0 ? to_value_group("backend.cms.ghost", ghost) : ""'
+      - type: dsl
+        dsl:
+          - 'len(kentico) > 0 ? to_value_group("backend.cms.kentico", kentico) : ""'
+
+      # Backend frameworks - E-commerce
+      - type: dsl
+        dsl:
+          - 'len(shopify) > 0 ? to_value_group("backend.ecommerce.shopify", shopify) : ""'
+      - type: dsl
+        dsl:
+          - 'len(magento) > 0 ? to_value_group("backend.ecommerce.magento", magento) : ""'
+      - type: dsl
+        dsl:
+          - 'len(woocommerce) > 0 ? to_value_group("backend.ecommerce.woocommerce", woocommerce) : ""'
+      - type: dsl
+        dsl:
+          - 'len(prestashop) > 0 ? to_value_group("backend.ecommerce.prestashop", prestashop) : ""'
+      - type: dsl
+        dsl:
+          - 'len(bigcommerce) > 0 ? to_value_group("backend.ecommerce.bigcommerce", bigcommerce) : ""'
+      - type: dsl
+        dsl:
+          - 'len(opencart) > 0 ? to_value_group("backend.ecommerce.opencart", opencart) : ""'
+
+      # Backend frameworks - Site builders
+      - type: dsl
+        dsl:
+          - 'len(wix) > 0 ? to_value_group("backend.sitebuilder.wix", wix) : ""'
+      - type: dsl
+        dsl:
+          - 'len(squarespace) > 0 ? to_value_group("backend.sitebuilder.squarespace", squarespace) : ""'
+
+      # Backend frameworks - Frameworks
+      - type: dsl
+        dsl:
+          - 'len(laravel) > 0 ? to_value_group("backend.framework.laravel", laravel) : ""'
+      - type: dsl
+        dsl:
+          - 'len(django) > 0 ? to_value_group("backend.framework.django", django) : ""'
+      - type: dsl
+        dsl:
+          - 'len(aspnet) > 0 ? to_value_group("backend.framework.aspnet", aspnet) : ""'
+      - type: dsl
+        dsl:
+          - 'len(rails) > 0 ? to_value_group("backend.framework.rails", rails) : ""'
+      - type: dsl
+        dsl:
+          - 'len(express_backend) > 0 ? to_value_group("backend.framework.express", express_backend) : ""'
+      - type: dsl
+        dsl:
+          - 'len(jsp) > 0 ? to_value_group("backend.framework.jsp", jsp) : ""'
+      - type: dsl
+        dsl:
+          - 'len(php) > 0 ? to_value_group("backend.framework.php", php) : ""'
+      - type: dsl
+        dsl:
+          - 'len(spring) > 0 ? to_value_group("backend.framework.spring", spring) : ""'
+
+      # API server frameworks
+      - type: dsl
+        dsl:
+          - 'len(fastapi) > 0 ? to_value_group("api.server.fastapi", fastapi) : ""'
+      - type: dsl
+        dsl:
+          - 'len(flask) > 0 ? to_value_group("api.server.flask", flask) : ""'
+      - type: dsl
+        dsl:
+          - 'len(gin) > 0 ? to_value_group("api.server.gin", gin) : ""'
+      - type: dsl
+        dsl:
+          - 'len(koa) > 0 ? to_value_group("api.server.koa", koa) : ""'
+      - type: dsl
+        dsl:
+          - 'len(nestjs) > 0 ? to_value_group("api.server.nestjs", nestjs) : ""'
+
+      # Infrastructure - Gateway/Proxy/CDN
+      - type: dsl
+        dsl:
+          - 'len(kong) > 0 ? to_value_group("gateway.kong", kong) : ""'
+      - type: dsl
+        dsl:
+          - 'len(envoy) > 0 ? to_value_group("gateway.envoy", envoy) : ""'
+      - type: dsl
+        dsl:
+          - 'len(akamai) > 0 ? to_value_group("gateway.akamai", akamai) : ""'
+      - type: dsl
+        dsl:
+          - 'len(traefik) > 0 ? to_value_group("gateway.traefik", traefik) : ""'
+      - type: dsl
+        dsl:
+          - 'len(cloudflare) > 0 ? to_value_group("gateway.cloudflare", cloudflare) : ""'
+      - type: dsl
+        dsl:
+          - 'len(nginx) > 0 ? to_value_group("gateway.nginx", nginx) : ""'
+      - type: dsl
+        dsl:
+          - 'len(haproxy) > 0 ? to_value_group("gateway.haproxy", haproxy) : ""'
+      - type: dsl
+        dsl:
+          - 'len(zuul) > 0 ? to_value_group("gateway.zuul", zuul) : ""'
+      - type: dsl
+        dsl:
+          - 'len(apigee) > 0 ? to_value_group("gateway.apigee", apigee) : ""'
+
+      # Page metadata
+      - type: dsl
+        dsl:
+          - 'len(page_title) > 0 ? to_value_group("page.title", page_title) : ""'
+      - type: dsl
+        dsl:
+          - 'len(page_description) > 0 ? to_value_group("page.description", page_description) : ""'
+

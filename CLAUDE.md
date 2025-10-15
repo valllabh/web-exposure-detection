@@ -50,3 +50,4 @@ Results stored in ./results/{domain}/ with caching. --force flag clears cache.
 
 ### Domain-Scan Integration
 Uses github.com/valllabh/domain-scan v1.0.0 SDK with real-time progress adapter.
+- never use --force unless told explicitly

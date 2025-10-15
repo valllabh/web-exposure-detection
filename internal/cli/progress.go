@@ -15,6 +15,7 @@ type CLIProgressHandler struct {
 	totalRequests     int64
 	hostCount         int64
 	rulesCount        int
+	verbose           bool
 }
 
 // Progress interface implementation
@@ -37,7 +38,9 @@ func (c *CLIProgressHandler) AddToTotal(delta int64) {
 
 func (c *CLIProgressHandler) IncrementRequests() {
 	c.requestsCount++
-	// Silent - no output during increment
+	if c.verbose && c.requestsCount%10 == 0 {
+		fmt.Printf("  Requests: %d\n", c.requestsCount)
+	}
 }
 
 func (c *CLIProgressHandler) SetRequests(count uint64) {
@@ -47,24 +50,31 @@ func (c *CLIProgressHandler) SetRequests(count uint64) {
 
 func (c *CLIProgressHandler) IncrementMatched() {
 	c.matchedCount++
-	// Silent - no output during increment
+	if c.verbose {
+		fmt.Printf("  Matches: %d\n", c.matchedCount)
+	}
 }
 
 func (c *CLIProgressHandler) IncrementErrorsBy(count int64) {
 	c.errorCount += count
-	// Silent - no output during increment
+	if c.verbose && count > 0 {
+		fmt.Printf("  Errors: %d (total: %d)\n", count, c.errorCount)
+	}
 }
 
 func (c *CLIProgressHandler) IncrementFailedRequestsBy(count int64) {
 	c.failedRequests += count
 	c.errorCount += count
-	// Silent - no output during increment
+	if c.verbose && count > 0 {
+		fmt.Printf("  Failed requests: %d (total: %d)\n", count, c.failedRequests)
+	}
 }
 
 // NewCLIProgressHandler creates a new CLI progress handler
-func NewCLIProgressHandler() *CLIProgressHandler {
+func NewCLIProgressHandler(verbose bool) *CLIProgressHandler {
 	return &CLIProgressHandler{
 		realProgressCount: 0,
+		verbose:           verbose,
 	}
 }
 
@@ -103,9 +113,16 @@ func (c *CLIProgressHandler) OnNucleiScanStart(targets int) {
 
 // OnNucleiScanProgress implements ProgressCallback
 func (c *CLIProgressHandler) OnNucleiScanProgress(host string, testsCompleted int) {
-	// Reduced frequency - only show every 100 tests to avoid spam
-	if testsCompleted%100 == 0 {
-		fmt.Printf("Scanning %s (%d tests)\n", host, testsCompleted)
+	if c.verbose {
+		// Verbose mode - show every 50 tests
+		if testsCompleted%50 == 0 {
+			fmt.Printf("Scanning %s (%d tests)\n", host, testsCompleted)
+		}
+	} else {
+		// Normal mode - show every 100 tests
+		if testsCompleted%100 == 0 {
+			fmt.Printf("Scanning %s (%d tests)\n", host, testsCompleted)
+		}
 	}
 }
 
