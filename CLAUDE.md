@@ -1,53 +1,28 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code when working with this repository.
 
 ## Project Overview
 
-Go-based CLI tool for detecting web exposure vulnerabilities using Cobra, Viper, Nuclei v3 SDK, Domain-scan v1.0.0 SDK, and Go embed for zero-dependency distribution. Designed for defensive security purposes.
+Go-based CLI tool for detecting web exposure vulnerabilities. Designed for defensive security purposes.
 
-## Development Commands
+**Key Technologies**: Cobra, Viper, Nuclei v3 SDK, Domain-scan v1.0.0 SDK, Go embed
 
-Reference Makefile for build, test, clean, deps, lint commands.
-Use `go run .` (entire package, not main.go).
+## Quick Reference
 
-## Embedded Architecture
+- **Documentation index**: [docs/index.md](./docs/index.md)
+- **How it works**: [README.md](./README.md#how-it-works) - scan pipeline, caching, keywords
+- **Development**: [docs/development.md](./docs/development.md) - build, test, project structure
+- **Architecture**: [README.md](./README.md#architecture) - SDK-first design, embedded files
+- **Reporting**: [docs/reporting-system.md](./docs/reporting-system.md) - report generation details
+- **Templates**: [docs/how-to-write-nuclei-template.md](./docs/how-to-write-nuclei-template.md)
+- **Reference impl**: [ref/](./ref/) directory - original bash scripts
 
-Uses Go embed package for zero-dependency distribution. All scan-templates, templates, and meanings.json embedded in binary. See embed.go for implementation.
+## Important Notes
 
-## Architecture
-
-### SDK-First Design
-CLI commands are facades over pkg/webexposure SDK. See pkg/webexposure for public API.
-
-### Scan Pipeline
-1. Domain Discovery (domain-scan v1.0.0)
-2. Nuclei Scanning (embedded templates)
-3. Result Aggregation
-4. Report Generation (JSON, HTML, PDF)
-5. HTML Cleanup
-
-### Keywords Parameter
-Keywords represent business/organization names used to filter domains found in SSL certificates. When scanning SSL certificates, SANs may contain domains from multiple organizations (due to shared hosting/CDNs). Keywords filter to only keep domains belonging to the target organization.
-
-**Auto-extraction**: Domain-scan SDK automatically extracts keywords from target domains (e.g., `example.com` → `example`).
-
-**Additional keywords**: Optional parameter for alternative business names/brands (e.g., `apple.com --keywords iphone,ipad,mac`).
-
-**NOT for**: Environment names (staging/prod), service types (api/admin), or subdomain prefixes. These are wrong examples.
-
-### Report Generation
-Single entry point generateReportsFromNucleiResults() handles all formats. See docs/reporting-system.md for details.
-
-### Reference Implementation
-Ports logic from ref/ bash scripts. See ref/ directory for original implementation.
-
-### CLI User Experience
-Real-time progress tracking with clear status messages, per-host timing, and live findings display.
-
-### Execution Flow
-Results stored in ./results/{domain}/ with caching. --force flag clears cache.
-
-### Domain-Scan Integration
-Uses github.com/valllabh/domain-scan v1.0.0 SDK with real-time progress adapter.
-- never use --force unless told explicitly
+- Use `go run .` not `go run main.go` (entire package required)
+- Reference Makefile for build, test, clean, deps, lint commands
+- SDK-first design: CLI commands are facades over pkg/webexposure SDK
+- All templates/assets embedded in binary via embed.go
+- Results cached in ./results/{domain}/ - never use --force unless explicitly told
+- Entry point for reports: generateReportsFromNucleiResults()
