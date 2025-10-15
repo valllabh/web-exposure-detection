@@ -2,18 +2,15 @@ package webexposure
 
 import (
 	"fmt"
-	"regexp"
 	"sort"
 	"strings"
 	"time"
-
-	"github.com/projectdiscovery/nuclei/v3/pkg/output"
 )
 
 // GenerateReport creates an exposure report from grouped Nuclei results
 func (s *scanner) GenerateReport(grouped *GroupedResults, targetDomain string) (*ExposureReport, error) {
 	// Use the new ResultProcessor for efficient single-pass processing
-	processor := NewResultProcessor(s.meanings)
+	processor := NewResultProcessor()
 
 	// Process all domains in one pass and build the report
 	report := processor.ProcessAllDomains(grouped)
@@ -31,11 +28,11 @@ func (s *scanner) GenerateReport(grouped *GroupedResults, targetDomain string) (
 }
 
 // NewResultProcessor creates a new result processor
-func NewResultProcessor(meanings map[string]TemplateMeaning) *ResultProcessor {
+func NewResultProcessor() *ResultProcessor {
 	return &ResultProcessor{
-		meanings:     meanings,
 		summary:      &Summary{},
 		technologies: make(map[string]bool),
+		techCounts:   make(map[string]int),
 	}
 }
 
@@ -43,9 +40,13 @@ func NewResultProcessor(meanings map[string]TemplateMeaning) *ResultProcessor {
 func (rp *ResultProcessor) ProcessAllDomains(grouped *GroupedResults) *ExposureReport {
 	// Reset state
 	rp.apis = nil
+	rp.apiSpecs = nil
+	rp.aiAssets = nil
 	rp.webApps = nil
 	rp.technologies = make(map[string]bool)
+	rp.techCounts = make(map[string]int)
 	rp.summary = &Summary{}
+	rp.grouped = grouped // Store for later use in building technologies
 
 	// Single pass through all domains
 	for domain, templates := range grouped.Domains {
@@ -57,174 +58,294 @@ func (rp *ResultProcessor) ProcessAllDomains(grouped *GroupedResults) *ExposureR
 }
 
 // processDomain processes a single domain's results
-func (rp *ResultProcessor) processDomain(domain string, templates map[string]*output.ResultEvent) {
+func (rp *ResultProcessor) processDomain(domain string, templates map[string]*StoredResult) {
 	domainResult := &DomainResult{
 		Domain:       domain,
 		Findings:     make(map[string]bool),
-		Detections:   make(map[string]bool),
 		Technologies: make(map[string]bool),
 	}
 
-	// Process all templates for this domain in one loop
+	// Step 1: Merge all findings from all templates
+	allFindings := make(map[string][]string) // slug -> values
+
 	for templateID, event := range templates {
-		rp.processTemplate(domainResult, templateID, event)
+		// Extract metadata (title, description)
+		if event.Findings != nil && rp.isTechnologyTemplate(templateID) {
+			if values, ok := event.Findings["page.title"]; ok && len(values) > 0 {
+				title := values[0]
+				if title != "" && !rp.isGenericTitle(title) {
+					domainResult.Title = title
+				}
+			}
+			if values, ok := event.Findings["page.description"]; ok && len(values) > 0 {
+				description := values[0]
+				if description != "" {
+					domainResult.Description = description
+				}
+			}
+		}
+
+		// Merge all findings
+		if event.Findings != nil {
+			for slug, values := range event.Findings {
+				// Skip metadata keys
+				if slug == "page.title" || slug == "page.description" || slug == "server.blank_root_status" {
+					continue
+				}
+				// Merge values (deduplicate)
+				if existing, ok := allFindings[slug]; ok {
+					// Deduplicate
+					valueSet := make(map[string]bool)
+					for _, v := range existing {
+						valueSet[v] = true
+					}
+					for _, v := range values {
+						if !valueSet[v] {
+							allFindings[slug] = append(allFindings[slug], v)
+						}
+					}
+				} else {
+					allFindings[slug] = values
+				}
+			}
+		}
 	}
 
-	// Classify and add to appropriate collection using the ResultEvent map
+	// Step 2: Collect technologies from allFindings and add all to Findings
+	for slug := range allFindings {
+		domainResult.Technologies[slug] = true
+		rp.technologies[slug] = true
+
+		// Count this technology usage (increment count for this domain)
+		rp.techCounts[slug]++
+
+		// Add all findings with their display names
+		item := NewFindingItem(slug)
+		displayName := item.GetDisplayName()
+		domainResult.Findings[displayName+"|"+slug] = true
+	}
+
+	// Step 3: Classify and add to collections
 	rp.classifyAndAdd(domainResult, templates)
 
 	// Update global summary
 	rp.updateSummary(domainResult)
 }
 
-// processTemplate processes a single template result
-func (rp *ResultProcessor) processTemplate(domainResult *DomainResult, templateID string, event *output.ResultEvent) {
-	meaning, exists := rp.meanings[templateID]
-	if !exists {
-		return
-	}
+// classifyAndAdd classifies the domain result and adds to appropriate collections
+// Domains can appear in multiple categories based on their findings
+func (rp *ResultProcessor) classifyAndAdd(domainResult *DomainResult, templates map[string]*StoredResult) {
+	// Extract display names and build FindingItems from the combined "displayName|slug" format
+	findingsMap := rp.extractFindingsWithSlugs(domainResult.Findings)
+	findings := findingsMap.displayNames
 
-	// Extract title and description from live-domain template
-	// Title extractor may match multiple title tags, so we find the longest one (real page title)
-	// Description is always the last extracted result
-	if templateID == "live-domain" && event.ExtractedResults != nil && len(event.ExtractedResults) > 0 {
-		// Find the longest title (real page titles are usually longer than SVG/meta titles)
-		var title string
-		var maxLen int
-		for i := 0; i < len(event.ExtractedResults)-1; i++ { // Exclude last element (description)
-			candidate := strings.TrimSpace(event.ExtractedResults[i])
-			if len(candidate) > maxLen {
-				maxLen = len(candidate)
-				title = candidate
+	// Check all possible classifications (no priority)
+	webAppClassification := rp.classifyAsWebApp(templates)
+	apiClassification := rp.classifyAsAPI(templates, findings)
+	apiSpecClassification := rp.classifyAsAPISpec(templates)
+	aiClassification := rp.classifyAsAI(templates)
+
+	// Helper function to build findings from technologies filtered by classification
+	buildTechFindings := func(classification string) (*findingsWithSlugs, []string) {
+		techFindingsMap := &findingsWithSlugs{
+			displayNames:      make([]string, 0, len(domainResult.Technologies)),
+			displayNameToSlug: make(map[string]string),
+		}
+		for techSlug := range domainResult.Technologies {
+			item := NewFindingItem(techSlug)
+			// Only include technologies that match the classification and should be shown
+			// Use hasClassificationForDisplay to include both regular and "~" prefixed classifications
+			if item.ShowInTech && rp.hasClassificationForDisplay(item, classification) {
+				displayName := item.GetDisplayName()
+				techFindingsMap.displayNames = append(techFindingsMap.displayNames, displayName)
+				techFindingsMap.displayNameToSlug[displayName] = techSlug
 			}
 		}
+		sort.Strings(techFindingsMap.displayNames)
+		return techFindingsMap, techFindingsMap.displayNames
+	}
 
-		// Last element is the description
-		var description string
-		if len(event.ExtractedResults) > 1 {
-			description = strings.TrimSpace(event.ExtractedResults[len(event.ExtractedResults)-1])
+	// Add to WebApp collection if it has webapp classification
+	if webAppClassification != "" {
+		webappFindings := rp.filterFindingsByClassification(findings, findingsMap, "webapp")
+		cleanedFindings := rp.cleanFindingsArray(webappFindings)
+
+		var finalMap *findingsWithSlugs
+		var finalFindings []string
+		if len(cleanedFindings) == 0 {
+			finalMap, finalFindings = buildTechFindings("webapp")
+		} else {
+			finalMap = rp.buildFilteredFindingsMap(cleanedFindings, findingsMap)
+			finalFindings = cleanedFindings
 		}
 
-		// Only use title if it's not generic
-		if title != "" && !rp.isGenericTitle(title) {
-			domainResult.Title = title
+		rp.webApps = append(rp.webApps, &Discovery{
+			Domain:       domainResult.Domain,
+			Title:        domainResult.Title,
+			Description:  domainResult.Description,
+			Discovered:   webAppClassification,
+			FindingItems: rp.buildFindingItems(finalFindings, finalMap, templates),
+		})
+		domainResult.Discovered = "WebApp"
+	}
+
+	// Add to API collection if it has api classification
+	if apiClassification != "" {
+		apiFindings := rp.filterFindingsByClassification(findings, findingsMap, "api")
+		cleanedFindings := rp.cleanFindingsArray(apiFindings)
+
+		var finalMap *findingsWithSlugs
+		var finalFindings []string
+
+		if len(cleanedFindings) > 0 {
+			finalMap = rp.buildFilteredFindingsMap(cleanedFindings, findingsMap)
+			finalFindings = cleanedFindings
+		} else {
+			finalMap, finalFindings = buildTechFindings("api")
 		}
 
-		if description != "" {
-			domainResult.Description = description
+		rp.apis = append(rp.apis, &Discovery{
+			Domain:       domainResult.Domain,
+			Title:        domainResult.Title,
+			Description:  domainResult.Description,
+			Discovered:   apiClassification,
+			FindingItems: rp.buildFindingItems(finalFindings, finalMap, templates),
+		})
+		if domainResult.Discovered == "" {
+			domainResult.Discovered = "API"
 		}
 	}
 
-	// Process detection templates
-	detections := meaning.DetectionTemplate.Process(event)
-	for _, detection := range detections {
-		if detection != "" {
-			domainResult.Detections[detection] = true
+	// Add to API Spec collection if it has api-spec classification
+	if apiSpecClassification != "" {
+		apiSpecFindings := rp.filterFindingsByClassification(findings, findingsMap, "api-spec")
+		cleanedFindings := rp.cleanFindingsArray(apiSpecFindings)
+
+		var finalMap *findingsWithSlugs
+		var finalFindings []string
+		if len(cleanedFindings) == 0 {
+			finalMap, finalFindings = buildTechFindings("api-spec")
+		} else {
+			finalMap = rp.buildFilteredFindingsMap(cleanedFindings, findingsMap)
+			finalFindings = cleanedFindings
+		}
+
+		rp.apiSpecs = append(rp.apiSpecs, &Discovery{
+			Domain:       domainResult.Domain,
+			Title:        domainResult.Title,
+			Description:  domainResult.Description,
+			Discovered:   apiSpecClassification,
+			FindingItems: rp.buildFindingItems(finalFindings, finalMap, templates),
+		})
+		if domainResult.Discovered == "" {
+			domainResult.Discovered = "APISpec"
 		}
 	}
 
-	// Process finding templates
-	findings := meaning.FindingTemplate.Process(event)
-	for _, finding := range findings {
-		if finding != "" {
-			domainResult.Findings[finding] = true
-		}
-	}
+	// Add to AI collection if it has ai classification
+	if aiClassification != "" {
+		aiFindings := rp.filterFindingsByClassification(findings, findingsMap, "ai")
+		cleanedFindings := rp.cleanFindingsArray(aiFindings)
 
-	// Extract technologies from specific templates
-	if rp.isTechnologyTemplate(templateID) && event.ExtractedResults != nil {
-		for _, tech := range event.ExtractedResults {
-			if tech != "" {
-				normalized := rp.normalizeTechnology(tech)
-				if normalized != "" { // Only add non-empty normalized technologies
-					domainResult.Technologies[normalized] = true
-					rp.technologies[normalized] = true
-				}
-			}
+		var finalMap *findingsWithSlugs
+		var finalFindings []string
+		if len(cleanedFindings) == 0 {
+			finalMap, finalFindings = buildTechFindings("ai")
+		} else {
+			finalMap = rp.buildFilteredFindingsMap(cleanedFindings, findingsMap)
+			finalFindings = cleanedFindings
+		}
+
+		rp.aiAssets = append(rp.aiAssets, &Discovery{
+			Domain:       domainResult.Domain,
+			Title:        domainResult.Title,
+			Description:  domainResult.Description,
+			Discovered:   aiClassification,
+			FindingItems: rp.buildFindingItems(finalFindings, finalMap, templates),
+		})
+		if domainResult.Discovered == "" {
+			domainResult.Discovered = "AI"
 		}
 	}
 }
 
-// classifyAndAdd classifies the domain result and adds to appropriate collection
-func (rp *ResultProcessor) classifyAndAdd(domainResult *DomainResult, templates map[string]*output.ResultEvent) {
-	// Convert findings to slice for output (technologies are now handled by finding_template)
-	findings := rp.setToSlice(domainResult.Findings)
+// findingsWithSlugs holds both display names and slug mapping
+type findingsWithSlugs struct {
+	displayNames      []string
+	displayNameToSlug map[string]string
+}
 
-	// Classify based on template IDs directly from the templates map
-	apiClassification := rp.classifyAsAPI(templates, findings)
-	webAppClassification := rp.classifyAsWebApp(templates)
+// extractFindingsWithSlugs separates the combined "displayName|slug" format
+func (rp *ResultProcessor) extractFindingsWithSlugs(findings map[string]bool) *findingsWithSlugs {
+	displayNames := make([]string, 0, len(findings))
+	displayNameToSlug := make(map[string]string)
 
-	// Determine final classification and add to appropriate collection
-	if apiClassification != "" {
-		// For APIs, filter out "Web Server" from findings
-		apiFindings := rp.filterWebServerFromAPI(findings)
-		rp.apis = append(rp.apis, &Discovery{
-			Domain:      domainResult.Domain,
-			Title:       domainResult.Title,
-			Description: domainResult.Description,
-			Discovered:  apiClassification,
-			Findings:    rp.cleanFindingsArray(apiFindings),
-		})
-		domainResult.Discovered = "API"
-	} else if webAppClassification != "" {
-		rp.webApps = append(rp.webApps, &Discovery{
-			Domain:      domainResult.Domain,
-			Title:       domainResult.Title,
-			Description: domainResult.Description,
-			Discovered:  webAppClassification,
-			Findings:    rp.cleanFindingsArray(findings),
-		})
-		domainResult.Discovered = "WebApp"
+	for combined := range findings {
+		parts := strings.Split(combined, "|")
+		if len(parts) == 2 {
+			displayName := parts[0]
+			slug := parts[1]
+			displayNames = append(displayNames, displayName)
+			displayNameToSlug[displayName] = slug
+		} else {
+			// Fallback for items without slugs (shouldn't happen)
+			displayNames = append(displayNames, combined)
+			displayNameToSlug[combined] = strings.ToLower(strings.ReplaceAll(combined, " ", "-"))
+		}
 	}
+
+	sort.Strings(displayNames)
+	return &findingsWithSlugs{
+		displayNames:      displayNames,
+		displayNameToSlug: displayNameToSlug,
+	}
+}
+
+// buildFindingItems creates FindingItem array from display names
+func (rp *ResultProcessor) buildFindingItems(displayNames []string, findingsMap *findingsWithSlugs, templates map[string]*StoredResult) []*FindingItem {
+	items := make([]*FindingItem, 0, len(displayNames))
+	for _, displayName := range displayNames {
+		slug, exists := findingsMap.displayNameToSlug[displayName]
+		if !exists {
+			slug = strings.ToLower(strings.ReplaceAll(displayName, " ", "-"))
+		}
+		item := NewFindingItem(slug)
+
+		// If display_as is "link", populate Values from nuclei results
+		if item.DisplayAs == "link" {
+			for _, template := range templates {
+				if template.Findings != nil {
+					if urls, ok := template.Findings[slug]; ok {
+						item.Values = append(item.Values, urls...)
+					}
+				}
+			}
+		}
+
+		items = append(items, item)
+	}
+	return items
 }
 
 // updateSummary updates global summary counters
 func (rp *ResultProcessor) updateSummary(domainResult *DomainResult) {
 	rp.summary.TotalDomains++
 
-	// Count detections
-	rp.summary.TotalDetections += len(domainResult.Detections)
+	// Count total detections from findings
+	rp.summary.TotalDetections += len(domainResult.Findings)
 
 	// Count live domains (domains with any findings)
 	if len(domainResult.Findings) > 0 {
 		rp.summary.LiveExposedDomains++
 	}
 
-	// Count by classification
-	switch domainResult.Discovered {
-	case "API":
-		rp.summary.APIsFound++
-		// Check for API specifications
-		for detection := range domainResult.Detections {
-			if strings.Contains(strings.ToLower(detection), "api spec") {
-				rp.summary.APISpecificationsFound++
+	// Check for API usage in web apps
+	if domainResult.Discovered == "WebApp" {
+		for finding := range domainResult.Findings {
+			if finding == "Using API" {
+				rp.summary.DomainsUsingAPI++
 				break
 			}
-		}
-	case "WebApp":
-		rp.summary.WebAppsFound++
-		// Check for API usage in web apps (frontend frameworks typically use APIs)
-		usingAPI := false
-		for detection := range domainResult.Detections {
-			if strings.Contains(strings.ToLower(detection), "using api") {
-				usingAPI = true
-				break
-			}
-		}
-		// Also check for frontend frameworks that typically use APIs
-		if !usingAPI {
-			for tech := range domainResult.Technologies {
-				techLower := strings.ToLower(tech)
-				if strings.Contains(techLower, "angular") || strings.Contains(techLower, "react") ||
-					strings.Contains(techLower, "vue") || strings.Contains(techLower, "next.js") ||
-					strings.Contains(techLower, "nuxt") {
-					usingAPI = true
-					break
-				}
-			}
-		}
-		if usingAPI {
-			rp.summary.DomainsUsingAPI++
 		}
 	}
 }
@@ -235,265 +356,211 @@ func (rp *ResultProcessor) buildReport() *ExposureReport {
 	sort.Slice(rp.apis, func(i, j int) bool {
 		return rp.apis[i].Domain < rp.apis[j].Domain
 	})
+	sort.Slice(rp.apiSpecs, func(i, j int) bool {
+		return rp.apiSpecs[i].Domain < rp.apiSpecs[j].Domain
+	})
+	sort.Slice(rp.aiAssets, func(i, j int) bool {
+		return rp.aiAssets[i].Domain < rp.aiAssets[j].Domain
+	})
 	sort.Slice(rp.webApps, func(i, j int) bool {
 		return rp.webApps[i].Domain < rp.webApps[j].Domain
 	})
 
-	// Build technologies list
-	techList := rp.setToSlice(rp.technologies)
-	sort.Strings(techList)
+	// Build technologies list from slugs, filtering by ShowInTech flag for top 5
+	// and setting their usage counts
+	var techItems []*FindingItem
+	for slug := range rp.technologies {
+		item := NewFindingItem(slug)
+		if item.ShowInTech {
+			// Set the count from techCounts map
+			item.Count = rp.techCounts[slug]
+			techItems = append(techItems, item)
+		}
+	}
 
-	// Calculate total applications
-	rp.summary.TotalApps = rp.summary.APIsFound + rp.summary.WebAppsFound
+	// Sort by count descending (most used first), then by display name for ties
+	sort.Slice(techItems, func(i, j int) bool {
+		if techItems[i].Count != techItems[j].Count {
+			return techItems[i].Count > techItems[j].Count
+		}
+		return techItems[i].GetDisplayName() < techItems[j].GetDisplayName()
+	})
+
+	// Create top 5 list for first page
+	top5 := techItems
+	if len(techItems) > 5 {
+		top5 = techItems[:5]
+	}
+
+	// Build ALL technologies list (including show_in_tech=false) for detailed section
+	var allTechItems []*FindingItem
+	for slug := range rp.technologies {
+		item := NewFindingItem(slug)
+		// Set the count from techCounts map
+		item.Count = rp.techCounts[slug]
+		allTechItems = append(allTechItems, item)
+	}
+
+	// Sort all technologies by count descending
+	sort.Slice(allTechItems, func(i, j int) bool {
+		if allTechItems[i].Count != allTechItems[j].Count {
+			return allTechItems[i].Count > allTechItems[j].Count
+		}
+		return allTechItems[i].GetDisplayName() < allTechItems[j].GetDisplayName()
+	})
+
+	// Calculate summary counts from actual collections
+	rp.summary.APIsFound = len(rp.apis)
+	rp.summary.APISpecificationsFound = len(rp.apiSpecs)
+	rp.summary.AIAssetsFound = len(rp.aiAssets)
+	rp.summary.WebAppsFound = len(rp.webApps)
+	rp.summary.TotalApps = rp.summary.APIsFound + rp.summary.AIAssetsFound + rp.summary.WebAppsFound
 
 	return &ExposureReport{
 		Summary: rp.summary,
 		Technologies: &TechnologiesDetected{
-			Count:        len(techList),
-			Technologies: techList,
+			Count:           len(techItems),
+			Technologies:    top5,         // Top 5 for first page (show_in_tech=true only)
+			AllTechnologies: allTechItems, // All technologies for detailed section (including show_in_tech=false)
 		},
-		APIsFound:    rp.apis,
-		WebAppsFound: rp.webApps,
+		APIsFound:     rp.apis,
+		APISpecsFound: rp.apiSpecs,
+		AIAssetsFound: rp.aiAssets,
+		WebAppsFound:  rp.webApps,
 	}
 }
 
 // ResultProcessor helper methods
 
-func (rp *ResultProcessor) classifyAsAPI(templates map[string]*output.ResultEvent, findings []string) string {
-	hasAPISpec := false
-	hasAPIServer := false
-	hasAPIKeyword := false
-	hasWebApp := false
+func (rp *ResultProcessor) classifyAsAPI(templates map[string]*StoredResult, findings []string) string {
+	hasServerDetection := false
+	hasDomainPattern := false
 
-	// Check for API specification templates
-	if templates["openapi"] != nil || templates["swagger-api"] != nil ||
-		templates["wadl-api"] != nil || templates["wsdl-api"] != nil {
-		hasAPISpec = true
+	// Check for specific API detection types
+	for _, template := range templates {
+		if template.Findings != nil {
+			for slug := range template.Findings {
+				// Confirmed API: serving JSON or XML
+				if slug == "api.server.json" || slug == "api.server.xml" {
+					hasServerDetection = true
+				}
+				// Potential API: domain pattern only
+				if slug == "api.domain_pattern" {
+					hasDomainPattern = true
+				}
+			}
+		}
 	}
 
-	// Check for API server detection
-	if templates["api-server-detection"] != nil {
-		hasAPIServer = true
-	}
-
-	// Check for API keyword/routing server patterns
-	if templates["api-host-keyword-detection"] != nil || templates["blank-root-server-detection"] != nil {
-		hasAPIKeyword = true
-	}
-
-	// Check for web app indicators (must match classifyAsWebApp function)
-	if templates["backend-framework-detection"] != nil ||
-		templates["frontend-tech-detection"] != nil ||
-		templates["js-libraries-detect"] != nil || templates["sap-spartacus"] != nil ||
-		templates["gunicorn-detect"] != nil || templates["fingerprinthub-web-fingerprints"] != nil ||
-		templates["tech-detect"] != nil {
-		hasWebApp = true
-	}
-
-	// Backend/Frontend tech presence excludes API classification
-	hasBackendFrontend := templates["backend-framework-detection"] != nil || templates["frontend-tech-detection"] != nil
-	if hasBackendFrontend {
-		return "" // Backend/Frontend tech means it's a WebApp, not API
-	}
-
-	// API server detection only wins if no backend/frontend tech
-	if hasAPIServer {
+	// Server detection takes precedence (confirmed)
+	if hasServerDetection {
 		return "Confirmed API Endpoint"
 	}
+	// Domain pattern only (potential)
+	if hasDomainPattern {
+		return "Potential API Endpoint"
+	}
+	return ""
+}
 
-	// Other WebApp indicators exclude remaining API classifications
-	if hasWebApp {
-		return "" // WebApp takes precedence for specs and keywords
+func (rp *ResultProcessor) classifyAsWebApp(templates map[string]*StoredResult) string {
+	hasWebApp := false
+
+	// Check for web app indicators using classification metadata from findings.json
+	// Look in both "frontend-tech-detection" and "" (empty template ID from aggregated results)
+	for templateID, template := range templates {
+		if (templateID == "frontend-tech-detection" || templateID == "") && template.Findings != nil {
+			for slug := range template.Findings {
+				// Look up the finding item and check its classification
+				item := NewFindingItem(slug)
+				if rp.hasClassification(item, "webapp") {
+					hasWebApp = true
+					break
+				}
+			}
+			if hasWebApp {
+				break
+			}
+		}
 	}
 
-	// For non-WebApp domains without API server, classify other API types
-	if hasAPISpec {
-		return "Potential API Endpoint"
-	} else if hasAPIKeyword {
-		// Check if it's only blank-root-server (with no other API indicators) - don't classify as API
-		hasBlankRoot := templates["blank-root-server-detection"] != nil
-		hasAPIHostKeyword := templates["api-host-keyword-detection"] != nil
-
-		if hasBlankRoot && !hasAPIHostKeyword {
-			// Only blank-root detected, no other API indicators
-			return ""
-		}
-
-		// Check if it's only "Routing Server" - if so, don't classify as API
-		if len(findings) == 1 && strings.ToLower(findings[0]) == "routing server" {
-			fmt.Printf("[DEBUG] Skipping API classification for domain with only 'Routing Server': %v\n", findings)
-			return ""
-		}
-		return "Potential API Endpoint"
+	// Backend/Frontend tech always makes it a WebApp
+	if hasWebApp {
+		return "Web App"
 	}
 
 	return ""
 }
 
-func (rp *ResultProcessor) classifyAsWebApp(templates map[string]*output.ResultEvent) string {
-	hasWebApp := false
-	hasAPIServer := false
-
-	// Check for web app indicators
-	if templates["backend-framework-detection"] != nil ||
-		templates["frontend-tech-detection"] != nil ||
-		templates["js-libraries-detect"] != nil || templates["sap-spartacus"] != nil ||
-		templates["gunicorn-detect"] != nil || templates["fingerprinthub-web-fingerprints"] != nil ||
-		templates["tech-detect"] != nil {
-		hasWebApp = true
+// hasClassification checks if a FindingItem has a specific classification tag
+// Classifications with "~" prefix are ignored for classification purposes (only shown in findings)
+func (rp *ResultProcessor) hasClassification(item *FindingItem, classification string) bool {
+	for _, c := range item.Classification {
+		// Skip classifications with "~" prefix (they're only for display, not classification)
+		if strings.HasPrefix(c, "~") {
+			continue
+		}
+		if c == classification {
+			return true
+		}
 	}
+	return false
+}
 
-	// Check for API server detection (JSON/XML serving)
-	if templates["api-server-detection"] != nil {
-		hasAPIServer = true
+// hasClassificationForDisplay checks if a FindingItem has a specific classification tag for display
+// Includes both regular classifications and "~" prefixed ones
+func (rp *ResultProcessor) hasClassificationForDisplay(item *FindingItem, classification string) bool {
+	for _, c := range item.Classification {
+		// Match both "webapp" and "~webapp"
+		if c == classification || c == "~"+classification {
+			return true
+		}
 	}
+	return false
+}
 
-	// Backend/Frontend tech always makes it a WebApp (even with JSON/XML)
-	hasBackendFrontend := templates["backend-framework-detection"] != nil || templates["frontend-tech-detection"] != nil
-	if hasBackendFrontend {
-		return "Web App"
+func (rp *ResultProcessor) classifyAsAPISpec(templates map[string]*StoredResult) string {
+	// Check all templates for API-Spec classification using metadata
+	for _, template := range templates {
+		if template.Findings != nil {
+			for slug := range template.Findings {
+				item := NewFindingItem(slug)
+				if rp.hasClassification(item, "api-spec") {
+					return "API Specification"
+				}
+			}
+		}
 	}
+	return ""
+}
 
-	// Other web indicators only if not serving JSON/XML
-	if hasWebApp && !hasAPIServer {
-		return "Web App"
+func (rp *ResultProcessor) classifyAsAI(templates map[string]*StoredResult) string {
+	// Check all templates for AI classification using metadata
+	for _, template := range templates {
+		if template.Findings != nil {
+			for slug := range template.Findings {
+				item := NewFindingItem(slug)
+				if rp.hasClassification(item, "ai") {
+					return "AI Service"
+				}
+			}
+		}
 	}
-
 	return ""
 }
 
 func (rp *ResultProcessor) isTechnologyTemplate(templateID string) bool {
 	techTemplates := map[string]bool{
-		"api-server-detection":            true, // API technologies
-		"backend-framework-detection":     true, // Backend frameworks
-		"frontend-tech-detection":         true, // Frontend technologies
-		"api-gateway-proxy-lb-detection":  true, // Infrastructure technologies
-		"js-libraries-detect":             true, // JavaScript libraries
-		"sap-spartacus":                   true, // SAP technologies
-		"gunicorn-detect":                 true, // Python web servers
-		"fingerprinthub-web-fingerprints": true, // General web fingerprints
-		"tech-detect":                     true, // General technology detection
-		"auth-detection":                  true, // Authentication mechanisms
+		"":                        true, // Empty template ID = aggregated results from all templates
+		"frontend-tech-detection": true, // All technologies: frontend, backend, API, infrastructure, auth
+		"ai-detection":            true, // AI technologies: OpenAI, Anthropic, Ollama, MCP, Vector DBs
+		"openapi":                 true, // API spec: OpenAPI
+		"swagger-api":             true, // API spec: Swagger
+		"postman-collection":      true, // API spec: Postman
+		"wadl-api":                true, // API spec: WADL
+		"wsdl-api":                true, // API spec: WSDL
 	}
 	return techTemplates[templateID]
-}
-
-func (rp *ResultProcessor) normalizeTechnology(tech string) string {
-	// Normalize technology names (convert to lowercase, remove versions for common cases)
-	normalized := strings.ToLower(strings.TrimSpace(tech))
-
-	// Skip empty strings
-	if normalized == "" {
-		return ""
-	}
-
-	// Clean up JSON array artifacts and URLs that shouldn't be technologies
-	if strings.HasPrefix(normalized, "[\"") && strings.HasSuffix(normalized, "\"]") {
-		// Remove JSON array formatting
-		normalized = strings.TrimPrefix(normalized, "[\"")
-		normalized = strings.TrimSuffix(normalized, "\"]")
-	}
-
-	// Skip URLs that are not technology indicators
-	if strings.HasPrefix(normalized, "http://") || strings.HasPrefix(normalized, "https://") {
-		return ""
-	}
-
-	// Skip file paths that are not technology indicators
-	if strings.HasPrefix(normalized, "/") && (strings.Contains(normalized, ".do") || strings.Contains(normalized, ".jsp") || strings.Contains(normalized, ".php")) {
-		return ""
-	}
-
-	// Improve form detection specificity
-	if normalized == "has forms" {
-		return "authentication-forms"
-	}
-
-	// Handle web servers
-	if strings.Contains(normalized, "nginx") {
-		return "nginx"
-	}
-	if strings.Contains(normalized, "apache") {
-		return "apache"
-	}
-	if strings.Contains(normalized, "iis") {
-		return "microsoft-iis"
-	}
-
-	// Handle CDNs and infrastructure
-	if strings.Contains(normalized, "akamai") {
-		return "akamai"
-	}
-	if strings.Contains(normalized, "cloudflare") {
-		return "cloudflare"
-	}
-	if strings.Contains(normalized, "amazon") || strings.Contains(normalized, "aws") {
-		return "aws"
-	}
-
-	// Handle JavaScript frameworks
-	if strings.Contains(normalized, "next.js") || strings.Contains(normalized, "nextjs") {
-		return "next.js"
-	}
-	if strings.Contains(normalized, "react") {
-		return "react"
-	}
-	if strings.Contains(normalized, "angular") {
-		return "angular"
-	}
-	if strings.Contains(normalized, "vue") {
-		return "vue.js"
-	}
-
-	// Handle backend technologies
-	if strings.Contains(normalized, "wordpress") {
-		return "wordpress"
-	}
-	if strings.Contains(normalized, "drupal") {
-		return "drupal"
-	}
-	if strings.Contains(normalized, "joomla") {
-		return "joomla"
-	}
-	if strings.Contains(normalized, "django") {
-		return "django"
-	}
-	if strings.Contains(normalized, "spring") {
-		return "spring"
-	}
-
-	// Handle authentication & SSO
-	if strings.Contains(normalized, "oauth") {
-		return "oauth"
-	}
-	if strings.Contains(normalized, "saml") {
-		return "saml"
-	}
-	if strings.Contains(normalized, "openid") {
-		return "openid"
-	}
-	if strings.Contains(normalized, "sso") {
-		return "sso"
-	}
-
-	// Remove version numbers and common prefixes
-	// Remove version patterns like "v1.2.3", "1.2.3", "(1.2.3)"
-	versionPattern := regexp.MustCompile(`\s*v?\d+\.\d+(\.\d+)?(\s*\([^)]+\))?`)
-	normalized = versionPattern.ReplaceAllString(normalized, "")
-
-	// Clean up extra spaces
-	normalized = strings.TrimSpace(normalized)
-
-	return normalized
-}
-
-func (rp *ResultProcessor) setToSlice(set map[string]bool) []string {
-	slice := make([]string, 0, len(set))
-	for key := range set {
-		slice = append(slice, key)
-	}
-	sort.Strings(slice)
-	return slice
 }
 
 func (rp *ResultProcessor) cleanFindingsArray(findings []string) []string {
@@ -519,22 +586,35 @@ func (rp *ResultProcessor) cleanFindingsArray(findings []string) []string {
 	return cleanedFindings
 }
 
-func (rp *ResultProcessor) cleanFindings(findings []string) string {
-	cleanedArray := rp.cleanFindingsArray(findings)
-	if len(cleanedArray) == 0 {
-		return ""
-	}
-	return strings.Join(cleanedArray, ", ")
-}
-
-func (rp *ResultProcessor) filterWebServerFromAPI(findings []string) []string {
+// filterFindingsByClassification filters findings to only include those with the specified classification
+// Uses hasClassificationForDisplay to include both regular and "~" prefixed classifications
+func (rp *ResultProcessor) filterFindingsByClassification(findings []string, findingsMap *findingsWithSlugs, classification string) []string {
 	var filtered []string
-	for _, finding := range findings {
-		if finding != "Web Server" {
-			filtered = append(filtered, finding)
+	for _, displayName := range findings {
+		slug, exists := findingsMap.displayNameToSlug[displayName]
+		if !exists {
+			continue
+		}
+		item := NewFindingItem(slug)
+		if rp.hasClassificationForDisplay(item, classification) {
+			filtered = append(filtered, displayName)
 		}
 	}
 	return filtered
+}
+
+// buildFilteredFindingsMap rebuilds a findingsWithSlugs map from filtered display names
+func (rp *ResultProcessor) buildFilteredFindingsMap(filteredNames []string, originalMap *findingsWithSlugs) *findingsWithSlugs {
+	newMap := &findingsWithSlugs{
+		displayNames:      filteredNames,
+		displayNameToSlug: make(map[string]string),
+	}
+	for _, name := range filteredNames {
+		if slug, exists := originalMap.displayNameToSlug[name]; exists {
+			newMap.displayNameToSlug[name] = slug
+		}
+	}
+	return newMap
 }
 
 // isGenericTitle checks if a title is too generic to be useful
