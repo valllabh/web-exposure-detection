@@ -93,10 +93,18 @@ func ExecuteNucleiScanWithCallback(ne *nuclei.NucleiEngine, opts *NucleiOptions,
 		if err != nil {
 			return nil, fmt.Errorf("failed to create progressive results file: %w", err)
 		}
-		defer progressiveWriter.Close()
+		defer func() {
+			if err := progressiveWriter.Close(); err != nil {
+				logger.Warning().Msgf("Failed to close progressive writer: %v", err)
+			}
+		}()
 		// Use larger buffer (1MB) to reduce syscalls for large results
 		jsonlWriter = bufio.NewWriterSize(progressiveWriter, 1024*1024)
-		defer jsonlWriter.Flush()
+		defer func() {
+			if err := jsonlWriter.Flush(); err != nil {
+				logger.Warning().Msgf("Failed to flush jsonl writer: %v", err)
+			}
+		}()
 		logger.Info().Msgf("Writing progressive results to: %s", opts.ResultsWriter)
 	}
 

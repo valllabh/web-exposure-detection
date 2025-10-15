@@ -109,7 +109,9 @@ func (s *scanner) extractEmbeddedTemplates() (string, error) {
 
 	// Extract embedded scan-templates to temp directory
 	if err := extractEmbeddedDirectory(scanTemplatesFS, "scan-templates", tempDir); err != nil {
-		os.RemoveAll(tempDir) // Clean up on error
+		if rmErr := os.RemoveAll(tempDir); rmErr != nil {
+			logger.Warning().Msgf("Failed to clean up temp directory: %v", rmErr)
+		}
 		logger.Error().Msgf("Failed to extract embedded templates: %v", err)
 		return "", fmt.Errorf("failed to extract embedded templates: %w", err)
 	}
@@ -121,7 +123,7 @@ func (s *scanner) extractEmbeddedTemplates() (string, error) {
 // extractEmbeddedDirectory recursively extracts a directory from embedded filesystem
 func extractEmbeddedDirectory(embeddedFS embed.FS, src, dst string) error {
 	// Create destination directory
-	if err := os.MkdirAll(dst, 0755); err != nil {
+	if err := os.MkdirAll(dst, 0750); err != nil {
 		return fmt.Errorf("failed to create destination directory %s: %w", dst, err)
 	}
 
@@ -161,7 +163,7 @@ func extractEmbeddedFile(embeddedFS embed.FS, src, dst string) error {
 	}
 
 	// Write destination file
-	if err := os.WriteFile(dst, data, 0644); err != nil {
+	if err := os.WriteFile(dst, data, 0600); err != nil {
 		return fmt.Errorf("failed to write destination file %s: %w", dst, err)
 	}
 
@@ -248,7 +250,7 @@ func (s *scanner) ScanWithPreset(domains []string, keywords []string, templates 
 
 	// Create results directory structure
 	resultsDir := filepath.Join("results", targetDomain)
-	if err := os.MkdirAll(resultsDir, 0755); err != nil {
+	if err := os.MkdirAll(resultsDir, 0750); err != nil {
 		return fmt.Errorf("failed to create results directory: %w", err)
 	}
 	logger.Debug().Msgf("Created results directory: %s", resultsDir)
@@ -274,7 +276,7 @@ func (s *scanner) ScanWithPreset(domains []string, keywords []string, templates 
 
 	// Prepare nuclei results directory
 	nucleiResultsDir := filepath.Join(resultsDir, "nuclei-results")
-	if err := os.MkdirAll(nucleiResultsDir, 0755); err != nil {
+	if err := os.MkdirAll(nucleiResultsDir, 0750); err != nil {
 		return fmt.Errorf("failed to create nuclei results directory: %w", err)
 	}
 
@@ -334,7 +336,7 @@ func (s *scanner) RunDiscoveryOnly(domains []string, keywords []string, force bo
 
 	// Create results directory structure
 	resultsDir := filepath.Join("results", targetDomain)
-	if err := os.MkdirAll(resultsDir, 0755); err != nil {
+	if err := os.MkdirAll(resultsDir, 0750); err != nil {
 		return fmt.Errorf("failed to create results directory: %w", err)
 	}
 
@@ -378,7 +380,7 @@ func (s *scanner) GenerateReportFromExistingResults(domains []string, debug bool
 
 	// Create results directory structure (same as ScanWithOptions)
 	resultsDir := filepath.Join("results", targetDomain)
-	err := os.MkdirAll(resultsDir, 0755)
+	err := os.MkdirAll(resultsDir, 0750)
 	if err != nil {
 		return fmt.Errorf("failed to create results directory: %w", err)
 	}
@@ -471,7 +473,7 @@ func (s *scanner) writeAndGenerateFormats(report *ExposureReport, resultsDir str
 func (s *scanner) writeJSONReport(report *ExposureReport, targetDomain string) error {
 	// Create directory structure: ./reports/{first-domain-name}/
 	reportsDir := filepath.Join("reports", targetDomain)
-	err := os.MkdirAll(reportsDir, 0755)
+	err := os.MkdirAll(reportsDir, 0750)
 	if err != nil {
 		return fmt.Errorf("failed to create reports directory: %w", err)
 	}
@@ -485,7 +487,7 @@ func (s *scanner) writeJSONReport(report *ExposureReport, targetDomain string) e
 		return fmt.Errorf("failed to marshal report: %w", err)
 	}
 
-	err = os.WriteFile(fullPath, data, 0644)
+	err = os.WriteFile(fullPath, data, 0600)
 	if err != nil {
 		return fmt.Errorf("failed to write report file: %w", err)
 	}
@@ -850,7 +852,11 @@ func (s *scanner) convertJSONLToJSON(jsonlPath, jsonPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to open JSONL file: %w", err)
 	}
-	defer jsonlFile.Close()
+	defer func() {
+		if err := jsonlFile.Close(); err != nil {
+			logger.Warning().Msgf("Failed to close JSONL file: %v", err)
+		}
+	}()
 
 	// Read and parse each line
 	var results []*StoredResult
@@ -906,7 +912,7 @@ func (s *scanner) convertJSONLToJSON(jsonlPath, jsonPath string) error {
 		return fmt.Errorf("failed to marshal results: %w", err)
 	}
 
-	if err := os.WriteFile(jsonPath, data, 0644); err != nil {
+	if err := os.WriteFile(jsonPath, data, 0600); err != nil {
 		return fmt.Errorf("failed to write JSON file: %w", err)
 	}
 
@@ -935,7 +941,7 @@ func (s *scanner) writeJSONToResults(report *ExposureReport, resultsDir string) 
 		return fmt.Errorf("failed to marshal report: %w", err)
 	}
 
-	err = os.WriteFile(filename, data, 0644)
+	err = os.WriteFile(filename, data, 0600)
 	if err != nil {
 		logger.Error().Msgf("Failed to write report file: %v", err)
 		return fmt.Errorf("failed to write report file: %w", err)

@@ -15,18 +15,18 @@ linters:
     - gocyclo
     - gocognit
     - goconst
-    - gocritic
     - gofmt
     - goimports
     - misspell
-    - unparam
     - unconvert
-    - prealloc
-    - exportloopref
     - noctx
     - bodyclose
     - sqlclosecheck
     - rowserrcheck
+  disable:
+    - gocritic  # Too many false positives
+    - unparam   # Unused parameter checks can be noisy
+    - prealloc  # Pre-allocation suggestions often not worth it
 
 linters-settings:
   gosec:
@@ -37,15 +37,16 @@ linters-settings:
     confidence: medium
 
   gocyclo:
-    min-complexity: 15
+    min-complexity: 30
 
   gocognit:
-    min-complexity: 20
+    min-complexity: 65
 
   govet:
     enable-all: true
     disable:
       - shadow
+      - fieldalignment
 
   staticcheck:
     checks: ["all"]

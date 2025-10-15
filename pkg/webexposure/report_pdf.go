@@ -65,7 +65,7 @@ func (s *scanner) generatePDF(htmlPath, pdfPath string) error {
 		return fmt.Errorf("failed to read PDF data: %w", err)
 	}
 
-	err = os.WriteFile(pdfPath, pdfBytes, 0644)
+	err = os.WriteFile(pdfPath, pdfBytes, 0600)
 	if err != nil {
 		logger.Error().Msgf("Failed to write PDF file to %s: %v", pdfPath, err)
 		return fmt.Errorf("failed to write PDF file: %w", err)

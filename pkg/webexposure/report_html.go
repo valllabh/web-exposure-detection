@@ -22,7 +22,7 @@ func (s *scanner) generateHTMLReport(report *ExposureReport, resultsDir string) 
 	assetsDir := filepath.Join(reportDir, "assets")
 
 	// Create report directory
-	if err := os.MkdirAll(reportDir, 0755); err != nil {
+	if err := os.MkdirAll(reportDir, 0750); err != nil {
 		return fmt.Errorf("failed to create report directory: %w", err)
 	}
 	logger.Info().Msgf("Created report directory: %s", reportDir)
@@ -41,7 +41,7 @@ func (s *scanner) generateHTMLReport(report *ExposureReport, resultsDir string) 
 
 	// Write the HTML report
 	htmlPath := filepath.Join(reportDir, "index.html")
-	if err := os.WriteFile(htmlPath, htmlContent, 0644); err != nil {
+	if err := os.WriteFile(htmlPath, htmlContent, 0600); err != nil {
 		return fmt.Errorf("failed to write HTML report: %w", err)
 	}
 	logger.Info().Msgf("HTML report generated: %s", htmlPath)
@@ -84,7 +84,7 @@ func copyEmbeddedDirectory(embeddedFS embed.FS, src, dst string) error {
 	logger.Debug().Msgf("Copying embedded directory %s to %s", src, dst)
 
 	// Create destination directory
-	if err := os.MkdirAll(dst, 0755); err != nil {
+	if err := os.MkdirAll(dst, 0750); err != nil {
 		logger.Error().Msgf("Failed to create destination directory %s: %v", dst, err)
 		return fmt.Errorf("failed to create destination directory %s: %w", dst, err)
 	}
@@ -129,7 +129,7 @@ func copyEmbeddedFile(embeddedFS embed.FS, src, dst string) error {
 	}
 
 	// Write destination file
-	if err := os.WriteFile(dst, data, 0644); err != nil {
+	if err := os.WriteFile(dst, data, 0600); err != nil {
 		logger.Error().Msgf("Failed to write destination file %s: %v", dst, err)
 		return fmt.Errorf("failed to write destination file %s: %w", dst, err)
 	}

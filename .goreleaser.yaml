@@ -52,16 +52,10 @@ checksum:
 
 # SBOM generation for supply chain security
 sboms:
-  - id: default
+  - id: archive
     artifacts: archive
     documents:
       - "{{ .ProjectName }}_{{ .Version }}_sbom.spdx.json"
-    cmd: cyclonedx-gomod
-    args:
-      - mod
-      - -json
-      - -output
-      - "{{ .ProjectName }}_{{ .Version }}_sbom.cyclonedx.json"
 
 # Sign artifacts for verification
 signs:

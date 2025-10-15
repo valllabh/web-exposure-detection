@@ -253,7 +253,7 @@ func (s *scanner) saveDomainsToCache(domains []string, cacheFile string) error {
 		return err
 	}
 
-	if err := os.WriteFile(cacheFile, data, 0644); err != nil {
+	if err := os.WriteFile(cacheFile, data, 0600); err != nil {
 		logger.Error().Msgf("Failed to write cache file %s: %v", cacheFile, err)
 		return err
 	}

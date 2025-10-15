@@ -1,5 +1,11 @@
 # Web Exposure Detection
 
+[![Test](https://github.com/valllabh/web-exposure-detection/actions/workflows/test.yml/badge.svg)](https://github.com/valllabh/web-exposure-detection/actions/workflows/test.yml)
+[![Security](https://github.com/valllabh/web-exposure-detection/actions/workflows/security.yml/badge.svg)](https://github.com/valllabh/web-exposure-detection/actions/workflows/security.yml)
+[![Release](https://github.com/valllabh/web-exposure-detection/actions/workflows/release.yml/badge.svg)](https://github.com/valllabh/web-exposure-detection/actions/workflows/release.yml)
+[![SLSA](https://github.com/valllabh/web-exposure-detection/actions/workflows/slsa.yml/badge.svg)](https://github.com/valllabh/web-exposure-detection/actions/workflows/slsa.yml)
+[![VEX](https://github.com/valllabh/web-exposure-detection/actions/workflows/vex.yml/badge.svg)](https://github.com/valllabh/web-exposure-detection/actions/workflows/vex.yml)
+
 CLI tool for detecting web exposure vulnerabilities through domain discovery and security scanning.
 
 ## Features

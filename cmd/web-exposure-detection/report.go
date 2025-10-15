@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/spf13/cobra"
 	"web-exposure-detection/internal/cli"
 	"web-exposure-detection/pkg/webexposure"
+
+	"github.com/spf13/cobra"
 )
 
 // reportCmd represents the report command
