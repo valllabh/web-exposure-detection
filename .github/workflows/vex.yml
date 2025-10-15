@@ -23,10 +23,11 @@ jobs:
       - name: Install vexctl
         run: |
           go install github.com/openvex/vexctl@latest
+          echo "$HOME/go/bin" >> $GITHUB_PATH
 
       - name: Validate VEX document
         run: |
-          vexctl validate .vex.yaml
+          $HOME/go/bin/vexctl validate .vex.yaml
 
       - name: Generate VEX attestation
         run: |
