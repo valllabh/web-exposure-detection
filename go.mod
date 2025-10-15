@@ -5,8 +5,9 @@ go 1.24.6
 toolchain go1.24.7
 
 require (
-	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/go-rod/rod v0.116.2
+	github.com/projectdiscovery/dsl v0.5.0
+	github.com/projectdiscovery/gologger v1.1.54
 	github.com/projectdiscovery/nuclei/v3 v3.3.5
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
@@ -28,7 +29,6 @@ require (
 	github.com/Azure/go-ntlmssp v0.0.0-20221128193559-754e69321358 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.4.2 // indirect
 	github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible // indirect
-	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/Mzack9999/gcache v0.0.0-20230410081825-519e28eab057 // indirect
@@ -164,7 +164,6 @@ require (
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/hbakhtiyor/strsim v0.0.0-20190107154042-4d2bbb273edf // indirect
 	github.com/hdm/jarm-go v0.0.7 // indirect
-	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/invopop/jsonschema v0.13.0 // indirect
@@ -214,9 +213,7 @@ require (
 	github.com/mikelolasagasti/xz v1.0.1 // indirect
 	github.com/minio/minlz v1.0.1 // indirect
 	github.com/minio/selfupdate v0.6.1-0.20230907112617-f11e74f84ca7 // indirect
-	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
-	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
@@ -244,7 +241,6 @@ require (
 	github.com/projectdiscovery/chaos-client v0.5.2 // indirect
 	github.com/projectdiscovery/clistats v0.1.1 // indirect
 	github.com/projectdiscovery/dnsx v1.2.2 // indirect
-	github.com/projectdiscovery/dsl v0.5.0 // indirect
 	github.com/projectdiscovery/fastdialer v0.4.4 // indirect
 	github.com/projectdiscovery/fasttemplate v0.0.2 // indirect
 	github.com/projectdiscovery/fdmax v0.0.4 // indirect
@@ -252,7 +248,6 @@ require (
 	github.com/projectdiscovery/go-smb2 v0.0.0-20240129202741-052cc450c6cb // indirect
 	github.com/projectdiscovery/goconfig v0.0.1 // indirect
 	github.com/projectdiscovery/goflags v0.1.74 // indirect
-	github.com/projectdiscovery/gologger v1.1.54 // indirect
 	github.com/projectdiscovery/gostruct v0.0.2 // indirect
 	github.com/projectdiscovery/gozero v0.0.3 // indirect
 	github.com/projectdiscovery/hmap v0.0.92 // indirect
@@ -290,7 +285,6 @@ require (
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/shirou/gopsutil/v3 v3.24.5 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
-	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/shurcooL/graphql v0.0.0-20230722043721-ed46e5a46466 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/skeema/knownhosts v1.3.1 // indirect
@@ -373,5 +367,3 @@ require (
 	mellium.im/sasl v0.3.2 // indirect
 	moul.io/http2curl v1.0.0 // indirect
 )
-
-replace github.com/valllabh/domain-scan => /Users/vajoshi/Work/domain-scan
