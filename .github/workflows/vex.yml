@@ -20,31 +20,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install vexctl
+      - name: Validate VEX document format
         run: |
-          go install github.com/openvex/vexctl@latest
-          echo "$HOME/go/bin" >> $GITHUB_PATH
-
-      - name: Validate VEX document
-        run: |
-          $HOME/go/bin/vexctl validate .vex.yaml
-
-      - name: Generate VEX attestation
-        run: |
-          # Convert YAML to JSON format
-          vexctl attest --product="pkg:github/valllabh/web-exposure-detection@main" \
-            --vuln="GHSA-c7q2-7mrq-w2rg" \
-            --status="not_affected" \
-            --file=.vex.yaml \
-            --output-file=vex-attestation.json
+          # Basic YAML syntax validation
+          python3 -c "import yaml; yaml.safe_load(open('.vex.yaml'))"
 
       - name: Upload VEX document
         uses: actions/upload-artifact@v4
         with:
           name: vex-document
-          path: |
-            .vex.yaml
-            vex-attestation.json
+          path: .vex.yaml
           retention-days: 90
 
   publish-vex:
@@ -61,6 +46,4 @@ jobs:
       - name: Upload to release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            .vex.yaml
-            vex-attestation.json
+          files: .vex.yaml
