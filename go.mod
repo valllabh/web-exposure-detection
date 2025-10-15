@@ -11,7 +11,7 @@ require (
 	github.com/projectdiscovery/nuclei/v3 v3.3.5
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
-	github.com/valllabh/domain-scan v1.0.3
+	github.com/valllabh/domain-scan v1.0.4
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -140,6 +140,7 @@ require (
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.4.0 // indirect
+	github.com/gocarina/gocsv v0.0.0-20240520201108-78e41c74b4b1 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
@@ -225,7 +226,7 @@ require (
 	github.com/nwaples/rardecode/v2 v2.1.1 // indirect
 	github.com/oasdiff/yaml v0.0.0-20250309154309-f31be36b4037 // indirect
 	github.com/oasdiff/yaml3 v0.0.0-20250309153720-d2182401db90 // indirect
-	github.com/olekukonko/tablewriter v0.0.5 // indirect
+	github.com/olekukonko/tablewriter v1.0.8 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
@@ -251,7 +252,7 @@ require (
 	github.com/projectdiscovery/gostruct v0.0.2 // indirect
 	github.com/projectdiscovery/gozero v0.0.3 // indirect
 	github.com/projectdiscovery/hmap v0.0.92 // indirect
-	github.com/projectdiscovery/httpx v1.7.0 // indirect
+	github.com/projectdiscovery/httpx v1.7.1 // indirect
 	github.com/projectdiscovery/interactsh v1.2.4 // indirect
 	github.com/projectdiscovery/ldapserver v1.0.2-0.20240219154113-dcc758ebc0cb // indirect
 	github.com/projectdiscovery/machineid v0.0.0-20250715113114-c77eb3567582 // indirect
@@ -369,8 +370,10 @@ require (
 )
 
 // Security: Force patched versions to address Dependabot alerts
-// Note: mholt/archiver and go-pg/pg are deprecated packages with no patches
-// These are transitive dependencies from projectdiscovery/nuclei
-// Vulnerability scope is limited to archive extraction and SQL operations
-// which are not exposed in this tool's usage of nuclei SDK
-replace github.com/nwaples/rardecode/v2 => github.com/nwaples/rardecode/v2 v2.0.0
+// rardecode: Fix DoS vulnerability (v2.2.1)
+// tablewriter: Force v0.0.5 for compatibility with jaytaylor/html2text
+// archiver,go-pg: Documented in .vex.yaml as not_affected (vulnerable code not used)
+replace (
+	github.com/nwaples/rardecode/v2 => github.com/nwaples/rardecode/v2 v2.2.1
+	github.com/olekukonko/tablewriter => github.com/olekukonko/tablewriter v0.0.5
+)

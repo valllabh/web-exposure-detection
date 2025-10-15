@@ -69,6 +69,37 @@ statements:
       - "@pkg:golang/github.com/nwaples/rardecode/v2@v2.1.1"
     status: fixed
     action_statement: |
-      Upgraded to v2.2.0 which includes fix for unrestricted dictionary sizes.
+      Upgraded to v2.2.1 which includes fix for unrestricted dictionary sizes.
       Forced via go.mod replace directive to ensure patched version is used.
     action_statement_timestamp: "2025-10-15T06:00:00Z"
+
+# Dependency Version Constraints
+dependency_notes:
+  nuclei:
+    current_version: "v3.3.5"
+    latest_version: "v3.4.10"
+    constraint_reason: |
+      Cannot upgrade to nuclei v3.4.10 due to breaking dependency conflicts:
+      - nuclei v3.4.10 requires tablewriter v1.0.8 (new API)
+      - httpx v1.7.1 and domain-scan v1.0.4 depend on jaytaylor/html2text
+      - html2text requires tablewriter v0.0.5 (old API)
+
+      The tablewriter v1.0.8 introduced breaking API changes that are incompatible
+      with html2text. Upgrading would require either:
+      1. Forking and patching html2text for new tablewriter API
+      2. Waiting for upstream html2text update
+
+      Staying on v3.3.5 maintains stability. No known security vulnerabilities
+      in nuclei v3.3.5 that affect this application's usage.
+
+  updated_dependencies:
+    - name: "httpx"
+      from: "v1.7.0"
+      to: "v1.7.1"
+    - name: "domain-scan"
+      from: "v1.0.3"
+      to: "v1.0.4"
+    - name: "rardecode/v2"
+      from: "v2.0.0"
+      to: "v2.2.1"
+      note: "Security fix via go.mod replace directive"
