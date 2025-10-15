@@ -20,7 +20,7 @@ Results are cached in results/{domain}/domain-scan.json for use by scan and repo
 
 Examples:
   web-exposure-detection discover example.com
-  web-exposure-detection discover example.com --keywords "examplecorp,exampleinc"
+  web-exposure-detection discover example.com --domain-keywords "examplecorp,exampleinc"
   web-exposure-detection discover example.com --force`,
 	Args: cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -41,10 +41,10 @@ Examples:
 			return fmt.Errorf("no valid domains provided")
 		}
 
-		// Get keywords flag
-		keywords, err := cmd.Flags().GetStringSlice("keywords")
+		// Get domain-keywords flag
+		domainKeywords, err := cmd.Flags().GetStringSlice("domain-keywords")
 		if err != nil {
-			return fmt.Errorf("failed to get keywords flag: %w", err)
+			return fmt.Errorf("failed to get domain-keywords flag: %w", err)
 		}
 
 		// Get force flag
@@ -74,14 +74,14 @@ Examples:
 
 		// Run discovery with CLI interface
 		fmt.Printf("Starting domain discovery for: %v\n", domains)
-		if len(keywords) > 0 {
-			fmt.Printf("Using keywords: %v\n", keywords)
+		if len(domainKeywords) > 0 {
+			fmt.Printf("Using domain keywords: %v\n", domainKeywords)
 		}
 		if debug {
 			fmt.Printf("Debug mode: enabled\n")
 		}
 
-		err = scanner.RunDiscoveryOnly(domains, keywords, force)
+		err = scanner.RunDiscoveryOnly(domains, domainKeywords, force)
 		if err != nil {
 			return fmt.Errorf("discovery failed: %w", err)
 		}
@@ -93,8 +93,8 @@ Examples:
 func init() {
 	rootCmd.AddCommand(discoverCmd)
 
-	// Add keywords flag
-	discoverCmd.Flags().StringSliceP("keywords", "k", []string{},
+	// Add domain-keywords flag
+	discoverCmd.Flags().StringSlice("domain-keywords", []string{},
 		"Optional keywords for SSL certificate domain filtering (default: auto-extracted from domain names)")
 
 	// Add force flag

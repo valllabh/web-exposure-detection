@@ -18,7 +18,7 @@ domain discovery and Nuclei templates. Generates a JSON report in the current di
 
 Examples:
   web-exposure-detection scan example.com
-  web-exposure-detection scan example.com --keywords "examplecorp,exampleinc"
+  web-exposure-detection scan example.com --domain-keywords "examplecorp,exampleinc"
   web-exposure-detection scan example.com --templates "openapi,swagger-api"
   web-exposure-detection scan domain1.com domain2.com --templates "live-domain"`,
 	Args: cobra.MinimumNArgs(1),
@@ -40,10 +40,10 @@ Examples:
 			return fmt.Errorf("no valid domains provided")
 		}
 
-		// Get keywords flag
-		keywords, err := cmd.Flags().GetStringSlice("keywords")
+		// Get domain-keywords flag
+		domainKeywords, err := cmd.Flags().GetStringSlice("domain-keywords")
 		if err != nil {
-			return fmt.Errorf("failed to get keywords flag: %w", err)
+			return fmt.Errorf("failed to get domain-keywords flag: %w", err)
 		}
 
 		// Get force flag
@@ -105,8 +105,8 @@ Examples:
 
 		// Run scan with CLI interface
 		fmt.Printf("Starting web exposure scan for: %v\n", domains)
-		if len(keywords) > 0 {
-			fmt.Printf("Using keywords: %v\n", keywords)
+		if len(domainKeywords) > 0 {
+			fmt.Printf("Using domain keywords: %v\n", domainKeywords)
 		}
 		if len(templates) > 0 {
 			fmt.Printf("Using specific templates: %v\n", templates)
@@ -126,7 +126,7 @@ Examples:
 		scanner.SetVerbose(verbose)
 		scanner.SetDebug(debug)
 
-		err = scanner.ScanWithPreset(domains, keywords, templates, force, preset, skipDiscovery)
+		err = scanner.ScanWithPreset(domains, domainKeywords, templates, force, preset, skipDiscovery)
 		if err != nil {
 			return fmt.Errorf("scan failed: %w", err)
 		}
@@ -139,8 +139,8 @@ Examples:
 func init() {
 	rootCmd.AddCommand(scanCmd)
 
-	// Add keywords flag
-	scanCmd.Flags().StringSliceP("keywords", "k", []string{},
+	// Add domain-keywords flag
+	scanCmd.Flags().StringSlice("domain-keywords", []string{},
 		"Optional keywords for SSL certificate domain filtering (default: auto-extracted from domain names)")
 
 	// Add force flag
