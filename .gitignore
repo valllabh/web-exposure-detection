@@ -24,6 +24,7 @@ dist/
 # IDE files
 .vscode/
 .idea/
+.obsidian/
 *.swp
 *.swo
 *~
