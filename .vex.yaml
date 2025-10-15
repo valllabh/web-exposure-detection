@@ -1,0 +1,74 @@
+# OpenVEX Document for web-exposure-detection
+# See: https://github.com/openvex/spec
+
+version: 1.0.0
+author: valllabh/web-exposure-detection
+role: Project Maintainer
+timestamp: "2025-10-15T00:00:00Z"
+
+statements:
+  # Alert #3: mholt/archiver Path Traversal (High)
+  - vulnerability:
+      name: GHSA-c7q2-7mrq-w2rg
+      description: "Path Traversal in mholt/archiver"
+    products:
+      - "@pkg:golang/github.com/mholt/archiver@v3.1.1"
+    status: not_affected
+    justification: vulnerable_code_not_in_execute_path
+    impact_statement: |
+      This vulnerability affects archive extraction functionality in mholt/archiver.
+      However, this application does not extract archives or process user-supplied
+      archive files. The package is only used transitively by the nuclei SDK for
+      internal template management, which does not expose archive extraction to
+      external input. The vulnerable code path is never executed in normal operation.
+
+  # Alert #2: mholt/archiver Path Traversal (Medium)
+  - vulnerability:
+      name: GHSA-rwgg-cpwv-53rm
+      description: "Archiver Path Traversal vulnerability"
+    products:
+      - "@pkg:golang/github.com/mholt/archiver@v3.1.1"
+    status: not_affected
+    justification: vulnerable_code_not_in_execute_path
+    impact_statement: |
+      This is a path traversal vulnerability in archive extraction. The application
+      does not use archive extraction features and does not process user-supplied
+      archives. Transitive dependency from nuclei SDK used only for internal operations.
+
+  # Alert #1: mholt/archiver Path Traversal (Medium)
+  - vulnerability:
+      name: CVE-2019-10743
+      description: "Path Traversal in MHolt Archiver"
+    products:
+      - "@pkg:golang/github.com/mholt/archiver@v3.1.1"
+    status: not_affected
+    justification: vulnerable_code_not_in_execute_path
+    impact_statement: |
+      Path traversal vulnerability in archive extraction. Not exploitable as the
+      application does not extract archives or process user input through the
+      vulnerable code path. Package included transitively via nuclei SDK.
+
+  # Alert #4: go-pg/pg SQL Injection (Medium)
+  - vulnerability:
+      name: GHSA-4qg4-33j8-3p96
+      description: "go-pg SQL injection via append_value.go"
+    products:
+      - "@pkg:golang/github.com/go-pg/pg@v8.0.7"
+    status: not_affected
+    justification: vulnerable_code_not_present
+    impact_statement: |
+      This application does not use any database functionality or SQL operations.
+      The go-pg package is a transitive dependency that is never instantiated or
+      invoked. No database connections are made and no SQL queries are executed.
+
+  # Alert #5: nwaples/rardecode DoS (Medium) - RESOLVED
+  - vulnerability:
+      name: GHSA-8w7r-8hx2-f7mp
+      description: "DoS risk due to unrestricted RAR dictionary sizes"
+    products:
+      - "@pkg:golang/github.com/nwaples/rardecode/v2@v2.1.1"
+    status: fixed
+    action_statement: |
+      Upgraded to v2.2.0 which includes fix for unrestricted dictionary sizes.
+      Forced via go.mod replace directive to ensure patched version is used.
+    action_statement_timestamp: "2025-10-15T06:00:00Z"

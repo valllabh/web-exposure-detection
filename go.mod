@@ -367,3 +367,10 @@ require (
 	mellium.im/sasl v0.3.2 // indirect
 	moul.io/http2curl v1.0.0 // indirect
 )
+
+// Security: Force patched versions to address Dependabot alerts
+// Note: mholt/archiver and go-pg/pg are deprecated packages with no patches
+// These are transitive dependencies from projectdiscovery/nuclei
+// Vulnerability scope is limited to archive extraction and SQL operations
+// which are not exposed in this tool's usage of nuclei SDK
+replace github.com/nwaples/rardecode/v2 => github.com/nwaples/rardecode/v2 v2.0.0

@@ -13,7 +13,29 @@ SLSA is a security framework developed by Google to ensure the integrity of soft
 
 ## Components
 
-### 1. SLSA Build Workflow
+### 1. SBOM (Software Bill of Materials)
+
+Generated in two formats:
+- **SPDX** (`sbom.spdx.json`) - ISO/IEC 5962:2021 standard
+- **CycloneDX** (`sbom.cyclonedx.json`) - OWASP standard
+
+Includes complete dependency tree with:
+- Package names and versions
+- License information
+- Package relationships
+- Vulnerability data
+
+### 2. VEX (Vulnerability Exploitability eXchange)
+
+OpenVEX document (`.vex.yaml`) provides:
+- Vulnerability impact assessments
+- Exploitability analysis
+- Justification for not affected vulnerabilities
+- Mitigation statements
+
+Generated automatically and attached to releases.
+
+### 3. SLSA Build Workflow
 
 `.github/workflows/slsa.yml` - Generates SLSA provenance for releases:
 - Uses official SLSA GitHub Generator

@@ -1,0 +1,65 @@
+name: VEX Generation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.vex.yaml'
+      - 'go.mod'
+      - 'go.sum'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-vex:
+    name: Generate OpenVEX Document
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install vexctl
+        run: |
+          go install github.com/openvex/vexctl@latest
+
+      - name: Validate VEX document
+        run: |
+          vexctl validate .vex.yaml
+
+      - name: Generate VEX attestation
+        run: |
+          # Convert YAML to JSON format
+          vexctl attest --product="pkg:github/valllabh/web-exposure-detection@main" \
+            --vuln="GHSA-c7q2-7mrq-w2rg" \
+            --status="not_affected" \
+            --file=.vex.yaml \
+            --output-file=vex-attestation.json
+
+      - name: Upload VEX document
+        uses: actions/upload-artifact@v4
+        with:
+          name: vex-document
+          path: |
+            .vex.yaml
+            vex-attestation.json
+          retention-days: 90
+
+  publish-vex:
+    name: Publish VEX to Release
+    runs-on: ubuntu-latest
+    needs: [generate-vex]
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download VEX artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: vex-document
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            .vex.yaml
+            vex-attestation.json
