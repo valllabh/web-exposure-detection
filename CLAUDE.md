@@ -6,7 +6,7 @@ Guidance for Claude Code when working with this repository.
 
 Go-based CLI tool for detecting web exposure vulnerabilities. Designed for defensive security purposes.
 
-**Key Technologies**: Cobra, Viper, Nuclei v3 SDK, Domain-scan v1.0.0 SDK, Go embed
+**Key Technologies**: Cobra, Viper, Nuclei v3 SDK, Domain-scan v2.2.0 SDK (local), Go embed
 
 ## Quick Reference
 
@@ -28,3 +28,27 @@ Go-based CLI tool for detecting web exposure vulnerabilities. Designed for defen
 - Results cached in ./results/{domain}/ - never use --force unless explicitly told
 - Entry point for reports: generateReportsFromNucleiResults()
 - **Logging**: Follow [docs/logging.md](./docs/logging.md) - ALWAYS use gologger (never fmt.Printf): Info for user messages, Debug for traces, Warning for non-fatal, Error for fatal
+
+## Package Organization
+
+**Critical Rules:**
+- Never use generic `types.go` - use descriptive names like `nuclei_types.go`, `findings_types.go`
+- Discovery is part of scanner package (separate concern)
+- PDF and HTML are both part of report package
+- DSL is nuclei related (part of nuclei package)
+- Common types go in common package
+
+**Package Structure:**
+```
+pkg/webexposure/
+├── common/           # Common types (scanner, report, pdf)
+├── scanner/          # Scanner orchestration and discovery
+├── report/           # Report generation (HTML, PDF)
+├── nuclei/           # Nuclei integration and DSL
+├── findings/         # Findings and criticality types
+├── industry/         # Industry classification
+├── criticality/      # Criticality calculation
+└── logger/           # Logger utilities
+```
+
+See [docs/development.md](./docs/development.md#package-organization-guide) for complete package organization guide.

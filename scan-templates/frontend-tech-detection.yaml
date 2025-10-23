@@ -1,15 +1,17 @@
 id: frontend-tech-detection
 info:
-  name: Frontend Technology & Authentication Detection
+  name: Frontend Technology, Authentication & Webapp Type Detection
   author: Vallabh
   severity: info
   description: |
-    Detects frontend JavaScript frameworks and authentication mechanisms on web applications.
+    Detects frontend JavaScript frameworks, authentication mechanisms, and webapp types on web applications.
     Frameworks: React.js, Angular, Vue.js, Svelte, Ember.js, Preact, SolidJS, Backbone.js, Alpine.js, Lit,
     Marko, Mithril, Inferno, Hyperapp, Dojo Toolkit, Knockout.js, Meteor, Next.js, Nuxt.js, Gatsby,
     Remix, Astro, Qwik, Fresh.
     Authentication: Traditional forms, SSO, social login, MFA, passwordless, registration, password recovery.
-  tags: frontend,spa,js,auth,login,authentication,detection
+    Webapp Types: E-commerce, Payment Processing, Admin Panel, SaaS Dashboard, Customer Portal, Developer Portal,
+    Marketing Site, Blog, Corporate Website, Documentation, Landing Page.
+  tags: frontend,spa,js,auth,login,authentication,detection,webapp,classification
 headless:
   - steps:
       - action: navigate
@@ -568,15 +570,6 @@ headless:
         regex:
           - "(?i)(__VIEWSTATE|__EVENTVALIDATION|ASP\\.NET)"
       - type: regex
-        name: rails
-        part: body
-        group: 1
-        internal: true
-        regex:
-          - "(?i)(authenticity_token|rails|action_dispatch|actionpack)"
-          - "(?i)data-csrf-token"
-          - "(?i)_rails_session"
-      - type: regex
         name: express_backend
         part: header
         group: 1
@@ -936,9 +929,6 @@ headless:
           - 'len(aspnet) > 0 ? to_value_group("backend.framework.aspnet", aspnet) : ""'
       - type: dsl
         dsl:
-          - 'len(rails) > 0 ? to_value_group("backend.framework.rails", rails) : ""'
-      - type: dsl
-        dsl:
           - 'len(express_backend) > 0 ? to_value_group("backend.framework.express", express_backend) : ""'
       - type: dsl
         dsl:
@@ -1003,4 +993,128 @@ headless:
       - type: dsl
         dsl:
           - 'len(page_description) > 0 ? to_value_group("page.description", page_description) : ""'
+
+      # Webapp Type Classification - Regex extractors followed by DSL output
+      # E-commerce Detection
+      - type: regex
+        name: ecommerce_indicators
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - "(?i)(add to cart|shopping cart|checkout|buy now|cdn\\.shopify\\.com)"
+
+      # Payment Processing Detection
+      - type: regex
+        name: payment_indicators
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - "(?i)(credit card|cvv|secure checkout|js\\.stripe\\.com|paypal\\.com/sdk)"
+
+      # Admin Panel Detection
+      - type: regex
+        name: admin_indicators
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - "(?i)(admin panel|user management|system settings|audit log|users?\\s*(management|settings)|permissions?\\s*(management|settings)|roles?\\s*(management|settings))"
+
+      # SaaS Dashboard Detection
+      - type: regex
+        name: saas_indicators
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - "(?i)(dashboard|account settings|subscription|billing plan|usage statistics)"
+
+      # Customer Portal Detection
+      - type: regex
+        name: customer_portal_indicators
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - "(?i)(support ticket|my orders|download invoice|customer portal)"
+
+      # Developer Portal Detection
+      - type: regex
+        name: developer_portal_indicators
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - "(?i)(api reference|api documentation|developer guide|code examples|sdk|<code[^>]*>.*</code>)"
+
+      # Marketing Site Detection (includes corporate website patterns)
+      - type: regex
+        name: marketing_indicators
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - "(?i)(sign up now|free trial|request demo|subscribe|utm_source|utm_medium|utm_campaign)"
+          - "(?i)(about us|careers|contact us|investors|leadership team)"
+
+      # Blog Detection
+      - type: regex
+        name: blog_indicators
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - "(?i)(published on|blog post|comments|rss feed|(january|february|march|april|may|june|july|august|september|october|november|december)\\s+[0-9]{1,2},\\s+[0-9]{4})"
+
+      # Documentation Detection
+      - type: regex
+        name: documentation_indicators
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - "(?i)(documentation|user guide|help center|knowledge base|faq|step\\s+[0-9]|chapter\\s+[0-9])"
+
+      # Landing Page Detection
+      - type: regex
+        name: landing_indicators
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - "(?i)(limited time offer|claim your|exclusive offer|countdown|timer|expires)"
+
+      # Output webapp type findings using DSL
+      - type: dsl
+        dsl:
+          - 'len(ecommerce_indicators) > 0 ? to_value_group("webapp.type.ecommerce", ecommerce_indicators) : ""'
+      - type: dsl
+        dsl:
+          - 'len(payment_indicators) > 0 ? to_value_group("webapp.type.payment_processing", payment_indicators) : ""'
+      - type: dsl
+        dsl:
+          - 'len(admin_indicators) > 0 ? to_value_group("webapp.type.admin_panel", admin_indicators) : ""'
+      - type: dsl
+        dsl:
+          - 'len(saas_indicators) > 0 ? to_value_group("webapp.type.saas_dashboard", saas_indicators) : ""'
+      - type: dsl
+        dsl:
+          - 'len(customer_portal_indicators) > 0 ? to_value_group("webapp.type.customer_portal", customer_portal_indicators) : ""'
+      - type: dsl
+        dsl:
+          - 'len(developer_portal_indicators) > 0 ? to_value_group("webapp.type.developer_portal", developer_portal_indicators) : ""'
+      - type: dsl
+        dsl:
+          - 'len(marketing_indicators) > 0 ? to_value_group("webapp.type.marketing", marketing_indicators) : ""'
+      - type: dsl
+        dsl:
+          - 'len(blog_indicators) > 0 ? to_value_group("webapp.type.blog", blog_indicators) : ""'
+      - type: dsl
+        dsl:
+          - 'len(documentation_indicators) > 0 ? to_value_group("webapp.type.documentation", documentation_indicators) : ""'
+      - type: dsl
+        dsl:
+          - 'len(landing_indicators) > 0 ? to_value_group("webapp.type.landing_page", landing_indicators) : ""'
 

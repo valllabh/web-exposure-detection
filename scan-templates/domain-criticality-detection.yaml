@@ -1,0 +1,280 @@
+id: domain-criticality-detection
+info:
+  name: Domain Criticality Pattern Detection
+  author: Vallabh
+  severity: info
+  description: |
+    Detects domain patterns that indicate asset function and environment for criticality scoring.
+    Asset Functions: Authentication, Identity, Vault, VPN, Admin, Gateway, Portal, Mobile, DevOps, Payment
+    Environments: Production (baseline), Staging, Dev, Test, UAT, Preview, Beta, Demo
+  tags: exposure,criticality,domain,environment
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+    redirects: true
+    max-redirects: 10
+    extractors:
+      # Extract hostname for processing
+      - type: regex
+        name: hostname
+        part: host
+        group: 0
+        internal: true
+        regex:
+          - '.*'
+
+      # Asset Function Detection - Authentication Service
+      - type: dsl
+        name: check_auth_service
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "sso.") || contains(to_lower(hostname), "auth.") || contains(to_lower(hostname), "login.") || contains(to_lower(hostname), "signin.") || contains(to_lower(hostname), "oauth.") || contains(to_lower(hostname), "oauth2.")'
+
+      # Asset Function Detection - Identity Provider
+      - type: dsl
+        name: check_identity_service
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "identity.") || contains(to_lower(hostname), "idp.") || contains(to_lower(hostname), "keycloak.") || contains(to_lower(hostname), "okta.")'
+
+      # Asset Function Detection - Vault/Secrets
+      - type: dsl
+        name: check_vault_service
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "vault.") || contains(to_lower(hostname), "secret.") || contains(to_lower(hostname), "secrets.")'
+
+      # Asset Function Detection - VPN Service
+      - type: dsl
+        name: check_vpn_service
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "vpn.")'
+
+      # Asset Function Detection - Admin Portal
+      - type: dsl
+        name: check_admin_portal
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "admin.") || contains(to_lower(hostname), "console.")'
+
+      # Asset Function Detection - Gateway
+      - type: dsl
+        name: check_gateway_service
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "gateway.")'
+
+      # Asset Function Detection - Customer Portal
+      - type: dsl
+        name: check_customer_portal
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "customer.") || contains(to_lower(hostname), "portal.") || contains(to_lower(hostname), "my.")'
+
+      # Asset Function Detection - API
+      - type: dsl
+        name: check_api_service
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "api.") || contains(to_lower(hostname), "-api.") || contains(to_lower(hostname), ".api.")'
+
+      # Asset Function Detection - Mobile
+      - type: dsl
+        name: check_mobile_service
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "mobile.") || contains(to_lower(hostname), "m.")'
+
+      # Asset Function Detection - Secure Portal
+      - type: dsl
+        name: check_secure_portal
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "secure.")'
+
+      # Asset Function Detection - DevOps Infrastructure
+      - type: dsl
+        name: check_devops_infra
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "jenkins.") || contains(to_lower(hostname), "gitlab.") || contains(to_lower(hostname), "github.") || contains(to_lower(hostname), "argocd.") || contains(to_lower(hostname), "nexus.") || contains(to_lower(hostname), "artifactory.") || contains(to_lower(hostname), "registry.") || contains(to_lower(hostname), "docker.")'
+
+      # Asset Function Detection - Payment Processing
+      - type: dsl
+        name: check_payment_service
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "payment.") || contains(to_lower(hostname), "pay.") || contains(to_lower(hostname), "checkout.") || contains(to_lower(hostname), "billing.")'
+
+      # Environment Detection - Development
+      - type: dsl
+        name: check_dev_env
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "dev.") || contains(to_lower(hostname), "dev-") || contains(to_lower(hostname), ".dev.") || contains(to_lower(hostname), "-dev.")'
+
+      # Environment Detection - Test
+      - type: dsl
+        name: check_test_env
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "test.") || contains(to_lower(hostname), "test-") || contains(to_lower(hostname), ".test.") || contains(to_lower(hostname), "-test.")'
+
+      # Environment Detection - Staging
+      - type: dsl
+        name: check_staging_env
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "staging.") || contains(to_lower(hostname), "staging-") || contains(to_lower(hostname), ".staging.") || contains(to_lower(hostname), "-staging.") || contains(to_lower(hostname), "stage.") || contains(to_lower(hostname), "stage-") || contains(to_lower(hostname), ".stage.") || contains(to_lower(hostname), "-stage.")'
+
+      # Environment Detection - Pre-production
+      - type: dsl
+        name: check_preprod_env
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "preprod.") || contains(to_lower(hostname), "preprod-") || contains(to_lower(hostname), ".preprod.") || contains(to_lower(hostname), "-preprod.")'
+
+      # Environment Detection - STG
+      - type: dsl
+        name: check_stg_env
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "stg.") || contains(to_lower(hostname), "stg-") || contains(to_lower(hostname), ".stg.") || contains(to_lower(hostname), "-stg.")'
+
+      # Environment Detection - SIT
+      - type: dsl
+        name: check_sit_env
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "sit.") || contains(to_lower(hostname), "sit-") || contains(to_lower(hostname), ".sit.") || contains(to_lower(hostname), "-sit.")'
+
+      # Environment Detection - Integration
+      - type: dsl
+        name: check_integration_env
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "int.") || contains(to_lower(hostname), "int-") || contains(to_lower(hostname), ".int.") || contains(to_lower(hostname), "-int.") || contains(to_lower(hostname), "integration.") || contains(to_lower(hostname), "integration-")'
+
+      # Environment Detection - UAT
+      - type: dsl
+        name: check_uat_env
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "uat.") || contains(to_lower(hostname), "uat-") || contains(to_lower(hostname), ".uat.") || contains(to_lower(hostname), "-uat.")'
+
+      # Environment Detection - QA
+      - type: dsl
+        name: check_qa_env
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "qa.") || contains(to_lower(hostname), "qa-") || contains(to_lower(hostname), ".qa.") || contains(to_lower(hostname), "-qa.")'
+
+      # Environment Detection - Preview
+      - type: dsl
+        name: check_preview_env
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "preview.") || contains(to_lower(hostname), "preview-") || contains(to_lower(hostname), ".preview.") || contains(to_lower(hostname), "-preview.")'
+
+      # Environment Detection - Beta
+      - type: dsl
+        name: check_beta_env
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "beta.") || contains(to_lower(hostname), "beta-") || contains(to_lower(hostname), ".beta.") || contains(to_lower(hostname), "-beta.")'
+
+      # Environment Detection - Demo
+      - type: dsl
+        name: check_demo_env
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "demo.") || contains(to_lower(hostname), "demo-") || contains(to_lower(hostname), ".demo.") || contains(to_lower(hostname), "-demo.")'
+
+      # Environment Detection - Sandbox
+      - type: dsl
+        name: check_sandbox_env
+        internal: true
+        dsl:
+          - 'contains(to_lower(hostname), "sandbox.") || contains(to_lower(hostname), "sandbox-") || contains(to_lower(hostname), ".sandbox.") || contains(to_lower(hostname), "-sandbox.")'
+
+      # Output findings using to_value_group
+      # Asset Functions
+      - type: dsl
+        dsl:
+          - 'check_auth_service ? to_value_group("domain.function.auth", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_identity_service ? to_value_group("domain.function.identity", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_vault_service ? to_value_group("domain.function.vault", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_vpn_service ? to_value_group("domain.function.vpn", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_admin_portal ? to_value_group("domain.function.admin", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_gateway_service ? to_value_group("domain.function.gateway", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_customer_portal ? to_value_group("domain.function.customer_portal", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_api_service ? to_value_group("domain.function.api", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_mobile_service ? to_value_group("domain.function.mobile", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_secure_portal ? to_value_group("domain.function.secure", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_devops_infra ? to_value_group("domain.function.devops", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_payment_service ? to_value_group("domain.function.payment", hostname) : ""'
+
+      # Environments
+      - type: dsl
+        dsl:
+          - 'check_dev_env ? to_value_group("domain.environment.dev", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_test_env ? to_value_group("domain.environment.test", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_staging_env ? to_value_group("domain.environment.staging", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_preprod_env ? to_value_group("domain.environment.preprod", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_stg_env ? to_value_group("domain.environment.stg", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_sit_env ? to_value_group("domain.environment.sit", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_integration_env ? to_value_group("domain.environment.integration", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_uat_env ? to_value_group("domain.environment.uat", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_qa_env ? to_value_group("domain.environment.qa", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_preview_env ? to_value_group("domain.environment.preview", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_beta_env ? to_value_group("domain.environment.beta", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_demo_env ? to_value_group("domain.environment.demo", hostname) : ""'
+      - type: dsl
+        dsl:
+          - 'check_sandbox_env ? to_value_group("domain.environment.sandbox", hostname) : ""'

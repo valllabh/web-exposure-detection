@@ -21,11 +21,22 @@ Technical documentation for web-exposure-detection.
 ### Logging System
 [logging.md](./logging.md) - Logging strategy, levels, gologger usage, migration guide, best practices
 
+### Caching Architecture
+[caching.md](./caching.md) - Caching principles, cached operations, API design patterns, force flag behavior
+
+### Industry Classification
+[industry-classification.md](./industry-classification.md) - Automatic industry vertical detection with OpenRouter API, compliance framework mapping
+
 ### Security & Supply Chain
 
 - [SECURITY.md](./SECURITY.md) - Security scanning tools (gosec, Trivy, Nancy, CodeQL, golangci-lint)
 - [SLSA.md](./SLSA.md) - SLSA Level 3 compliance, build provenance, artifact signing
 - [RELEASE.md](../RELEASE.md) - Release process with GoReleaser and GitHub Actions
+
+## Research
+
+- [Exploitability Scoring](./research/exploitability-scoring.md) - Research on EPSS, KEV, CVSS, and composite scoring approaches for vulnerability prioritization
+- [Industry Classification](./research/industry-detection-api.md) - API integration for automatic industry vertical detection with compliance framework mapping
 
 ## SDK Documentation
 

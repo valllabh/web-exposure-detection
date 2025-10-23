@@ -3,14 +3,33 @@ info:
   name: API Server Keyword Detection
   author: Vallabh
   severity: info
-  description: Detects API servers based on hostname patterns like api., api-gateway, graphql, etc.
-  tags: exposure,api,detection
+  description: Detects API servers based on hostname patterns like api., api-gateway, graphql, etc. and confirms if JSON/XML is returned.
+  tags: exposure,api,detection,tech
 http:
   - method: GET
     path:
       - "{{BaseURL}}"
     redirects: true
     max-redirects: 10
+    matchers:
+      - type: status
+        status:
+          - 200
+          - 201
+          - 204
+          - 301
+          - 302
+          - 303
+          - 307
+          - 308
+          - 400
+          - 401
+          - 403
+          - 404
+          - 405
+          - 500
+          - 502
+          - 503
     extractors:
       - type: regex
         name: api_domain

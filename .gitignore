@@ -44,6 +44,7 @@ Thumbs.db
 .env.production
 config.prod.yaml
 config.local.yaml
+.web-exposure-detection.yaml
 
 # Log files
 *.log

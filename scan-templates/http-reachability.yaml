@@ -1,0 +1,42 @@
+id: http-reachability
+
+info:
+  name: HTTP Reachability Check
+  author: Vallabh
+  severity: info
+  description: |
+    Simple HTTP check to verify if a domain is reachable and returns any HTTP response.
+    This ensures domains that return 404 or other error codes are still detected as reachable.
+  tags: http,reachability,detection
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    max-redirects: 3
+
+    matchers:
+      - type: status
+        status:
+          - 200
+          - 201
+          - 204
+          - 301
+          - 302
+          - 303
+          - 307
+          - 308
+          - 400
+          - 401
+          - 403
+          - 404
+          - 405
+          - 500
+          - 502
+          - 503
+
+    extractors:
+      - type: dsl
+        dsl:
+          - 'to_value_group("http.reachable", "true")'

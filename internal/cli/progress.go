@@ -4,8 +4,6 @@ import (
 	"web-exposure-detection/pkg/webexposure"
 )
 
-var logger = webexposure.GetLogger()
-
 // CLIProgressHandler implements ProgressCallback for command line interface
 type CLIProgressHandler struct {
 	realProgressCount int
@@ -39,7 +37,7 @@ func (c *CLIProgressHandler) AddToTotal(delta int64) {
 func (c *CLIProgressHandler) IncrementRequests() {
 	c.requestsCount++
 	if c.requestsCount%10 == 0 {
-		logger.Debug().Msgf("Requests: %d", c.requestsCount)
+		webexposure.GetLogger().Debug().Msgf("Requests: %d", c.requestsCount)
 	}
 }
 
@@ -50,13 +48,13 @@ func (c *CLIProgressHandler) SetRequests(count uint64) {
 
 func (c *CLIProgressHandler) IncrementMatched() {
 	c.matchedCount++
-	logger.Debug().Msgf("Matches: %d", c.matchedCount)
+	webexposure.GetLogger().Debug().Msgf("Matches: %d", c.matchedCount)
 }
 
 func (c *CLIProgressHandler) IncrementErrorsBy(count int64) {
 	c.errorCount += count
 	if count > 0 {
-		logger.Warning().Msgf("Errors: %d (total: %d)", count, c.errorCount)
+		webexposure.GetLogger().Warning().Msgf("Errors: %d (total: %d)", count, c.errorCount)
 	}
 }
 
@@ -64,7 +62,7 @@ func (c *CLIProgressHandler) IncrementFailedRequestsBy(count int64) {
 	c.failedRequests += count
 	c.errorCount += count
 	if count > 0 {
-		logger.Warning().Msgf("Failed requests: %d (total: %d)", count, c.failedRequests)
+		webexposure.GetLogger().Warning().Msgf("Failed requests: %d (total: %d)", count, c.failedRequests)
 	}
 }
 
@@ -77,6 +75,7 @@ func NewCLIProgressHandler() *CLIProgressHandler {
 
 // OnDomainDiscoveryStart implements ProgressCallback
 func (c *CLIProgressHandler) OnDomainDiscoveryStart(domains []string, keywords []string) {
+	logger := webexposure.GetLogger()
 	logger.Info().Msgf("Starting domain discovery for: %v", domains)
 	if len(keywords) > 0 {
 		logger.Info().Msgf("Using keywords: %v", keywords)
@@ -91,19 +90,21 @@ func (c *CLIProgressHandler) OnDomainDiscoveryStart(domains []string, keywords [
 func (c *CLIProgressHandler) OnDomainDiscoveryProgress(found int) {
 	// Show actual progress updates
 	if found > c.realProgressCount {
-		logger.Info().Msgf("Found %d live domains", found)
+		webexposure.GetLogger().Info().Msgf("Found %d live domains", found)
 		c.realProgressCount = found
 	}
 }
 
 // OnDomainDiscoveryComplete implements ProgressCallback
 func (c *CLIProgressHandler) OnDomainDiscoveryComplete(total, original, new int) {
+	logger := webexposure.GetLogger()
 	logger.Info().Msg("Domain discovery completed")
 	logger.Info().Msgf("Total: %d domains (%d original + %d newly discovered)", total, original, new)
 }
 
 // OnNucleiScanStart implements ProgressCallback
 func (c *CLIProgressHandler) OnNucleiScanStart(targets int) {
+	logger := webexposure.GetLogger()
 	logger.Info().Msgf("Starting vulnerability scan on %d targets", targets)
 	logger.Info().Msg("Loading templates...")
 }
@@ -112,18 +113,18 @@ func (c *CLIProgressHandler) OnNucleiScanStart(targets int) {
 func (c *CLIProgressHandler) OnNucleiScanProgress(host string, testsCompleted int) {
 	// Show every 100 tests
 	if testsCompleted%100 == 0 {
-		logger.Info().Msgf("Scanning %s (%d tests)", host, testsCompleted)
+		webexposure.GetLogger().Info().Msgf("Scanning %s (%d tests)", host, testsCompleted)
 	}
 }
 
 // OnNucleiScanComplete implements ProgressCallback
 func (c *CLIProgressHandler) OnNucleiScanComplete(testsPerformed, findings int) {
-	logger.Info().Msgf("Scan completed - %d tests, %d findings", testsPerformed, findings)
+	webexposure.GetLogger().Info().Msgf("Scan completed - %d tests, %d findings", testsPerformed, findings)
 }
 
 // OnReportGenerated implements ProgressCallback
 func (c *CLIProgressHandler) OnReportGenerated(filepath string) {
-	logger.Info().Msgf("Report generated: %s", filepath)
+	webexposure.GetLogger().Info().Msgf("Report generated: %s", filepath)
 }
 
 // Verify CLIProgressHandler implements ProgressCallback

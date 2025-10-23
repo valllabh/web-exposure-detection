@@ -1,0 +1,164 @@
+id: storage-api-detection
+info:
+  name: Storage and Object API Detection
+  author: Vallabh
+  severity: info
+  description: |
+    Detects cloud storage APIs and object storage services based on response patterns.
+    Detects: AWS S3, MinIO, Azure Blob Storage, Google Cloud Storage, Generic File APIs.
+  tags: storage,s3,minio,azure,gcs,api,bucket
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+    redirects: true
+    max-redirects: 10
+    headers:
+      Accept: "*/*"
+
+    extractors:
+      # AWS S3 Detection
+      - type: regex
+        name: s3_xml_response
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - '(?i)<ListBucketResult'
+          - '(?i)<Contents><Key>'
+          - '(?i)<CommonPrefixes>'
+          - '(?i)xmlns="http://s3\.amazonaws\.com'
+
+      - type: regex
+        name: s3_error_response
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - '(?i)<Error><Code>(NoSuchBucket|AccessDenied|InvalidBucketName)'
+          - '(?i)<RequestId>[A-Z0-9]{16}</RequestId>'
+
+      - type: regex
+        name: s3_headers
+        part: header
+        group: 0
+        internal: true
+        regex:
+          - '(?i)x-amz-request-id'
+          - '(?i)x-amz-id-2'
+          - '(?i)server.*AmazonS3'
+
+      # MinIO Detection
+      - type: regex
+        name: minio_headers
+        part: header
+        group: 0
+        internal: true
+        regex:
+          - '(?i)server.*MinIO'
+          - '(?i)x-minio-deployment-id'
+
+      - type: regex
+        name: minio_response
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - '(?i)MinIO'
+          - '(?i)"MinIO Object Storage"'
+
+      # Azure Blob Storage Detection
+      - type: regex
+        name: azure_headers
+        part: header
+        group: 0
+        internal: true
+        regex:
+          - '(?i)x-ms-request-id'
+          - '(?i)x-ms-version'
+          - '(?i)server.*Windows-Azure-Blob'
+
+      - type: regex
+        name: azure_xml_response
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - '(?i)<EnumerationResults'
+          - '(?i)<Blobs><Blob>'
+          - '(?i)xmlns=".*windows\.net'
+
+      # Google Cloud Storage Detection
+      - type: regex
+        name: gcs_headers
+        part: header
+        group: 0
+        internal: true
+        regex:
+          - '(?i)x-goog-stored-content-length'
+          - '(?i)x-guploader-uploadid'
+          - '(?i)server.*UploadServer'
+
+      - type: regex
+        name: gcs_xml_response
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - '(?i)<ListBucketResult.*storage\.googleapis\.com'
+          - '(?i)xmlns=".*storage\.googleapis\.com'
+
+      # Generic File/Directory Listing Detection
+      - type: regex
+        name: directory_listing
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - '(?i)<title>Index of /'
+          - '(?i)<h1>Index of'
+          - '(?i)Parent Directory'
+          - '(?i)<a href="\.\./">\.\./'
+
+      - type: regex
+        name: file_api_json
+        part: body
+        group: 0
+        internal: true
+        regex:
+          - '(?i)"files"\s*:\s*\['
+          - '(?i)"type"\s*:\s*"(file|directory)"'
+          - '(?i)"path"\s*:\s*"'
+
+      # Check content-type for storage APIs
+      - type: kval
+        name: content_type
+        part: header
+        internal: true
+        kval:
+          - content_type
+
+      # Output findings
+      - type: dsl
+        dsl:
+          - '(len(s3_xml_response) > 0 || len(s3_error_response) > 0 || len(s3_headers) > 0) ? to_value_group("api.storage.s3", "s3") : ""'
+
+      - type: dsl
+        dsl:
+          - '(len(minio_headers) > 0 || len(minio_response) > 0) ? to_value_group("api.storage.minio", "minio") : ""'
+
+      - type: dsl
+        dsl:
+          - '(len(azure_headers) > 0 || len(azure_xml_response) > 0) ? to_value_group("api.storage.azure_blob", "azure") : ""'
+
+      - type: dsl
+        dsl:
+          - '(len(gcs_headers) > 0 || len(gcs_xml_response) > 0) ? to_value_group("api.storage.gcs", "gcs") : ""'
+
+      - type: dsl
+        dsl:
+          - 'len(directory_listing) > 0 ? to_value_group("api.storage.directory_listing", "directory") : ""'
+
+      - type: dsl
+        dsl:
+          - 'len(file_api_json) > 0 ? to_value_group("api.storage.file_api", "file_api") : ""'

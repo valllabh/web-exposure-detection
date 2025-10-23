@@ -1,0 +1,105 @@
+[
+  {
+    "domain": "blog.qualys.com",
+    "title": "Facebook",
+    "findings": [
+      "auth.enterprise.saml_sso",
+      "auth.traditional.basic_auth",
+      "auth.traditional.registration",
+      "backend.cms.wordpress",
+      "gateway.nginx"
+    ]
+  },
+  {
+    "domain": "msspportal.qualys.com",
+    "title": "MSSP",
+    "findings": [
+      "auth.enterprise.saml_sso",
+      "auth.traditional.basic_auth",
+      "auth.traditional.password_recovery",
+      "gateway.cloudflare"
+    ]
+  },
+  {
+    "domain": "pci-api.qualys.com",
+    "title": "404 Not Found",
+    "findings": [
+      "api.domain_pattern",
+      "gateway.nginx"
+    ]
+  },
+  {
+    "domain": "portal-bo.gov01.apps.qualys.com",
+    "title": "403 Forbidden",
+    "findings": [
+      "gateway.nginx"
+    ]
+  },
+  {
+    "domain": "portal-bo.gov1.qualys.us",
+    "title": "Qualys Portal",
+    "findings": [
+      "auth.enterprise.saml_sso",
+      "auth.mfa",
+      "auth.traditional.basic_auth",
+      "auth.traditional.password_recovery",
+      "gateway.nginx"
+    ]
+  },
+  {
+    "domain": "portal.gov01.apps.qualys.com",
+    "title": "Qualys Portal",
+    "findings": [
+      "auth.enterprise.saml_sso",
+      "auth.mfa",
+      "auth.traditional.basic_auth",
+      "auth.traditional.password_recovery",
+      "auth.traditional.registration",
+      "gateway.nginx"
+    ]
+  },
+  {
+    "domain": "portal.qg2.apps.qualys.com",
+    "title": "Qualys Portal",
+    "findings": [
+      "auth.enterprise.saml_sso",
+      "auth.mfa",
+      "auth.traditional.basic_auth",
+      "auth.traditional.password_recovery",
+      "auth.traditional.registration",
+      "gateway.cloudflare"
+    ]
+  },
+  {
+    "domain": "qualysapi.qg2.apps.qualys.com",
+    "title": "Qualys - Login",
+    "findings": [
+      "api.domain_pattern",
+      "gateway.nginx"
+    ]
+  },
+  {
+    "domain": "qualysapi.qg2.apps.qualys.eu",
+    "title": "Qualys - Login",
+    "findings": [
+      "api.domain_pattern",
+      "gateway.nginx"
+    ]
+  },
+  {
+    "domain": "dev.api.qualys.com",
+    "title": "Development API",
+    "findings": [
+      "api.domain_pattern",
+      "gateway.nginx"
+    ]
+  },
+  {
+    "domain": "test-portal.qualys.com",
+    "title": "Test Portal",
+    "findings": [
+      "auth.traditional.basic_auth",
+      "gateway.nginx"
+    ]
+  }
+]

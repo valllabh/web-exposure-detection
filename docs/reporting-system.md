@@ -38,7 +38,7 @@ generateReportsFromNucleiResults() (Single Entry Point):
 After complete scan, the system creates:
 ```
 results/example-com/
-├── domain-scan.json                    # Cached domain discovery results
+├── domain-discovery-result.json        # Cached domain discovery results (full AssetDiscoveryResult)
 ├── nuclei-results/
 │   └── results.json                   # Raw Nuclei scan results
 ├── web-exposure-result.json           # Final JSON report (schema v1)
@@ -219,9 +219,32 @@ Web applications are identified by:
 
 **Status Column Removed:**
 - HTML report no longer shows separate Status column
-- Status now indicated by colored circles before domain names:
-  - 🔴 Red circle: "Confirmed API Endpoint"
-  - 🟡 Yellow circle: "Potential API Endpoint"
+- Status now indicated by colored circles before domain names in API Endpoints table:
+  - Green circle: "Confirmed API Endpoint"
+  - Yellow circle: "Potential API Endpoint"
+
+### Report Sections
+
+**Application Exposure:**
+- Renamed from "Asset Inventory"
+- Shows 4 summary cards in uniform width grid layout: API Servers, API Specifications, AI Apps, Web Apps
+- Cards use gradient background without box shadow for clean appearance
+- Label font size: 12px (text-xs) for compact uniform appearance
+- Layout: Tailwind CSS grid (grid-cols-4) for equal width distribution
+
+**Technology Exposure:**
+- Displays first 4 technologies with icons and counts
+- Shows additional count badge (e.g., "9+ Additional") if more than 4 technologies detected
+- Matches styling of Application Exposure section (same padding, border radius, colors)
+
+**Legend Positioning:**
+- Asset Criticality Score legend appears above each table section
+- API Status legend only appears above API Endpoints table
+- Compact inline format: "Highest 5 4 3 2 1 Lowest"
+
+**Table Styling:**
+- Criticality column values aligned to top
+- All inline styles moved to CSS classes for maintainability
 
 ### Technology Extraction
 
@@ -265,7 +288,7 @@ Technologies are extracted from specific templates and normalized:
         "web_apps_found": 10,
         "domains_using_api": 2
     },
-    "technologies_detected": {
+    "technology_exposure": {
         "count": 7,
         "technologies": ["nginx", "wordpress", "angular"]
     },
@@ -360,6 +383,9 @@ The system applies cleanup rules to findings:
 - Print-optimized CSS with `@page` and `@media print` rules
 - Technology icons for visual identification
 - Structured sections matching JSON schema
+- Tailwind CSS for styling with utility classes
+- Grid based layout for uniform card widths
+- Clean design without box shadows on metric cards
 
 ### PDF Report (`generatePDF`)
 

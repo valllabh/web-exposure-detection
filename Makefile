@@ -1,4 +1,4 @@
-.PHONY: build test test-unit test-integration test-e2e test-validation test-all test-targets clean deps lint run help list-templates update-cve-stats security sec-gosec sec-trivy sec-nancy sec-all
+.PHONY: build test test-unit test-integration test-e2e test-validation test-all test-targets clean deps lint run help list-templates update-cve-stats update-cwe-stats security sec-gosec sec-trivy sec-nancy sec-all criticality criticality-analyze
 
 # Binary name
 BINARY_NAME=web-exposure-detection
@@ -181,13 +181,49 @@ list-templates:
 	@echo "Usage: make test-template TEMPLATE=<template-name>"
 	@echo "Example: make test-template TEMPLATE=api-host-detection"
 
-# Update CVE statistics for findings.json
+# Update CVE statistics for findings.json using vulnx
 update-cve-stats:
-	@if ! command -v cvemap >/dev/null 2>&1; then \
-		echo "❌ cvemap not installed. Install from: https://github.com/projectdiscovery/cvemap"; \
+	@if ! command -v vulnx >/dev/null 2>&1; then \
+		echo "❌ vulnx not installed. Install with: go install github.com/projectdiscovery/cvemap/cmd/vulnx@latest"; \
 		exit 1; \
 	fi
 	@python3 scripts/update-findings-cve/update-cve-stats.py
+
+# Update CWE statistics for findings.json using vulnx
+update-cwe-stats:
+	@if ! command -v vulnx >/dev/null 2>&1; then \
+		echo "❌ vulnx not installed. Install with: go install github.com/projectdiscovery/cvemap/cmd/vulnx@latest"; \
+		exit 1; \
+	fi
+	@python3 scripts/update-findings-cve/update-cwe-stats.py
+
+# Calculate criticality scores for scan results
+criticality:
+	@if [ -z "$(DOMAIN)" ]; then \
+		echo "❌ Usage: make criticality DOMAIN=example.com"; \
+		echo "Example: make criticality DOMAIN=qualys.com"; \
+		exit 1; \
+	fi
+	@if [ ! -f "results/$(DOMAIN)/nuclei-results/results.jsonl" ]; then \
+		echo "❌ Scan results not found for $(DOMAIN)"; \
+		echo "Run scan first: ./bin/web-exposure-detection scan $(DOMAIN)"; \
+		exit 1; \
+	fi
+	@echo "Calculating criticality scores for $(DOMAIN)..."
+	@python3 scripts/calculate-criticality-from-jsonl.py results/$(DOMAIN)/nuclei-results/results.jsonl
+
+# Analyze specific domain criticality
+criticality-analyze:
+	@if [ -z "$(DOMAIN)" ] || [ -z "$(TARGET)" ]; then \
+		echo "❌ Usage: make criticality-analyze DOMAIN=example.com TARGET=subdomain.example.com"; \
+		echo "Example: make criticality-analyze DOMAIN=qualys.com TARGET=portal.qg2.apps.qualys.com"; \
+		exit 1; \
+	fi
+	@if [ ! -f "results/$(DOMAIN)/nuclei-results/results.jsonl" ]; then \
+		echo "❌ Scan results not found for $(DOMAIN)"; \
+		exit 1; \
+	fi
+	@python3 scripts/analyze-single-domain.py results/$(DOMAIN)/nuclei-results/results.jsonl $(TARGET)
 
 # Security scanning
 security: sec-all
@@ -262,6 +298,11 @@ help:
 	@echo "  lint               - Run code formatters and linters"
 	@echo "  clean              - Clean build artifacts"
 	@echo "  update-cve-stats   - Update CVE statistics for findings.json"
+	@echo "  update-cwe-stats   - Update CWE statistics for findings.json"
+	@echo ""
+	@echo "Criticality Scoring:"
+	@echo "  criticality        - Calculate criticality for all domains (DOMAIN=name)"
+	@echo "  criticality-analyze - Analyze specific domain (DOMAIN=name TARGET=subdomain)"
 	@echo ""
 	@echo "Security Analysis:"
 	@echo "  security           - Run all security scans (alias for sec-all)"

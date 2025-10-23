@@ -1,0 +1,145 @@
+[
+  {
+    "domain": "portal.qg3.apps.qualys.com",
+    "ai": {
+      "criticality_score": 2.0,
+      "confidence": "high",
+      "reasoning": "Domain contains 'portal' and '.apps.qualys.com', indicating a potential customer-facing application or service, suggesting standard production asset criticality.",
+      "detected_type": "portal/api"
+    },
+    "rule_based": 2.0,
+    "difference": 0.0
+  },
+  {
+    "domain": "portal.qualys.com",
+    "ai": {
+      "criticality_score": 1.0,
+      "confidence": "low",
+      "reasoning": "Failed to parse JSON. Raw: {\n  \"criticality_score\": 2.0,\n  \"confidence\": \"high\",\n  \"reasoning\": \"The domain 'portal.qualys.com'",
+      "detected_type": "unknown"
+    },
+    "rule_based": 1.6,
+    "difference": 0.6000000000000001
+  },
+  {
+    "domain": "qualysapi.qg2.apps.qualys.com",
+    "ai": {
+      "criticality_score": 2.0,
+      "confidence": "high",
+      "reasoning": "Domain contains 'qualysapi' indicating a critical API or service, combined with '.qg2.apps.qualys.com' suggesting a high-production environment.",
+      "detected_type": "portal"
+    },
+    "rule_based": 1.7,
+    "difference": 0.30000000000000004
+  },
+  {
+    "domain": "api.qualys.com",
+    "ai": {
+      "criticality_score": 2.8,
+      "confidence": "high",
+      "reasoning": "The domain api.qualys.com is an API, indicating it may be related to services or functionality for Qualys customers. The presence of 'api' in the domain name suggests it's a service-oriented or data exchange-focused environment. This score falls within the range of important services (3.5-5.0), as APIs are critical infrastructure components that support various business functions.",
+      "detected_type": "portal/api"
+    },
+    "rule_based": 1.3,
+    "difference": 1.4999999999999998
+  },
+  {
+    "domain": "blog.qualys.com",
+    "ai": {
+      "criticality_score": 2.0,
+      "confidence": "high",
+      "reasoning": "The domain blog.qualys.com suggests a customer-facing portal or blog, indicating a standard production asset with moderate criticality.",
+      "detected_type": "portal"
+    },
+    "rule_based": 1.0,
+    "difference": 1.0
+  },
+  {
+    "domain": "pay.qualys.com",
+    "ai": {
+      "criticality_score": 2.0,
+      "confidence": "high",
+      "reasoning": "The domain 'pay.qualys.com' contains the word 'pay', indicating a potential customer-facing service. It is also on the main domain (not subdomain), suggesting it's likely a production asset. This, combined with Qualys being a well-known company, suggests this domain hosts an important service or API.",
+      "detected_type": "portal"
+    },
+    "rule_based": 1.8,
+    "difference": 0.19999999999999996
+  },
+  {
+    "domain": "checkout.example.com",
+    "ai": {
+      "criticality_score": 1.0,
+      "confidence": "low",
+      "reasoning": "Failed to parse JSON. Raw: {\n  \"criticality_score\": 2.0,\n  \"confidence\": \"high\",\n  \"reasoning\": \"The domain 'checkout.example.c",
+      "detected_type": "unknown"
+    },
+    "rule_based": 1.8,
+    "difference": 0.8
+  },
+  {
+    "domain": "dev.staging.qualys.com",
+    "ai": {
+      "criticality_score": 1.0,
+      "confidence": "low",
+      "reasoning": "Failed to parse JSON. Raw: {\n  \"criticality_score\": 2.0,\n  \"confidence\": \"high\",\n  \"reasoning\": \"Domain staging suggests a non-",
+      "detected_type": "unknown"
+    },
+    "rule_based": 0.3,
+    "difference": 0.7
+  },
+  {
+    "domain": "test-api.qualys.com",
+    "ai": {
+      "criticality_score": 2.0,
+      "confidence": "high",
+      "reasoning": "The domain name test-api.qualys.com suggests a production environment for an API, indicating standard production assets with medium criticality.",
+      "detected_type": "portal"
+    },
+    "rule_based": 0.9,
+    "difference": 1.1
+  },
+  {
+    "domain": "sandbox.qualys.com",
+    "ai": {
+      "criticality_score": 1.0,
+      "confidence": "low",
+      "reasoning": "Failed to parse JSON. Raw: {\n  \"criticality_score\": 2.0,\n  \"confidence\": \"high\",\n  \"reasoning\": \"The domain name sandbox.qualys",
+      "detected_type": "unknown"
+    },
+    "rule_based": 0.7,
+    "difference": 0.30000000000000004
+  },
+  {
+    "domain": "admin.qualys.com",
+    "ai": {
+      "criticality_score": 3.0,
+      "confidence": "high",
+      "reasoning": "Admin domain suggests a high level of access and control, likely related to internal administrative functions or critical infrastructure. The presence of 'admin' in the domain indicates a strong potential for asset criticality.",
+      "detected_type": "portal"
+    },
+    "rule_based": 1.4,
+    "difference": 1.6
+  },
+  {
+    "domain": "dashboard.qualys.com",
+    "ai": {
+      "criticality_score": 1.0,
+      "confidence": "low",
+      "reasoning": "Failed to parse JSON. Raw: {\n  \"criticality_score\": 2.0,\n  \"confidence\": \"high\",\n  \"reasoning\": \"The domain 'dashboard.qualys.c",
+      "detected_type": "unknown"
+    },
+    "rule_based": 1.4,
+    "difference": 0.3999999999999999
+  },
+  {
+    "domain": "www.qualys.com",
+    "ai": {
+      "criticality_score": 2.0,
+      "confidence": "high",
+      "reasoning": "www.qualys.com indicates a customer-facing portal and potentially critical services, given the high score. The 'www' domain suggests a primary or main domain, which is commonly associated with important services.",
+      "detected_type": "portal"
+    },
+    "rule_based": 1.4,
+    "difference": 0.6000000000000001
+  }
+]

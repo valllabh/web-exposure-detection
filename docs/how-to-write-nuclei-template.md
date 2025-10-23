@@ -390,7 +390,7 @@ extractors:
 
 ### Complete Key Reference
 
-**94 total detection keys organized by category:**
+**111 total detection keys organized by category:**
 
 **Frontend (24):** react, angular, vuejs, svelte, ember, preact, solidjs, backbone, alpine, lit, marko, mithril, inferno, hyperapp, dojo, knockout, meteor, nextjs, nuxtjs, gatsby, remix, astro, qwik, fresh
 
@@ -418,7 +418,11 @@ extractors:
 
 **API Vector DBs (5):** ai.vector_db.pinecone, ai.vector_db.weaviate, ai.vector_db.qdrant, ai.vector_db.milvus, ai.vector_db.chroma
 
+**API Storage (6):** storage.s3, storage.minio, storage.azure_blob, storage.gcs, storage.directory_listing, storage.file_api
+
 **Gateway (9):** nginx, kong, envoy, traefik, cloudflare, akamai, haproxy, zuul, apigee
+
+**Webapp Types (11):** type.ecommerce, type.payment_processing, type.admin_panel, type.saas_dashboard, type.customer_portal, type.developer_portal, type.marketing, type.blog, type.corporate, type.documentation, type.landing_page
 
 **Metadata/Status (3):** page.page_title, page.page_description, server.blank_root_status
 
@@ -603,7 +607,7 @@ When removing detections:
 
 ### Updating CVE Data
 
-CVE statistics are automatically collected from cvemap and added to findings.json.
+CVE statistics are automatically collected from vulnx and added to findings.json.
 
 **To update CVE statistics:**
 ```bash
@@ -611,12 +615,13 @@ CVE statistics are automatically collected from cvemap and added to findings.jso
 make update-cve-stats
 
 # Or directly
-./scripts/update-findings-cve/update-cve-stats.sh
+python3 scripts/update-findings-cve/update-cve-stats.py
 ```
 
 **Prerequisites:**
-- Install cvemap: https://github.com/projectdiscovery/cvemap
-- Install jq: `brew install jq`
+- Install vulnx: `go install github.com/projectdiscovery/cvemap/cmd/vulnx@latest`
+- Install python3: Built into macOS/Linux
+- Configure API key: `export PDCP_API_KEY=your_key` (get from https://cloud.projectdiscovery.io/)
 
 **Output format:**
 ```json

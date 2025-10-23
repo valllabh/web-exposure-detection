@@ -92,7 +92,7 @@ Reports are saved to `./results/{domain}/`:
 
 ```
 results/example-com/
-├── domain-scan.json                      # Cached domain discovery results
+├── domain-discovery-result.json          # Cached domain discovery results (full AssetDiscoveryResult)
 ├── nuclei-results/
 │   └── results.json                     # Raw Nuclei scan results
 ├── web-exposure-result.json             # Final JSON report
@@ -146,13 +146,35 @@ web-exposure-detection scan apple.com --domain-keywords "iphone,ipad,mac"
 
 ## Architecture
 
+### Design Principles
+
 - **SDK-First Design:** CLI commands are facades over `pkg/webexposure` SDK
 - **Embedded Files:** All templates/assets embedded in binary (zero dependencies)
 - **Domain Discovery:** github.com/valllabh/domain-scan v1.0.0 SDK
 - **Vulnerability Scanning:** Nuclei v3 SDK
 - **Report Generation:** Single entry point handles all formats
 
-See [docs/](./docs/) for technical documentation.
+### Package Structure
+
+```
+pkg/webexposure/
+├── common/           # Common types (scanner, report, pdf)
+├── scanner/          # Scanner orchestration and discovery
+├── report/           # Report generation (HTML, PDF)
+├── nuclei/           # Nuclei integration and DSL
+├── findings/         # Findings and criticality types
+├── industry/         # Industry classification
+├── criticality/      # Criticality calculation
+└── logger/           # Logger utilities
+```
+
+**Package Organization:**
+- Discovery is scanner concern (part of scanner package)
+- PDF and HTML are report concerns (both in report package)
+- DSL is nuclei related (part of nuclei package)
+- Common types in common package (never use generic types.go)
+
+See [docs/development.md](./docs/development.md#package-organization-guide) for detailed package organization rules.
 
 ## Development
 

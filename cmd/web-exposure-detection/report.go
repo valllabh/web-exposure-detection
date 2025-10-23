@@ -8,6 +8,7 @@ import (
 	"web-exposure-detection/pkg/webexposure"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // reportCmd represents the report command
@@ -46,8 +47,11 @@ Examples:
 			return fmt.Errorf("no valid domains provided")
 		}
 
-		// Create scanner
-		scanner, err := webexposure.New()
+		// Get PDF generator from config/flag
+		pdfGenerator := viper.GetString("pdf_generator")
+
+		// Create scanner with configured PDF generator
+		scanner, err := webexposure.NewWithPDFGenerator(pdfGenerator)
 		if err != nil {
 			return fmt.Errorf("failed to create scanner: %w", err)
 		}

@@ -6,8 +6,10 @@ import (
 
 	"web-exposure-detection/internal/cli"
 	"web-exposure-detection/pkg/webexposure"
+	_ "web-exposure-detection/pkg/webexposure/nuclei" // Import for DSL init
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var logger = webexposure.GetLogger()
@@ -90,14 +92,16 @@ Examples:
 			return fmt.Errorf("failed to get silent flag: %w", err)
 		}
 
-		// Get skip-discovery flag
-		skipDiscovery, err := cmd.Flags().GetBool("skip-discovery")
-		if err != nil {
-			return fmt.Errorf("failed to get skip-discovery flag: %w", err)
-		}
+		// Get discovery control flags from Viper (respects priority: flag > env > config > default)
+		skipDiscoveryAll := viper.GetBool("discovery.skip_all")
+		skipDiscoveryPassive := viper.GetBool("discovery.skip_passive")
+		skipDiscoveryCertificate := viper.GetBool("discovery.skip_certificate")
 
-		// Create scanner
-		scanner, err := webexposure.New()
+		// Get PDF generator from config/flag
+		pdfGenerator := viper.GetString("pdf_generator")
+
+		// Create scanner with configured PDF generator
+		scanner, err := webexposure.NewWithPDFGenerator(pdfGenerator)
 		if err != nil {
 			return fmt.Errorf("failed to create scanner: %w", err)
 		}
@@ -125,11 +129,21 @@ Examples:
 		if silent {
 			logger.Info().Msg("Silent mode: enabled")
 		}
-		if skipDiscovery {
-			logger.Info().Msg("Skip discovery: enabled (will scan only provided domains)")
+
+		// Log discovery configuration
+		if skipDiscoveryAll {
+			logger.Info().Msg("Discovery: Skipping all (scanning only provided domains)")
+		} else if skipDiscoveryPassive && skipDiscoveryCertificate {
+			logger.Info().Msg("Discovery: Skipping passive and certificate (scanning only provided domains)")
+		} else if skipDiscoveryPassive {
+			logger.Info().Msg("Discovery: Passive disabled, certificate enabled")
+		} else if skipDiscoveryCertificate {
+			logger.Info().Msg("Discovery: Passive enabled, certificate disabled")
+		} else {
+			logger.Info().Msg("Discovery: Full discovery enabled (passive + certificate)")
 		}
 
-		err = scanner.ScanWithPreset(domains, domainKeywords, templates, force, preset, skipDiscovery)
+		err = scanner.ScanWithPreset(domains, domainKeywords, templates, force, preset, skipDiscoveryAll, skipDiscoveryPassive, skipDiscoveryCertificate)
 		if err != nil {
 			return fmt.Errorf("scan failed: %w", err)
 		}
@@ -152,7 +166,7 @@ func init() {
 
 	// Add templates flag
 	scanCmd.Flags().StringSliceP("templates", "t", []string{},
-		"Specify specific Nuclei templates to use (comma-separated). If not specified, uses all templates with tech tag excluding ssl")
+		"Specify specific Nuclei templates to use (comma-separated). If not specified, uses all templates")
 
 	// Add preset flag
 	scanCmd.Flags().StringP("preset", "p", "slow",
@@ -162,7 +176,20 @@ func init() {
 	scanCmd.Flags().BoolP("silent", "s", false,
 		"Enable silent mode (suppress info messages, show warnings and errors only)")
 
-	// Add skip-discovery flag
-	scanCmd.Flags().Bool("skip-discovery", false,
-		"Skip domain discovery and scan only the provided domain(s)")
+	// Add discovery control flags
+	scanCmd.Flags().Bool("skip-discovery-all", false,
+		"Skip all domain discovery (scan only provided domains)")
+	scanCmd.Flags().Bool("skip-discovery-passive", false,
+		"Skip passive subdomain enumeration (subfinder)")
+	scanCmd.Flags().Bool("skip-discovery-certificate", false,
+		"Skip certificate domain extraction")
+
+	// Bind discovery flags to viper
+	viper.BindPFlag("discovery.skip_all", scanCmd.Flags().Lookup("skip-discovery-all"))
+	viper.BindPFlag("discovery.skip_passive", scanCmd.Flags().Lookup("skip-discovery-passive"))
+	viper.BindPFlag("discovery.skip_certificate", scanCmd.Flags().Lookup("skip-discovery-certificate"))
+
+	// Bind scan flags to viper
+	viper.BindPFlag("scan.preset", scanCmd.Flags().Lookup("preset"))
+	viper.BindPFlag("scan.force", scanCmd.Flags().Lookup("force"))
 }

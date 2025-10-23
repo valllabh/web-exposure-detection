@@ -1,0 +1,37 @@
+# Web Exposure Detection Configuration
+# Save this file as ~/.web-exposure-detection.yaml or specify with --config flag
+
+# OpenRouter API configuration for industry classification
+openrouter_api_key: ""  # Your OpenRouter API key (or use OPENROUTER_API_KEY env var)
+# openrouter_model: "@preset/industry-classification-prompt"  # Default preset for industry classification
+# openrouter_model: "meta-llama/llama-3.2-3b-instruct"  # Or use a specific model (will need custom prompting)
+
+# Discovery control
+discovery:
+  skip_all: false
+  skip_passive: false
+  skip_certificate: false
+  recursive: true
+  recursion_depth: 0
+  max_domains: 0
+  threads: 50
+  timeout: "10m"
+
+# Scan settings
+scan:
+  preset: "slow"
+  force: false
+
+# PDF Generator configuration
+# Options:
+#   "rod" (go-rod/Chrome - faster, default)
+#   "playwright" (playwright/Chromium - native PDF)
+#   "playwright-firefox" (playwright/Firefox - screenshot to PDF)
+#   "playwright-webkit" (playwright/WebKit/Safari - screenshot to PDF)
+pdf_generator: "rod"  # Default: rod
+
+# Logging
+log_level: "info"
+
+# Debug mode (can also use --debug flag)
+debug: false
