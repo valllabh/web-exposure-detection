@@ -1,10 +1,24 @@
 # Web Exposure Detection Configuration
 # Save this file as ~/.web-exposure-detection.yaml or specify with --config flag
 
-# OpenRouter API configuration for industry classification
+# AI Provider Configuration
+# Supported providers: "perplexity", "openrouter"
+ai_provider: "perplexity"  # Default AI provider for industry classification
+
+# OpenRouter API configuration
 openrouter_api_key: ""  # Your OpenRouter API key (or use OPENROUTER_API_KEY env var)
-# openrouter_model: "@preset/industry-classification-prompt"  # Default preset for industry classification
-# openrouter_model: "meta-llama/llama-3.2-3b-instruct"  # Or use a specific model (will need custom prompting)
+# openrouter_model: "openai/o1"  # Uses OpenAI o1 120B model for industry classification (default if using OpenRouter)
+# openrouter_model: "@preset/industry-classification-prompt"  # Or use OpenRouter preset (legacy)
+# openrouter_model: "meta-llama/llama-3.2-3b-instruct"  # Or use a different model
+# openrouter_base_url: "https://openrouter.ai/api/v1/chat/completions"  # Custom base URL (optional)
+# openrouter_timeout: "30s"  # Request timeout (optional)
+
+# Perplexity API configuration (RECOMMENDED for industry classification)
+perplexity_api_key: ""  # Your Perplexity API key (or use PERPLEXITY_API_KEY env var)
+# perplexity_model: "sonar"  # Sonar model with web search grounding (default)
+# perplexity_model: "sonar-pro"  # Advanced Sonar Pro model for complex queries
+# perplexity_base_url: "https://api.perplexity.ai/chat/completions"  # Custom base URL (optional)
+# perplexity_timeout: "30s"  # Request timeout (optional)
 
 # Discovery control
 discovery:

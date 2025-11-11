@@ -21,6 +21,7 @@ Go-based CLI tool for detecting web exposure vulnerabilities. Designed for defen
 
 ## Important Notes
 
+- **CRITICAL**: NEVER run scans (./web-exposure-detection scan) without explicit user permission. User will test themselves.
 - Use `go run .` not `go run main.go` (entire package required)
 - Reference Makefile for build, test, clean, deps, lint commands
 - SDK-first design: CLI commands are facades over pkg/webexposure SDK
@@ -28,6 +29,7 @@ Go-based CLI tool for detecting web exposure vulnerabilities. Designed for defen
 - Results cached in ./results/{domain}/ - never use --force unless explicitly told
 - Entry point for reports: generateReportsFromNucleiResults()
 - **Logging**: Follow [docs/logging.md](./docs/logging.md) - ALWAYS use gologger (never fmt.Printf): Info for user messages, Debug for traces, Warning for non-fatal, Error for fatal
+- **Findings**: When adding new findings to findings.json, ALWAYS add `classification` field for application type indicators (webapp, api, api-spec, ai). See [docs/development.md](./docs/development.md#adding-new-findings)
 
 ## Package Organization
 
@@ -36,6 +38,7 @@ Go-based CLI tool for detecting web exposure vulnerabilities. Designed for defen
 - Discovery is part of scanner package (separate concern)
 - PDF and HTML are both part of report package
 - DSL is nuclei related (part of nuclei package)
+- AI providers are adapter pattern implementations (part of ai package)
 - Common types go in common package
 
 **Package Structure:**
@@ -48,6 +51,7 @@ pkg/webexposure/
 ├── findings/         # Findings and criticality types
 ├── industry/         # Industry classification
 ├── criticality/      # Criticality calculation
+├── ai/               # AI provider adapters (OpenRouter, Perplexity)
 └── logger/           # Logger utilities
 ```
 

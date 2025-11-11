@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/projectdiscovery/nuclei/v3/pkg/output"
 	"github.com/valllabh/domain-scan/pkg/domainscan"
@@ -20,6 +21,7 @@ import (
 	"web-exposure-detection/pkg/webexposure/logger"
 	"web-exposure-detection/pkg/webexposure/nuclei"
 	"web-exposure-detection/pkg/webexposure/report"
+	"web-exposure-detection/pkg/webexposure/truinsights"
 )
 
 // cleanDomainName cleans and normalizes domain names
@@ -357,6 +359,13 @@ func (s *scanner) ScanWithPreset(domains []string, keywords []string, templates 
 	}
 	logger.Info().Msgf("Discovered %d domains", len(discoveredDomains))
 
+	// Warn if no live domains were found
+	if len(discoveredDomains) == 0 {
+		logger.Error().Msgf("No live/reachable domains found")
+		logger.Error().Msgf("Check domain discovery results: %s/domain-discovery-result.json", resultsDir)
+		return fmt.Errorf("no live domains found to scan (verify domains exist and are reachable)")
+	}
+
 	// Extract URLs from discovered domains
 	var discoveredURLs []string
 	for domainURL := range discoveredDomains {
@@ -497,6 +506,26 @@ func (s *scanner) GenerateReportFromExistingResults(domains []string, debug bool
 		logger.Debug().Msgf("Discovery result not found (backward compatibility): %v", err)
 	}
 
+	// Step 1.6: Load industry classification from cache (if available)
+	industryFile := filepath.Join(resultsDir, "industry-classification.json")
+	if classification, err := industry.ClassifyDomainIndustryWithCache(targetDomain, industryFile, false); err == nil {
+		s.industryClassification = classification
+		logger.Debug().Msgf("Loaded industry classification: %s - %s", classification.Industry, classification.SubIndustry)
+	} else {
+		logger.Debug().Msgf("Industry classification not found: %v", err)
+	}
+
+	// Step 2: Generate TRU insights (with automatic caching)
+	generator, genErr := truinsights.NewGenerator()
+	if genErr != nil {
+		logger.Warning().Msgf("Failed to initialize TRU insights generator: %v (continuing without TRU insights)", genErr)
+	} else {
+		_, genErr = generator.GenerateWithDebug(targetDomain, false, debug)
+		if genErr != nil {
+			logger.Warning().Msgf("Failed to generate TRU insights: %v (continuing without TRU insights)", genErr)
+		}
+	}
+
 	// Step 3: Generate report from grouped results
 	logger.Info().Msgf("Generating report from %d grouped results", len(groupedResults.Domains))
 	
@@ -504,9 +533,15 @@ func (s *scanner) GenerateReportFromExistingResults(domains []string, debug bool
 	var industryInfo *common.IndustryInfo
 	if s.industryClassification != nil {
 		industryInfo = &common.IndustryInfo{
-			Industry:    s.industryClassification.Industry,
-			SubIndustry: s.industryClassification.SubIndustry,
-			Compliances: s.industryClassification.Compliances,
+			CompanyName:      s.industryClassification.CompanyName,
+			ParentCompany:    s.industryClassification.ParentCompany,
+			Subsidiaries:     s.industryClassification.Subsidiaries,
+			Industry:         s.industryClassification.Industry,
+			SubIndustry:      s.industryClassification.SubIndustry,
+			Compliances:      s.industryClassification.Compliances,
+			HeadquartersCity: s.industryClassification.HeadquartersCity,
+			OperatingRegions: s.industryClassification.OperatingRegions,
+			PrimaryRegion:    s.industryClassification.PrimaryRegion,
 		}
 	}
 
@@ -539,9 +574,15 @@ func (s *scanner) generateReportsFromNucleiResults(nucleiResults []*output.Resul
 	var industryInfo *common.IndustryInfo
 	if s.industryClassification != nil {
 		industryInfo = &common.IndustryInfo{
-			Industry:    s.industryClassification.Industry,
-			SubIndustry: s.industryClassification.SubIndustry,
-			Compliances: s.industryClassification.Compliances,
+			CompanyName:      s.industryClassification.CompanyName,
+			ParentCompany:    s.industryClassification.ParentCompany,
+			Subsidiaries:     s.industryClassification.Subsidiaries,
+			Industry:         s.industryClassification.Industry,
+			SubIndustry:      s.industryClassification.SubIndustry,
+			Compliances:      s.industryClassification.Compliances,
+			HeadquartersCity: s.industryClassification.HeadquartersCity,
+			OperatingRegions: s.industryClassification.OperatingRegions,
+			PrimaryRegion:    s.industryClassification.PrimaryRegion,
 		}
 	}
 
@@ -572,7 +613,7 @@ func (s *scanner) writeAndGenerateFormats(expReport *common.ExposureReport, resu
 	} else {
 		// Generate PDF from HTML
 		htmlPath := filepath.Join(resultsDir, "report", "index.html")
-		pdfPath := filepath.Join(resultsDir, expReport.ReportMetadata.TargetDomain+"-web-exposure-report.pdf")
+		pdfPath := filepath.Join(resultsDir, expReport.ReportMetadata.TargetDomain+"-appex-report.pdf")
 
 		err = s.generatePDF(htmlPath, pdfPath)
 		if err != nil {
@@ -860,6 +901,11 @@ func (s *scanner) runNucleiScanWithStorage(targets []string, opts *nuclei.Nuclei
 		logger.Error().Msgf("Nuclei scan failed: %v", err)
 		return nil, err
 	}
+
+	// Wait briefly for nuclei background goroutines to finish cleanup
+	// This prevents race conditions with fastdialer during subsequent operations
+	time.Sleep(2 * time.Second)
+	logger.Debug().Msg("Nuclei cleanup delay completed")
 
 	// Convert JSONL to JSON for backward compatibility
 	nucleiResultsDir := filepath.Join(resultsDir, "nuclei-results")

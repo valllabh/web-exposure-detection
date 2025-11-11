@@ -37,11 +37,17 @@ sudo mv web-exposure-detection /usr/local/bin/
 
 ### Scan Command
 
-Full pipeline: domain discovery + vulnerability scanning + report generation
+Complete pipeline with automatic caching: domain discovery, vulnerability scanning, TRU insights, and multi-format report generation (JSON, HTML, PDF).
 
 ```bash
-# Basic scan
+# Basic scan (generates full report with all formats)
 web-exposure-detection scan example.com
+
+# Subsequent runs use cached results (fast)
+web-exposure-detection scan example.com
+
+# Force fresh scan (ignore all caches)
+web-exposure-detection scan example.com --force
 
 # Scan multiple domains
 web-exposure-detection scan example.com test.com
@@ -49,11 +55,8 @@ web-exposure-detection scan example.com test.com
 # Additional keywords for SSL cert filtering
 web-exposure-detection scan example.com --domain-keywords "examplecorp,exampleinc"
 
-# Force fresh domain discovery (ignore cache)
-web-exposure-detection scan example.com --force
-
-# Skip domain discovery, scan specific domain only
-web-exposure-detection scan example.com --skip-discovery
+# Skip domain discovery, scan provided domain only
+web-exposure-detection scan example.com --skip-discovery-all
 
 # Scan with specific templates
 web-exposure-detection scan example.com --templates "openapi,swagger-api"
@@ -62,9 +65,11 @@ web-exposure-detection scan example.com --templates "openapi,swagger-api"
 web-exposure-detection scan example.com --preset fast
 ```
 
-### Discover Command
+**Automatic Caching:** The scan command intelligently caches all intermediate results. Running scan again on the same domain instantly regenerates reports from cached data unless `--force` is used.
 
-Domain discovery only (no vulnerability scanning)
+### Discover Command (Optional)
+
+Domain discovery only, no vulnerability scanning. Results are cached for subsequent scan commands.
 
 ```bash
 # Discover domains
@@ -77,13 +82,13 @@ web-exposure-detection discover example.com --domain-keywords "examplecorp"
 web-exposure-detection discover example.com --force
 ```
 
-### Report Command
+### Classify Command (Optional)
 
-Regenerate reports from existing scan results
+Industry classification for a domain. Used internally by scan command.
 
 ```bash
-# Regenerate report from cached results
-web-exposure-detection report example.com
+# Classify domain industry
+web-exposure-detection classify example.com
 ```
 
 ## Output
@@ -92,44 +97,58 @@ Reports are saved to `./results/{domain}/`:
 
 ```
 results/example-com/
-├── domain-discovery-result.json          # Cached domain discovery results (full AssetDiscoveryResult)
+├── domain-discovery-result.json          # Cached domain discovery results
+├── industry-classification.json          # Industry classification
 ├── nuclei-results/
-│   └── results.json                     # Raw Nuclei scan results
+│   └── results.json                     # Raw Nuclei scan results (grouped)
+├── tru-insights-TAS.json                # TRU insights analysis
 ├── web-exposure-result.json             # Final JSON report
-└── example-com-web-exposure-report.pdf  # PDF report
+├── report/
+│   └── index.html                       # HTML report
+└── example-com-appex-report.pdf         # PDF report
 ```
+
+All outputs are cached. Running scan command again uses cached results unless `--force` flag is provided.
 
 ## How It Works
 
-### Scan Pipeline
+### Unified Pipeline with Automatic Caching
 
-1. **Domain Discovery**
+The scan command executes a complete pipeline with intelligent caching at each step:
+
+1. **Domain Discovery** (cached)
    - Passive enumeration via certificate transparency
    - SSL certificate SAN extraction
    - Auto-extracts keywords from target domain
    - Filters discovered domains by keywords
 
-2. **Vulnerability Scanning**
+2. **Industry Classification** (cached, non-blocking)
+   - AI-powered industry detection
+   - Compliance requirements identification
+
+3. **Vulnerability Scanning** (cached)
    - Parallel Nuclei scanning with embedded templates
    - Real-time progress tracking per host
    - Live findings display
 
-3. **Result Aggregation**
-   - Classify findings by severity
-   - API vs Web Application detection
-   - Metadata enrichment
+4. **TRU Insights Generation** (cached, non-blocking)
+   - AI-powered risk analysis
+   - Actionable security recommendations
 
-4. **Report Generation**
+5. **Report Generation** (cached)
    - JSON (machine-readable)
-   - HTML (human-readable)
+   - HTML (human-readable with charts)
    - PDF (export/sharing)
 
-### Caching & Performance
+### Caching Strategy
 
-- Results cached in `./results/{domain}/`
-- Subsequent scans use cached domain discovery
-- Use `--force` to bypass cache and re-scan
-- Per-host timing and progress stats
+Each pipeline step checks its cache before executing:
+- **First run:** Executes all steps, caches results
+- **Subsequent runs:** Uses cached results (instant)
+- **Force mode:** Bypasses all caches with `--force` flag
+- **Smart dependencies:** Steps only re-run if dependencies change
+
+This design allows running the scan command multiple times without penalty, making report regeneration instant.
 
 ### Keywords Parameter
 

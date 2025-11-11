@@ -1,0 +1,77 @@
+package cmd
+
+import (
+	"fmt"
+
+	"web-exposure-detection/pkg/webexposure"
+
+	"github.com/spf13/cobra"
+)
+
+// truInsightsCmd represents the tru-insights command
+var truInsightsCmd = &cobra.Command{
+	Use:   "tru-insights [domain]",
+	Short: "Generate TRU (Threat Research Unit) insights from existing scan results",
+	Long: `Generate TRU insights using Perplexity AI based on existing scan results.
+This command requires prior scan results and generates theoretical attack scenarios.
+
+Requires PERPLEXITY_API_KEY environment variable or config file.
+
+Examples:
+  web-exposure-detection tru-insights example.com
+  web-exposure-detection tru-insights --force example.com
+  web-exposure-detection tru-insights --debug example.com`,
+	Args: cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		domain := args[0]
+
+		// Get debug flag
+		debug, err := cmd.Flags().GetBool("debug")
+		if err != nil {
+			return fmt.Errorf("failed to get debug flag: %w", err)
+		}
+
+		// Get force flag
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return fmt.Errorf("failed to get force flag: %w", err)
+		}
+
+		// Create scanner
+		scanner, err := webexposure.New()
+		if err != nil {
+			return fmt.Errorf("failed to create scanner: %w", err)
+		}
+
+		// Set debug flag
+		scanner.SetDebug(debug)
+
+		// Configure logger
+		if debug {
+			webexposure.GetLogger().Debug().Msg("Debug mode enabled for TRU insights generation")
+		}
+
+		logger.Info().Msgf("Generating TRU insights for: %s", domain)
+
+		// Use new flow architecture
+		// force flag passed from command line, empty keywords/templates since using existing results
+		err = scanner.RunTRUInsightsFlow(domain, force, []string{}, []string{}, false, false, webexposure.PresetSlow)
+		if err != nil {
+			return fmt.Errorf("TRU insights generation failed: %w", err)
+		}
+
+		// Show summary
+		logger.Info().Msg("TRU insights generated successfully")
+		logger.Info().Msgf("JSON saved to: results/%s/tru-insights-TAS.json", domain)
+		logger.Info().Msgf("Metadata saved to: results/%s/tru-insights-metadata.json", domain)
+
+		return nil
+	},
+}
+
+func init() {
+	rootCmd.AddCommand(truInsightsCmd)
+
+	// Add force flag to regenerate insights
+	truInsightsCmd.Flags().BoolP("force", "f", false, "Force fresh insights generation by clearing cache")
+}

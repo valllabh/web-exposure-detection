@@ -46,7 +46,11 @@ go run . scan example.com --domain-keywords additional,keywords --force
 │       ├── nuclei/           # Nuclei integration and DSL
 │       ├── findings/         # Findings and criticality types
 │       ├── industry/         # Industry classification
+│       │   └── prompts/      # Industry classification AI prompts
 │       ├── criticality/      # Criticality calculation
+│       ├── truinsights/      # TRU threat intelligence
+│       │   └── prompts/      # Threat assessment AI prompts
+│       ├── ai/               # AI provider adapters
 │       └── logger/           # Logger utilities
 ├── internal/                 # Private implementation
 ├── scan-templates/           # Nuclei templates (embedded)
@@ -110,6 +114,67 @@ make update-cve-stats
 
 See [how-to-write-nuclei-template.md](./how-to-write-nuclei-template.md#cve-statistics) for details.
 
+## Architecture Overview
+
+### Unified Pipeline
+
+The tool uses a single unified pipeline (`RunCompletePipeline`) that executes all operations with intelligent caching:
+
+**Command Structure:**
+- `scan` - Complete pipeline (discovery, scanning, TRU insights, reports)
+- `discover` - Domain discovery only (optional, for pre-caching)
+- `classify` - Industry classification only (optional, standalone utility)
+
+**Pipeline Flow:**
+```
+scan command → RunCompletePipeline() → All 7 subflows in sequence
+                                        ├─ Discovery Subflow (cached)
+                                        ├─ Industry Classification Subflow (cached)
+                                        ├─ Nuclei Scan Subflow (cached)
+                                        ├─ TRU Insights Subflow (cached)
+                                        ├─ Report JSON Subflow (cached)
+                                        ├─ HTML Subflow (cached)
+                                        └─ PDF Subflow (cached)
+```
+
+**Key Principles:**
+- Each subflow checks its cache before executing
+- Force flag bypasses all caches
+- Dependencies automatically resolved (subflows call other subflows)
+- Non-blocking steps (industry, TRU insights, HTML, PDF) fail gracefully
+
+**Implementation Location:** `pkg/webexposure/scanner/flow_unified.go`
+
+### Caching Strategy
+
+Each subflow follows this pattern:
+
+```go
+func (s *scanner) runXSubflow(domain string, force bool, ...) (*Result, error) {
+    cacheFile := filepath.Join("results", domain, "cache-file.json")
+
+    // Step 1: Check cache (unless force=true)
+    if !force {
+        if cachedData := loadFromCache(cacheFile); cachedData != nil {
+            return cachedData, nil
+        }
+    }
+
+    // Step 2: Call dependency subflows (with same force flag)
+    dependency, err := s.runDependencySubflow(domain, force, ...)
+
+    // Step 3: Execute this subflow's work
+    result := doWork(dependency)
+
+    // Step 4: Save to cache
+    saveToCache(cacheFile, result)
+
+    return result, nil
+}
+```
+
+This allows running scan command multiple times instantly (uses cache) unless `--force` is specified.
+
 ## Adding Features
 
 1. Implement in SDK (`pkg/webexposure`) first
@@ -118,6 +183,36 @@ See [how-to-write-nuclei-template.md](./how-to-write-nuclei-template.md#cve-stat
 4. Add tests
 5. Update CLAUDE.md references if needed
 
+### Adding New Findings
+
+When adding new findings to `pkg/webexposure/findings/findings.json`:
+
+**Critical:** Always add the `classification` field for findings that indicate application type:
+
+```json
+{
+  "your.new.finding": {
+    "slug": "your.new.finding",
+    "display_name": "Your Finding Name",
+    "icon": "icon.svg",
+    "show_in_tech": true,
+    "classification": ["webapp"],  // Required for proper classification
+    "description": "Description of the finding"
+  }
+}
+```
+
+**Classification Categories:**
+- `["webapp"]` - Authentication, frontend/backend frameworks, CMS
+- `["api"]` - API servers, API patterns, JSON/XML endpoints
+- `["api-spec"]` - OpenAPI, Swagger, Postman collections
+- `["ai"]` - MCP servers, vector databases, AI endpoints
+- No classification - Security headers, page metadata, infrastructure checks
+
+**Why this matters:** Findings without proper classification cause domains to be categorized as "Other" instead of their correct type.
+
+See [reporting-system.md](./reporting-system.md#adding-new-findings) for complete classification requirements.
+
 ## Embedded Resources
 
 When adding/modifying embedded resources:
@@ -125,6 +220,84 @@ When adding/modifying embedded resources:
 1. Add files to appropriate directory (`scan-templates/`, `templates/`)
 2. Verify `embed.go` includes the path
 3. Rebuild to embed new files
+
+## AI Prompts Organization
+
+AI prompts are embedded within their respective packages for maintainability and encapsulation.
+
+### Prompt Locations
+
+```
+pkg/webexposure/
+├── industry/
+│   └── prompts/
+│       └── industry-classification.md    # Industry classification prompt
+└── truinsights/
+    └── prompts/
+        └── threat-landscape.md            # Threat assessment prompt
+```
+
+### Embedding Strategy
+
+Each package that uses AI prompts embeds its own prompts:
+
+**Industry Package** (`pkg/webexposure/industry/prompts.go`):
+```go
+//go:embed prompts/*.md
+var promptsFS embed.FS
+```
+
+**TRU Insights Package** (`pkg/webexposure/truinsights/truinsights.go`):
+```go
+//go:embed prompts/*.md
+var promptsFS embed.FS
+```
+
+### Adding/Modifying Prompts
+
+1. **Locate the prompt file** in the appropriate package's `prompts/` directory
+2. **Edit the markdown file** with your changes
+3. **Rebuild** the binary to embed the updated prompt:
+   ```bash
+   make build
+   ```
+
+### Prompt File Format
+
+All prompts are markdown files with:
+- Clear role definition
+- Structured input expectations
+- Detailed output requirements
+- Examples and validation rules
+
+Example structure:
+```markdown
+# Prompt Title
+
+## Your Role
+[Define the AI's role and objectives]
+
+## Input Data
+[Describe expected inputs]
+
+## Output Format
+[Specify exact output format, usually JSON]
+
+## Examples
+[Provide concrete examples]
+
+## Validation
+[List validation requirements]
+```
+
+### Testing Prompts
+
+After modifying prompts:
+
+1. Rebuild: `make build`
+2. Run relevant command (e.g., `./bin/web-exposure-detection scan domain.com`)
+3. Verify output quality and format
+4. Check for API errors or timeout issues
 
 ## Code Style
 
@@ -151,20 +324,31 @@ Rules:
 - Types only
 
 #### pkg/webexposure/scanner/
-Main scanner orchestration and domain discovery.
+Main scanner orchestration with subflow-based architecture.
 
 Files:
-- `scanner.go` - Scan pipeline, template management, result aggregation
+- `scanner.go` - Legacy scan methods, template management
 - `scanner_impl.go` - Scanner struct implementation
-- `discovery.go` - Domain discovery, caching, protocol handling
-- `nuclei.go` - Nuclei scan execution
+- `discovery.go` - Domain discovery helpers
+- `nuclei.go` - Nuclei scan helpers
+- `flow_unified.go` - Unified pipeline (RunCompletePipeline)
+- `subflow_discovery.go` - Discovery subflow with caching
+- `subflow_industry.go` - Industry classification subflow
+- `subflow_nuclei.go` - Nuclei scan subflow with caching
+- `subflow_tru_insights.go` - TRU insights generation subflow
+- `subflow_report_json.go` - JSON report generation subflow
+- `subflow_html.go` - HTML report generation subflow
+- `subflow_pdf.go` - PDF report generation subflow
 
 Responsibilities:
-- Complete scan pipeline orchestration
-- Domain discovery and caching
-- Nuclei scan execution
+- Unified pipeline orchestration (flow_unified.go)
+- Subflow execution with intelligent caching
+- Domain discovery and protocol handling
+- Nuclei scan coordination
 - Template validation
 - Progress tracking
+
+**Architecture:** Each subflow is self-contained with cache checking, dependency resolution, execution, and cache saving. Subflows call other subflows as dependencies, creating a nested (Russian doll) pattern.
 
 #### pkg/webexposure/report/
 All report generation (HTML and PDF).

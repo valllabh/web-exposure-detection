@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.ReportMetadata.Title}}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -12,12 +13,36 @@
                 extend: {
                     fontFamily: {
                         'montserrat': ['Montserrat', 'sans-serif'],
+                        'condensed': ['Roboto Condensed', 'sans-serif'],
                     },
                 }
             }
         }
     </script>
     <style>
+        /* CSS Custom Properties */
+        :root {
+            /* Color Tokens */
+            --color-border-light: #e7eaed;
+            --color-border-accent: #C4CFE8;
+            --color-text-primary: #364750;
+            --color-text-secondary: #505964;
+            --color-text-muted: #6B7280;
+
+            /* Gradients */
+            --gradient-card: linear-gradient(148.39deg, rgba(255,255,255,0.3) -34.39%, rgba(217,228,255,0.3) 102.8%);
+            --gradient-card-subtle: linear-gradient(148.39deg, rgba(255,255,255,0.3) -34.39%, rgba(231,236,238,0.3) 102.8%);
+        }
+
+        /* Utility Classes */
+        .bg-gradient-card {
+            background: var(--gradient-card);
+        }
+        .bg-gradient-card-subtle {
+            background: var(--gradient-card-subtle);
+        }
+
+        /* Print Styles */
         @page {
             size: A4;
             margin: 0.3in;
@@ -37,10 +62,39 @@
             tr {
                 page-break-inside: avoid;
             }
+            .page-break-before {
+                page-break-before: always;
+                break-before: page;
+            }
         }
         * {
             -webkit-print-color-adjust: exact;
             color-adjust: exact;
+        }
+
+        /* Risk Level Colors */
+        .risk-high {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+        }
+        .risk-medium {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+        }
+        .risk-low {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #166534;
+        }
+
+        /* Coverage Colors */
+        .coverage-high {
+            background: linear-gradient(to right, #ef4444, #dc2626);
+        }
+        .coverage-medium {
+            background: linear-gradient(to right, #f59e0b, #d97706);
+        }
+        .coverage-low {
+            background: linear-gradient(to right, #10b981, #059669);
         }
     </style>
 </head>
@@ -48,102 +102,293 @@
     <div class="max-w-[210mm] mx-auto bg-white p-2.5">
 
         <!-- Header -->
-        <header class="flex justify-between items-center mb-4">
+        <header class="flex justify-between items-center mb-6">
+            <!-- Left: Qualys Logo and Title -->
             <div class="flex items-center gap-5">
-                <div class="h-9">
-                    <img src="./assets/qualys-logo.svg" alt="Qualys Logo" class="h-9 w-auto">
+                <div class="h-14">
+                    <img src="./assets/qualys-logo.svg" alt="Qualys Logo" class="h-14 w-auto">
                 </div>
-                <h1 class="text-[22px] font-bold text-gray-700 m-0">TotalAppSec External Application Discovery</h1>
+                <div class="flex flex-col">
+                    <h1 class="text-2xl font-bold text-gray-800 m-0 leading-tight">Application Exposure Report</h1>
+                    <p class="text-sm text-gray-600 mt-1">powered by <span class="font-semibold">TotalAppSec</span></p>
+                </div>
+            </div>
+
+            <!-- Right: Confidential Badge -->
+            <div class="w-20 h-20 flex items-center justify-center" style="transform: rotate(15deg);">
+                <img src="./assets/confidential-stamp.svg" alt="Confidential" class="w-full h-full opacity-30">
             </div>
         </header>
 
-        <!-- Scan Info -->
-        <div class="bg-white border border-gray-200 rounded-xl p-4 my-5">
-            {{if .Summary.DomainMetrics}}
-            <div class="flex flex-col gap-2">
-                <div class="flex items-center gap-3 flex-wrap">
-                    <div class="text-sm text-gray-600">
-                        <span class="font-semibold">For</span> {{.ReportMetadata.TargetDomain}}
-                    </div>
-                    <div class="text-sm text-gray-600">
-                        <span class="text-gray-300">|</span>
-                        {{.ReportMetadata.Date}}
-                    </div>
+        <!-- Hero Section -->
+        <div class="bg-white border border-[#e7eaed] rounded-2xl p-6 mb-6">
+            <!-- Line 1: Company Name -->
+            <h1 class="text-2xl font-semibold text-gray-800 mb-2">
+                {{if and .ReportMetadata.Industry .ReportMetadata.Industry.CompanyName}}
+                    {{.ReportMetadata.Industry.CompanyName}}
+                {{else if .ReportMetadata.TargetDomain}}
+                    {{.ReportMetadata.TargetDomain}}
+                {{else}}
+                    ACME Corporation
+                {{end}}
+            </h1>
+
+            <!-- Line 2: Industry -->
+            <div class="flex items-center gap-2 text-sm text-gray-600 mb-2 overflow-hidden">
+                <i class="fas fa-industry text-gray-500 flex-shrink-0"></i>
+                <span class="font-semibold whitespace-nowrap flex-shrink-0">Industry:</span>
+                <span class="truncate">{{if and .ReportMetadata.Industry .ReportMetadata.Industry.SubIndustry}}{{.ReportMetadata.Industry.SubIndustry}}{{else if .ReportMetadata.Industry}}{{.ReportMetadata.Industry.Industry}}{{else}}Retail{{end}}</span>
+            </div>
+
+            <!-- Line 2.5: Related Organizations -->
+            {{if or (and .ReportMetadata.Industry .ReportMetadata.Industry.ParentCompany) (and .ReportMetadata.Industry .ReportMetadata.Industry.Subsidiaries)}}
+            <div class="flex items-center gap-2 text-sm text-gray-600 mb-2 overflow-hidden">
+                <i class="fas fa-sitemap text-gray-500 flex-shrink-0"></i>
+                <span class="font-semibold whitespace-nowrap flex-shrink-0">Related Orgs:</span>
+                <span class="truncate">
+                    {{$count := 0}}
+                    {{if .ReportMetadata.Industry.ParentCompany}}{{$count = add $count 1}}{{end}}
+                    {{if .ReportMetadata.Industry.Subsidiaries}}{{$count = add $count (len .ReportMetadata.Industry.Subsidiaries)}}{{end}}
+                    {{if .ReportMetadata.Industry.ParentCompany}}{{.ReportMetadata.Industry.ParentCompany}}{{if .ReportMetadata.Industry.Subsidiaries}}, {{end}}{{end}}{{if .ReportMetadata.Industry.Subsidiaries}}{{range $index, $sub := .ReportMetadata.Industry.Subsidiaries}}{{if lt $index 2}}{{if gt $index 0}}, {{end}}{{$sub}}{{end}}{{end}}{{if gt (len .ReportMetadata.Industry.Subsidiaries) 2}}...{{end}}{{end}} ({{$count}})
+                </span>
+            </div>
+            {{end}}
+
+            <!-- Line 2.6: Operating Regions -->
+            {{if and .ReportMetadata.Industry .ReportMetadata.Industry.OperatingRegions}}
+            <div class="flex items-center gap-2 text-sm text-gray-600 mb-2 overflow-hidden">
+                <i class="fas fa-map-marked-alt text-gray-500 flex-shrink-0"></i>
+                <span class="font-semibold whitespace-nowrap flex-shrink-0">Operating Regions:</span>
+                <span class="truncate">{{if .ReportMetadata.Industry.HeadquartersCity}}HQ: {{.ReportMetadata.Industry.HeadquartersCity}} | {{end}}{{range $index, $region := .ReportMetadata.Industry.OperatingRegions}}{{if gt $index 0}}, {{end}}{{$region}}{{end}}</span>
+            </div>
+            {{end}}
+
+            <!-- Line 3: Domains and Generated Date -->
+            <div class="flex items-center gap-6 text-sm text-gray-600 mb-3">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-globe text-gray-500"></i>
+                    <span>{{if .Summary.DomainMetrics}}{{.Summary.DomainMetrics.TotalDiscovered}}{{else}}544{{end}}</span>
+                    <span>Domains</span>
                 </div>
-                <div class="flex items-center gap-3 flex-wrap">
-                    <div class="flex items-center gap-1.5 text-sm text-gray-600">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                        </svg>
-                        <span class="font-semibold">{{.Summary.DomainMetrics.InternetExposed}}</span> Publicly Accessible
-                    </div>
-                    <div class="text-sm text-gray-600">
-                        <span class="font-semibold">{{.Summary.DomainMetrics.NotReachable}}</span> Internal
-                    </div>
-                    <div class="text-sm text-gray-600">
-                        <span class="font-semibold">{{.Summary.DomainMetrics.TotalDiscovered}}</span> Total Discovered
-                    </div>
+                <div class="flex items-center gap-2">
+                    <span class="font-semibold">Generated on:</span>
+                    <span>{{.ReportMetadata.Date}}</span>
+                </div>
+            </div>
+
+            <!-- Line 4: Applicable Compliances -->
+            {{if and .ReportMetadata.Industry .ReportMetadata.Industry.Compliances}}
+            <div class="mt-3 pt-3 border-t border-[#e7eaed]">
+                <p class="text-[11px] font-medium text-gray-700 mb-2">Applicable Compliance Frameworks <a href="#appendix-compliances" class="text-gray-600 hover:text-gray-800 transition-colors no-underline"><i class="far fa-circle-question text-xs"></i></a></p>
+                <div class="flex gap-2 flex-wrap items-start">
+                    {{range $index, $compliance := .ReportMetadata.Industry.Compliances}}
+                    {{if lt $index 5}}
+                    <a href="#compliance-{{$compliance.Name}}" class="px-3 py-1 rounded-2xl border border-[#C4CFE8] bg-gradient-card-subtle no-underline inline-block" >
+                        <p class="text-xs font-medium text-gray-800">{{$compliance.Name}}</p>
+                    </a>
+                    {{end}}
+                    {{end}}
+                    {{if gt (len .ReportMetadata.Industry.Compliances) 5}}
+                    <a href="#appendix-compliances" class="px-3 py-1 rounded-2xl border border-[#C4CFE8] bg-gradient-card-subtle no-underline inline-block" >
+                        <p class="text-xs font-medium text-gray-600">Other +{{subtract (len .ReportMetadata.Industry.Compliances) 5}}</p>
+                    </a>
+                    {{end}}
                 </div>
             </div>
             {{end}}
         </div>
 
-        <!-- Application Exposure -->
-        {{if or (gt .Summary.APIsFound 0) (gt .Summary.APISpecificationsFound 0) (gt .Summary.AIAssetsFound 0) (gt .Summary.WebAppsFound 0)}}
-        <div class="bg-white border border-[#e7eaed] rounded-[20px] p-5">
-            <h2 class="text-xl font-medium text-[#505964] mb-5">Application Exposure</h2>
-            <div class="grid grid-cols-4 gap-4">
-                <div class="flex flex-col justify-center px-4 py-4 rounded-[20px] border border-[#ecf2ff]" style="background: linear-gradient(148.39deg, rgba(255,255,255,0.3) -34.39%, rgba(217,228,255,0.3) 102.8%);">
-                    <p class="text-xs font-medium text-[#364750] mb-2">API Servers</p>
-                    <p class="text-[32px] font-bold text-[#364750] leading-none">{{.Summary.APIsFound}}</p>
+        <!-- Application and Technology Exposure -->
+        {{if or (gt .Summary.APIServers 0) (gt .Summary.APISpecificationsFound 0) (gt .Summary.AIAssetsFound 0) (gt .Summary.WebAppsFound 0) (and .Technologies (gt .Technologies.Count 0))}}
+        <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-6">
+            <h2 class="text-xl font-medium text-gray-700 mb-5">Application and Technology Exposure</h2>
+
+            <!-- Application Exposure Row -->
+            {{if or (gt .Summary.APIServers 0) (gt .Summary.APISpecificationsFound 0) (gt .Summary.AIAssetsFound 0) (gt .Summary.WebAppsFound 0)}}
+            <div class="grid grid-cols-4 gap-4 mb-4">
+                {{if gt .Summary.APIServers 0}}
+                <a href="#api-servers" class="flex flex-col justify-center p-4 rounded-2xl border border-[#C4CFE8] no-underline cursor-pointer bg-gradient-card" >
+                    <p class="text-xs font-medium text-gray-800 mb-2">API Servers</p>
+                    <p class="text-3xl font-bold text-gray-800 leading-none">{{.Summary.APIServers}}</p>
+                </a>
+                {{end}}
+                {{if gt .Summary.APISpecificationsFound 0}}
+                <a href="#api-specifications" class="flex flex-col justify-center p-4 rounded-2xl border border-[#C4CFE8] no-underline cursor-pointer bg-gradient-card" >
+                    <p class="text-xs font-medium text-gray-800 mb-2">API Specifications</p>
+                    <p class="text-3xl font-bold text-gray-800 leading-none">{{.Summary.APISpecificationsFound}}</p>
+                </a>
+                {{end}}
+                {{if gt .Summary.AIAssetsFound 0}}
+                <a href="#ai-services" class="flex flex-col justify-center p-4 rounded-2xl border border-[#C4CFE8] no-underline cursor-pointer bg-gradient-card" >
+                    <p class="text-xs font-medium text-gray-800 mb-2">AI Apps</p>
+                    <p class="text-3xl font-bold text-gray-800 leading-none">{{.Summary.AIAssetsFound}}</p>
+                </a>
+                {{end}}
+                {{if gt .Summary.WebAppsFound 0}}
+                <a href="#web-apps" class="flex flex-col justify-center p-4 rounded-2xl border border-[#C4CFE8] no-underline cursor-pointer bg-gradient-card" >
+                    <p class="text-xs font-medium text-gray-800 mb-2">Web Apps</p>
+                    <p class="text-3xl font-bold text-gray-800 leading-none">{{.Summary.WebAppsFound}}</p>
+                </a>
+                {{end}}
+            </div>
+            {{end}}
+
+            <!-- Technology Exposure Row -->
+            {{if and .Technologies (gt .Technologies.Count 0)}}
+            <div class="flex gap-3 overflow-x-visible">
+                {{range $index, $tech := .Technologies.Technologies}}
+                {{if lt $index 4}}
+                <a href="#tech-{{$tech.Slug}}" class="flex items-center gap-2 px-3 py-2 rounded-2xl border border-[#C4CFE8] min-w-[110px] bg-gradient-card-subtle no-underline" >
+                    {{if $tech.Icon}}
+                    <div class="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                        <img src="./assets/{{$tech.Icon}}" alt="{{$tech.DisplayName}}" class="w-5 h-5 object-contain">
+                    </div>
+                    {{end}}
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[11px] font-medium text-gray-700 truncate">{{$tech.DisplayName}}</p>
+                        <p class="text-sm font-bold text-gray-800 leading-none">{{$tech.Count}} <span class="text-[11px] font-normal text-gray-600">domains</span></p>
+                    </div>
+                </a>
+                {{end}}
+                {{end}}
+                {{if gt .Technologies.Count 4}}
+                <a href="#technologies-found" class="flex items-center justify-center px-3 py-2 rounded-2xl border border-[#C4CFE8] min-w-[110px] no-underline cursor-pointer bg-gradient-card-subtle" >
+                    <div class="text-center">
+                        <p class="text-sm font-bold text-gray-800 leading-none">+{{subtract .Technologies.Count 4}}</p>
+                        <p class="text-[11px] font-normal text-gray-700">other</p>
+                    </div>
+                </a>
+                {{end}}
+            </div>
+            {{end}}
+        </div>
+        {{end}}
+
+        <!-- Asset Criticality Score -->
+        {{if or .Summary.APICriticality .Summary.WebAppCriticality .Summary.AIAssetCriticality}}
+        <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-6">
+            <h2 class="text-xl font-medium text-gray-700 mb-1">Asset Criticality Score (ACS)</h2>
+            <p class="text-xs text-gray-600 mb-4">Business importance predicted from domain patterns, asset function, and environment</p>
+
+            <div class="grid grid-cols-5 gap-4">
+                {{$totalCritical := 0}}
+                {{$totalHigh := 0}}
+                {{$totalMedium := 0}}
+                {{$totalLow := 0}}
+                {{$totalMinimal := 0}}
+
+                {{if .Summary.APICriticality}}
+                    {{$totalCritical = add $totalCritical .Summary.APICriticality.Critical}}
+                    {{$totalHigh = add $totalHigh .Summary.APICriticality.High}}
+                    {{$totalMedium = add $totalMedium .Summary.APICriticality.Medium}}
+                    {{$totalLow = add $totalLow .Summary.APICriticality.Low}}
+                    {{$totalMinimal = add $totalMinimal .Summary.APICriticality.Minimal}}
+                {{end}}
+
+                {{if .Summary.WebAppCriticality}}
+                    {{$totalCritical = add $totalCritical .Summary.WebAppCriticality.Critical}}
+                    {{$totalHigh = add $totalHigh .Summary.WebAppCriticality.High}}
+                    {{$totalMedium = add $totalMedium .Summary.WebAppCriticality.Medium}}
+                    {{$totalLow = add $totalLow .Summary.WebAppCriticality.Low}}
+                    {{$totalMinimal = add $totalMinimal .Summary.WebAppCriticality.Minimal}}
+                {{end}}
+
+                {{if .Summary.AIAssetCriticality}}
+                    {{$totalCritical = add $totalCritical .Summary.AIAssetCriticality.Critical}}
+                    {{$totalHigh = add $totalHigh .Summary.AIAssetCriticality.High}}
+                    {{$totalMedium = add $totalMedium .Summary.AIAssetCriticality.Medium}}
+                    {{$totalLow = add $totalLow .Summary.AIAssetCriticality.Low}}
+                    {{$totalMinimal = add $totalMinimal .Summary.AIAssetCriticality.Minimal}}
+                {{end}}
+
+                {{if .Summary.APISpecCriticality}}
+                    {{$totalCritical = add $totalCritical .Summary.APISpecCriticality.Critical}}
+                    {{$totalHigh = add $totalHigh .Summary.APISpecCriticality.High}}
+                    {{$totalMedium = add $totalMedium .Summary.APISpecCriticality.Medium}}
+                    {{$totalLow = add $totalLow .Summary.APISpecCriticality.Low}}
+                    {{$totalMinimal = add $totalMinimal .Summary.APISpecCriticality.Minimal}}
+                {{end}}
+
+                <!-- Critical Assets -->
+                <div class="flex flex-col justify-center px-4 py-3 rounded-2xl border border-[#C4CFE8] bg-gradient-card" >
+                    <p class="text-xs font-medium text-[#6B2C28] mb-1">Critical</p>
+                    <p class="text-2xl font-bold text-gray-800 leading-none">{{$totalCritical}}</p>
                 </div>
-                <div class="flex flex-col justify-center px-4 py-4 rounded-[20px] border border-[#ecf2ff]" style="background: linear-gradient(148.39deg, rgba(255,255,255,0.3) -34.39%, rgba(217,228,255,0.3) 102.8%);">
-                    <p class="text-xs font-medium text-[#364750] mb-2">API Specifications</p>
-                    <p class="text-[32px] font-bold text-[#364750] leading-none">{{.Summary.APISpecificationsFound}}</p>
+
+                <!-- High Assets -->
+                <div class="flex flex-col justify-center px-4 py-3 rounded-2xl border border-[#C4CFE8] bg-gradient-card" >
+                    <p class="text-xs font-medium text-[#C13832] mb-1">High</p>
+                    <p class="text-2xl font-bold text-gray-800 leading-none">{{$totalHigh}}</p>
                 </div>
-                <div class="flex flex-col justify-center px-4 py-4 rounded-[20px] border border-[#ecf2ff]" style="background: linear-gradient(148.39deg, rgba(255,255,255,0.3) -34.39%, rgba(217,228,255,0.3) 102.8%);">
-                    <p class="text-xs font-medium text-[#364750] mb-2">AI Apps</p>
-                    <p class="text-[32px] font-bold text-[#364750] leading-none">{{.Summary.AIAssetsFound}}</p>
+
+                <!-- Medium Assets -->
+                <div class="flex flex-col justify-center px-4 py-3 rounded-2xl border border-[#C4CFE8] bg-gradient-card" >
+                    <p class="text-xs font-medium text-[#C1603D] mb-1">Medium</p>
+                    <p class="text-2xl font-bold text-gray-800 leading-none">{{$totalMedium}}</p>
                 </div>
-                <div class="flex flex-col justify-center px-4 py-4 rounded-[20px] border border-[#ecf2ff]" style="background: linear-gradient(148.39deg, rgba(255,255,255,0.3) -34.39%, rgba(217,228,255,0.3) 102.8%);">
-                    <p class="text-xs font-medium text-[#364750] mb-2">Web Apps</p>
-                    <p class="text-[32px] font-bold text-[#364750] leading-none">{{.Summary.WebAppsFound}}</p>
+
+                <!-- Low Assets -->
+                <div class="flex flex-col justify-center px-4 py-3 rounded-2xl border border-[#C4CFE8] bg-gradient-card" >
+                    <p class="text-xs font-medium text-[#E5A550] mb-1">Low</p>
+                    <p class="text-2xl font-bold text-gray-800 leading-none">{{$totalLow}}</p>
+                </div>
+
+                <!-- Minimal Assets -->
+                <div class="flex flex-col justify-center px-4 py-3 rounded-2xl border border-[#C4CFE8] bg-gradient-card" >
+                    <p class="text-xs font-medium text-[#E5A550] mb-1">Minimal</p>
+                    <p class="text-2xl font-bold text-gray-800 leading-none">{{$totalMinimal}}</p>
                 </div>
             </div>
         </div>
         {{end}}
 
-        <!-- Technology Exposure -->
-        {{if and .Technologies (gt .Technologies.Count 0)}}
-        <div class="bg-white p-5 my-7 rounded-[20px] border border-gray-200">
-            <h2 class="text-[#505964] text-xl mb-5 font-medium">Technology Exposure</h2>
-            <div class="grid grid-cols-5 gap-4 mt-4">
-                {{range $index, $tech := .Technologies.Technologies}}
-                {{if lt $index 4}}
-                <div class="flex flex-col items-center p-3 bg-white border border-gray-300 rounded-xl">
-                    <img src="./assets/{{$tech.Icon}}" alt="{{$tech.DisplayName}}" class="h-6" onerror="this.style.display='none'">
-                    <span class="mt-2 text-[10px] font-medium text-gray-600 text-center capitalize">{{$tech.DisplayName}}</span>
-                    <span class="mt-1 text-[9px] font-semibold text-blue-500 bg-blue-50 px-2 py-0.5 rounded-lg">{{$tech.Count}}</span>
+        <!-- Possible Weaknesses -->
+        {{if and .Summary.Security .Summary.Security.TopWeaknesses}}
+        <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-6">
+            <h2 class="text-xl font-medium text-gray-700 mb-1">Possible Weaknesses</h2>
+            <p class="text-xs text-gray-600 mb-3">Security weaknesses that may be applicable based on detected technologies</p>
+            <div class="flex gap-2 flex-wrap items-start">
+                {{range $index, $weakness := .Summary.Security.TopWeaknesses}}
+                {{if lt $index 3}}
+                <div class="px-3 py-1 rounded-2xl border border-[#C4CFE8] bg-gradient-card-subtle inline-block" >
+                    <p class="text-xs font-medium text-gray-700">{{$weakness.Name}} <span class="text-gray-600">({{$weakness.Count}})</span></p>
                 </div>
                 {{end}}
                 {{end}}
-                {{if gt .Technologies.Count 4}}
-                <div class="flex flex-col items-center justify-center p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl">
-                    <span class="text-[28px] font-bold text-white mb-1">{{subtract .Technologies.Count 4}}+</span>
-                    <span class="text-[10px] font-semibold text-white">Additional</span>
+                {{if gt (len .Summary.Security.TopWeaknesses) 3}}
+                <div class="px-3 py-1 rounded-2xl border border-[#C4CFE8] bg-gradient-card-subtle inline-block" >
+                    <p class="text-xs font-medium text-gray-600">Other +{{subtract (len .Summary.Security.TopWeaknesses) 3}}</p>
                 </div>
                 {{end}}
             </div>
+        </div>
+        {{end}}
+
+        <!-- Qualys Threat Research Unit Insights Section -->
+        {{if .TRUInsights}}
+        <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 my-7 page-break-before">
+            <!-- Title with TRU Logo -->
+            <div class="flex items-center gap-3 mb-5">
+                <img src="./assets/tru-logo.svg" alt="TRU Logo" class="h-10 w-10">
+                <h2 class="text-xl font-medium text-gray-700">Top 7 Insights from Qualys TRU for {{if and .ReportMetadata.Industry .ReportMetadata.Industry.CompanyName}}{{.ReportMetadata.Industry.CompanyName}}{{else}}{{.ReportMetadata.TargetDomain}}{{end}}</h2>
+            </div>
+
+            <!-- Top 7 Insights -->
+            <ol class="list-decimal list-outside ml-5 space-y-3 text-xs text-gray-700 leading-relaxed marker:text-blue-500 marker:font-semibold">
+                {{range $insight := .TRUInsights.ThreatAssessment.TopInsights}}
+                <li>{{markdownBold $insight}}</li>
+                {{end}}
+            </ol>
         </div>
         {{end}}
 
         <!-- Marketing Section -->
-        <div class="bg-[#EDF3F9] p-6 rounded-xl my-7 flex items-center justify-between">
+        <div class="bg-[#EDF3F9] p-6 rounded-2xl my-7 flex items-center justify-between">
             <div class="flex-1">
-                <h3 class="text-lg font-bold text-gray-700 mb-3 leading-tight">Attackers can see your {{.Summary.TotalApps}} applications and the technology powering them.</h3>
+                {{$exposedApps := add (add (add .Summary.APIServers .Summary.APISpecificationsFound) .Summary.AIAssetsFound) .Summary.WebAppsFound}}
+                <h3 class="text-lg font-bold text-gray-700 mb-3 leading-tight">Attackers can see your {{$exposedApps}} applications and the technology powering them.</h3>
                 <p class="text-[15px] mb-4 text-gray-600 leading-snug">Their attack plan is already in motion. Secure your APIs and Web Apps with Qualys TotalAppSec.</p>
-                <a href="https://www.qualys.com/forms/totalappsec/" class="inline-block bg-blue-500 text-white px-6 py-3 rounded-full text-[13px] font-bold no-underline hover:bg-blue-600 transition">Try Qualys TotalAppSec</a>
+                <a href="https://www.qualys.com/forms/totalappsec/" class="inline-block bg-blue-500 text-white px-6 py-3 rounded-full text-sm font-bold no-underline hover:bg-blue-600 transition">Try Qualys TotalAppSec</a>
             </div>
             <div class="ml-8">
                 <div class="w-[170px] h-[170px] flex items-center justify-center p-2">
@@ -153,374 +398,550 @@
         </div>
 
         <!-- API Endpoints -->
-        {{if .APIsFound}}
-        <div class="my-7">
-            <h2 class="text-gray-800 text-2xl mb-5 font-bold">API Endpoints Discovered</h2>
+        {{if .APIServers}}
+        <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-6 page-break-before" id="api-servers">
+            <h2 class="text-xl font-medium text-gray-700 mb-5">API Servers Discovered</h2>
 
-            <div class="bg-white border border-gray-200 rounded-lg p-3 mb-4 flex flex-wrap gap-5 items-center text-[11px]">
-                <div class="flex items-center gap-2">
-                    <span class="font-semibold text-gray-800">Asset Criticality Score:</span>
-                    <div class="flex items-center gap-2">
-                        <span class="text-gray-600">Highest</span>
-                        <span class="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold border-2 border-[#a0302e] text-[#a0302e] bg-white">5</span>
-                        <span class="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold border-2 border-[#d97706] text-[#d97706] bg-white">4</span>
-                        <span class="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold border-2 border-[#ea580c] text-[#ea580c] bg-white">3</span>
-                        <span class="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold border-2 border-[#84cc16] text-[#84cc16] bg-white">2</span>
-                        <span class="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold border-2 border-[#10b981] text-[#10b981] bg-white">1</span>
-                        <span class="text-gray-600">Lowest</span>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="font-semibold text-gray-800">API Status:</span>
-                    <div class="flex items-center gap-3">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-green-500"></span>
-                            <span>Confirmed</span>
+            <div class="space-y-3">
+                {{range .APIServers}}
+                <div class="bg-gradient-card-subtle border border-[#e7eaed] rounded-2xl p-4">
+                    <div class="flex items-start justify-between gap-6">
+                        <!-- Status + Domain -->
+                        <div class="flex items-center gap-2 flex-1 min-w-0">
+                            {{if eq .Discovered "Confirmed API Endpoint"}}
+                            <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
+                            {{else}}
+                            <span class="w-2 h-2 rounded-full bg-yellow-500 flex-shrink-0"></span>
+                            {{end}}
+                            <a href="https://{{.Domain}}" target="_blank" class="font-semibold text-sm text-gray-700 hover:text-blue-500 no-underline truncate">{{.Domain}}</a>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
-                            <span>Potential</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <table class="w-full border-collapse bg-white border border-gray-300 rounded-xl overflow-hidden">
-                <thead>
-                    <tr class="bg-gray-50">
-                        <th class="text-left p-3 font-semibold text-[13px] text-gray-600 border-b border-gray-300">Application</th>
-                        <th class="text-center p-3 font-semibold text-[13px] text-gray-600 border-b border-gray-300 w-20">Criticality</th>
-                        <th class="text-left p-3 font-semibold text-[13px] text-gray-600 border-b border-gray-300">Findings</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{range .APIsFound}}
-                    <tr class="even:bg-gray-50">
-                        <td class="p-3 border-b border-gray-300 align-top text-[13px]">
-                            <div class="flex items-start gap-2">
-                                {{if eq .Discovered "Confirmed API Endpoint"}}
-                                <span class="w-2 h-2 rounded-full bg-green-500 mt-1.5"></span>
-                                {{else}}
-                                <span class="w-2 h-2 rounded-full bg-yellow-500 mt-1.5"></span>
-                                {{end}}
-                                <a href="https://{{.Domain}}" target="_blank" class="font-bold text-gray-700 hover:text-blue-600 no-underline">{{.Domain}}</a>
-                            </div>
-                        </td>
-                        <td class="p-3 border-b border-gray-300 text-center align-top">
-                            {{if .Criticality}}
-                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-md text-sm font-bold border-2 bg-white criticality-score-{{.Criticality.Score}}" style="border-color: {{if eq .Criticality.Score 5}}#a0302e{{else if eq .Criticality.Score 4}}#d97706{{else if eq .Criticality.Score 3}}#ea580c{{else if eq .Criticality.Score 2}}#84cc16{{else}}#10b981{{end}}; color: {{if eq .Criticality.Score 5}}#a0302e{{else if eq .Criticality.Score 4}}#d97706{{else if eq .Criticality.Score 3}}#ea580c{{else if eq .Criticality.Score 2}}#84cc16{{else}}#10b981{{end}};">{{.Criticality.Score}}</span>
-                            {{end}}
-                        </td>
-                        <td class="p-3 border-b border-gray-300 align-top w-2/5">
-                            <ul class="list-disc pl-5 m-0">
-                                {{if and (eq (len .FindingItems) 1) (eq (index .FindingItems 0).DisplayName "Routing Server")}}
-                                <li class="py-0.5 text-xs text-gray-600">Basic web service detected</li>
-                                {{else}}
-                                {{range .FindingItems}}
-                                {{if and (eq .DisplayAs "link") .Values}}
-                                    {{$name := .DisplayName}}
-                                    {{range .Values}}
-                                    <li class="py-0.5 text-xs"><a href="{{.}}" target="_blank" class="text-blue-600 no-underline font-medium hover:text-blue-800 hover:underline">{{$name}}</a></li>
-                                    {{end}}
-                                {{else}}
-                                <li class="py-0.5 text-xs text-gray-600">{{.DisplayName}}</li>
-                                {{end}}
-                                {{end}}
-                                {{end}}
-                            </ul>
-                        </td>
-                    </tr>
-                    {{end}}
-                </tbody>
-            </table>
-        </div>
-        {{end}}
-
-        <!-- API Specifications -->
-        {{if .APISpecsFound}}
-        <div class="my-7">
-            <h2 class="text-gray-800 text-2xl mb-5 font-bold">API Specifications Discovered</h2>
-            <table class="w-full border-collapse bg-white border border-gray-300 rounded-xl overflow-hidden">
-                <thead>
-                    <tr class="bg-gray-50">
-                        <th class="text-left p-3 font-semibold text-[13px] text-gray-600 border-b border-gray-300">Application</th>
-                        <th class="text-center p-3 font-semibold text-[13px] text-gray-600 border-b border-gray-300 w-20">Criticality</th>
-                        <th class="text-left p-3 font-semibold text-[13px] text-gray-600 border-b border-gray-300">Findings</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{range .APISpecsFound}}
-                    <tr class="even:bg-gray-50">
-                        <td class="p-3 border-b border-gray-300 align-top text-[13px]">
-                            <a href="https://{{.Domain}}" target="_blank" class="font-bold text-gray-700 hover:text-blue-600 no-underline">{{.Domain}}</a>
-                        </td>
-                        <td class="p-3 border-b border-gray-300 text-center align-top">
-                            {{if .Criticality}}
-                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-md text-sm font-bold border-2 bg-white" style="border-color: {{if eq .Criticality.Score 5}}#a0302e{{else if eq .Criticality.Score 4}}#d97706{{else if eq .Criticality.Score 3}}#ea580c{{else if eq .Criticality.Score 2}}#84cc16{{else}}#10b981{{end}}; color: {{if eq .Criticality.Score 5}}#a0302e{{else if eq .Criticality.Score 4}}#d97706{{else if eq .Criticality.Score 3}}#ea580c{{else if eq .Criticality.Score 2}}#84cc16{{else}}#10b981{{end}};">{{.Criticality.Score}}</span>
-                            {{end}}
-                        </td>
-                        <td class="p-3 border-b border-gray-300 align-top w-2/5">
-                            <ul class="list-disc pl-5 m-0">
-                                {{range .FindingItems}}
-                                {{if and (eq .DisplayAs "link") .Values}}
-                                    {{$name := .DisplayName}}
-                                    {{range .Values}}
-                                    <li class="py-0.5 text-xs"><a href="{{.}}" target="_blank" class="text-blue-600 no-underline font-medium hover:text-blue-800 hover:underline">{{$name}}</a></li>
-                                    {{end}}
-                                {{else}}
-                                <li class="py-0.5 text-xs text-gray-600">{{.DisplayName}}</li>
-                                {{end}}
-                                {{end}}
-                            </ul>
-                        </td>
-                    </tr>
-                    {{end}}
-                </tbody>
-            </table>
-        </div>
-        {{end}}
-
-        <!-- AI Services -->
-        {{if .AIAssetsFound}}
-        <div class="my-7">
-            <h2 class="text-gray-800 text-2xl mb-5 font-bold">AI Services Discovered</h2>
-            <table class="w-full border-collapse bg-white border border-gray-300 rounded-xl overflow-hidden">
-                <thead>
-                    <tr class="bg-gray-50">
-                        <th class="text-left p-3 font-semibold text-[13px] text-gray-600 border-b border-gray-300">Application</th>
-                        <th class="text-center p-3 font-semibold text-[13px] text-gray-600 border-b border-gray-300 w-20">Criticality</th>
-                        <th class="text-left p-3 font-semibold text-[13px] text-gray-600 border-b border-gray-300">Findings</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{range .AIAssetsFound}}
-                    <tr class="even:bg-gray-50">
-                        <td class="p-3 border-b border-gray-300 align-top text-[13px]">
-                            <a href="https://{{.Domain}}" target="_blank" class="font-bold text-gray-700 hover:text-blue-600 no-underline">{{.Domain}}</a>
-                        </td>
-                        <td class="p-3 border-b border-gray-300 text-center align-top">
-                            {{if .Criticality}}
-                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-md text-sm font-bold border-2 bg-white" style="border-color: {{if eq .Criticality.Score 5}}#a0302e{{else if eq .Criticality.Score 4}}#d97706{{else if eq .Criticality.Score 3}}#ea580c{{else if eq .Criticality.Score 2}}#84cc16{{else}}#10b981{{end}}; color: {{if eq .Criticality.Score 5}}#a0302e{{else if eq .Criticality.Score 4}}#d97706{{else if eq .Criticality.Score 3}}#ea580c{{else if eq .Criticality.Score 2}}#84cc16{{else}}#10b981{{end}};">{{.Criticality.Score}}</span>
-                            {{end}}
-                        </td>
-                        <td class="p-3 border-b border-gray-300 align-top w-2/5">
-                            <ul class="list-disc pl-5 m-0">
-                                {{range .FindingItems}}
-                                {{if and (eq .DisplayAs "link") .Values}}
-                                    {{$name := .DisplayName}}
-                                    {{range .Values}}
-                                    <li class="py-0.5 text-xs"><a href="{{.}}" target="_blank" class="text-blue-600 no-underline font-medium hover:text-blue-800 hover:underline">{{$name}}</a></li>
-                                    {{end}}
-                                {{else}}
-                                <li class="py-0.5 text-xs text-gray-600">{{.DisplayName}}</li>
-                                {{end}}
-                                {{end}}
-                            </ul>
-                        </td>
-                    </tr>
-                    {{end}}
-                </tbody>
-            </table>
-        </div>
-        {{end}}
-
-        <!-- Web Applications -->
-        {{if .WebAppsFound}}
-        <div class="my-7">
-            <h2 class="text-gray-800 text-2xl mb-5 font-bold">Web Applications Discovered</h2>
-
-            <div class="bg-white border border-gray-200 rounded-lg p-3 mb-4 flex items-center gap-2 text-[11px]">
-                <span class="font-semibold text-gray-800">Asset Criticality Score:</span>
-                <div class="flex items-center gap-2">
-                    <span class="text-gray-600">Highest</span>
-                    <span class="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold border-2 border-[#a0302e] text-[#a0302e] bg-white">5</span>
-                    <span class="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold border-2 border-[#d97706] text-[#d97706] bg-white">4</span>
-                    <span class="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold border-2 border-[#ea580c] text-[#ea580c] bg-white">3</span>
-                    <span class="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold border-2 border-[#84cc16] text-[#84cc16] bg-white">2</span>
-                    <span class="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold border-2 border-[#10b981] text-[#10b981] bg-white">1</span>
-                    <span class="text-gray-600">Lowest</span>
-                </div>
-            </div>
-
-            <table class="w-full border-collapse bg-white border border-gray-300 rounded-xl overflow-hidden">
-                <thead>
-                    <tr class="bg-gray-50">
-                        <th class="text-left p-3 font-semibold text-[13px] text-gray-600 border-b border-gray-300">Application</th>
-                        <th class="text-center p-3 font-semibold text-[13px] text-gray-600 border-b border-gray-300 w-20">Criticality</th>
-                        <th class="text-left p-3 font-semibold text-[13px] text-gray-600 border-b border-gray-300">Findings</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{range .WebAppsFound}}
-                    <tr class="even:bg-gray-50">
-                        <td class="p-3 border-b border-gray-300 align-top text-[13px]">
-                            <a href="https://{{.Domain}}" target="_blank" class="font-bold text-gray-700 hover:text-blue-600 no-underline block">{{.Domain}}</a>
-                            {{if .Title}}
-                            <div class="text-xs font-medium text-gray-600 mt-1">{{.Title}}</div>
-                            {{end}}
-                            {{if .Description}}
-                            <div class="text-[11px] text-gray-500 mt-1 leading-relaxed">{{.Description}}</div>
-                            {{end}}
-                        </td>
-                        <td class="p-3 border-b border-gray-300 text-center align-top">
-                            {{if .Criticality}}
-                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-md text-sm font-bold border-2 bg-white" style="border-color: {{if eq .Criticality.Score 5}}#a0302e{{else if eq .Criticality.Score 4}}#d97706{{else if eq .Criticality.Score 3}}#ea580c{{else if eq .Criticality.Score 2}}#84cc16{{else}}#10b981{{end}}; color: {{if eq .Criticality.Score 5}}#a0302e{{else if eq .Criticality.Score 4}}#d97706{{else if eq .Criticality.Score 3}}#ea580c{{else if eq .Criticality.Score 2}}#84cc16{{else}}#10b981{{end}};">{{.Criticality.Score}}</span>
-                            {{end}}
-                        </td>
-                        <td class="p-3 border-b border-gray-300 align-top w-2/5">
-                            <ul class="list-disc pl-5 m-0">
-                                {{if and (eq (len .FindingItems) 1) (eq (index .FindingItems 0).DisplayName "Web Server")}}
-                                <li class="py-0.5 text-xs text-gray-600">Standard web application</li>
-                                {{else}}
-                                {{range .FindingItems}}
-                                {{if and (eq .DisplayAs "link") .Values}}
-                                    {{$name := .DisplayName}}
-                                    {{range .Values}}
-                                    <li class="py-0.5 text-xs"><a href="{{.}}" target="_blank" class="text-blue-600 no-underline font-medium hover:text-blue-800 hover:underline">{{$name}}</a></li>
-                                    {{end}}
-                                {{else}}
-                                <li class="py-0.5 text-xs text-gray-600">{{.DisplayName}}</li>
-                                {{end}}
-                                {{end}}
-                                {{end}}
-                            </ul>
-                        </td>
-                    </tr>
-                    {{end}}
-                </tbody>
-            </table>
-        </div>
-        {{end}}
-
-        <!-- Other Domains -->
-        {{if .OtherDomains}}
-        <div class="my-7">
-            <h2 class="text-gray-800 text-2xl mb-5 font-bold">Other Domains Discovered</h2>
-            <table class="w-full border-collapse bg-white border border-gray-300 rounded-xl overflow-hidden">
-                <thead>
-                    <tr class="bg-gray-50">
-                        <th class="text-left p-3 font-semibold text-[13px] text-gray-600 border-b border-gray-300">Domain</th>
-                        <th class="text-center p-3 font-semibold text-[13px] text-gray-600 border-b border-gray-300 w-20">Criticality</th>
-                        <th class="text-left p-3 font-semibold text-[13px] text-gray-600 border-b border-gray-300">Findings</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{range .OtherDomains}}
-                    <tr class="even:bg-gray-50">
-                        <td class="p-3 border-b border-gray-300 align-top text-[13px]">
-                            <a href="https://{{.Domain}}" target="_blank" class="font-bold text-gray-700 hover:text-blue-600 no-underline block">{{.Domain}}</a>
-                            {{if .Title}}
-                            <div class="text-xs font-medium text-gray-600 mt-1">{{.Title}}</div>
-                            {{end}}
-                            {{if .Description}}
-                            <div class="text-[11px] text-gray-500 mt-1 leading-relaxed">{{.Description}}</div>
-                            {{end}}
-                        </td>
-                        <td class="p-3 border-b border-gray-300 text-center align-top">
-                            {{if .Criticality}}
-                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-md text-sm font-bold border-2 bg-white" style="border-color: {{if eq .Criticality.Score 5}}#a0302e{{else if eq .Criticality.Score 4}}#d97706{{else if eq .Criticality.Score 3}}#ea580c{{else if eq .Criticality.Score 2}}#84cc16{{else}}#10b981{{end}}; color: {{if eq .Criticality.Score 5}}#a0302e{{else if eq .Criticality.Score 4}}#d97706{{else if eq .Criticality.Score 3}}#ea580c{{else if eq .Criticality.Score 2}}#84cc16{{else}}#10b981{{end}};">{{.Criticality.Score}}</span>
-                            {{end}}
-                        </td>
-                        <td class="p-3 border-b border-gray-300 align-top w-2/5">
-                            {{if .FindingItems}}
-                            <ul class="list-disc pl-5 m-0">
-                                {{range .FindingItems}}
-                                {{if and (eq .DisplayAs "link") .Values}}
-                                    {{$name := .DisplayName}}
-                                    {{range .Values}}
-                                    <li class="py-0.5 text-xs"><a href="{{.}}" target="_blank" class="text-blue-600 no-underline font-medium hover:text-blue-800 hover:underline">{{$name}}</a></li>
-                                    {{end}}
-                                {{else}}
-                                <li class="py-0.5 text-xs text-gray-600">{{.DisplayName}}</li>
-                                {{end}}
-                                {{end}}
-                            </ul>
-                            {{end}}
-                        </td>
-                    </tr>
-                    {{end}}
-                </tbody>
-            </table>
-        </div>
-        {{end}}
-
-        <!-- Technology Details -->
-        {{if and .Technologies .Technologies.AllTechnologies (gt (len .Technologies.AllTechnologies) 0)}}
-        <div class="my-7 break-before-page">
-            <h2 class="text-gray-800 text-2xl mb-6 font-bold">Technology Exposure</h2>
-            <div class="flex flex-col gap-5">
-                {{range .Technologies.AllTechnologies}}
-                <div class="bg-white border border-gray-300 rounded-xl p-5 flex gap-5">
-                    <div class="flex-shrink-0 w-15 h-15 flex items-center justify-center">
-                        <img src="./assets/{{.Icon}}" alt="{{.DisplayName}}" class="w-10 h-10 object-contain" onerror="this.style.display='none'">
-                    </div>
-                    <div class="flex-1 flex flex-col gap-2">
-                        <div class="flex justify-between items-center">
-                            <span class="text-base font-bold text-gray-700">{{.DisplayName}}</span>
-                            <span class="text-sm font-semibold text-gray-600 bg-gray-100 px-3 py-1 rounded-lg">Used by {{.Count}} {{if eq .Count 1}}domain{{else}}domains{{end}}</span>
-                        </div>
-                        {{if .Description}}
-                        <div class="text-[13px] text-gray-600 leading-relaxed">{{.Description}}</div>
-                        {{end}}
-                        {{if .Labels}}
-                        <div class="flex gap-2 flex-wrap mt-1">
-                            {{range .Labels}}
-                            <span class="text-[11px] font-medium text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-md">{{.}}</span>
-                            {{end}}
-                        </div>
-                        {{end}}
-                        {{if .Security}}
-                        {{if or (and .Security.CVE (gt .Security.CVE.Stats.Total 0)) (and .Security.Weaknesses (gt .Security.Weaknesses.Stats.Total 0))}}
-                        <div class="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                            {{if .Security.CVE}}
-                            {{if gt .Security.CVE.Stats.Total 0}}
-                            <div class="mb-2.5">
-                                <div class="text-[11px] font-bold text-gray-700 uppercase tracking-wide mb-1.5">Known Vulnerabilities (CVE)</div>
-                                <div class="flex gap-1.5 items-center flex-wrap">
-                                    {{if gt .Security.CVE.Stats.Critical 0}}
-                                    <span class="inline-flex items-center justify-center min-w-8 h-5 px-2 rounded text-[11px] font-bold text-white bg-red-600">{{.Security.CVE.Stats.Critical}} Critical</span>
-                                    {{end}}
-                                    {{if gt .Security.CVE.Stats.High 0}}
-                                    <span class="inline-flex items-center justify-center min-w-8 h-5 px-2 rounded text-[11px] font-bold text-white bg-orange-600">{{.Security.CVE.Stats.High}} High</span>
-                                    {{end}}
-                                    {{if gt .Security.CVE.Stats.Medium 0}}
-                                    <span class="inline-flex items-center justify-center min-w-8 h-5 px-2 rounded text-[11px] font-bold text-white bg-yellow-500">{{.Security.CVE.Stats.Medium}} Medium</span>
-                                    {{end}}
-                                    {{if gt .Security.CVE.Stats.Low 0}}
-                                    <span class="inline-flex items-center justify-center min-w-8 h-5 px-2 rounded text-[11px] font-bold text-white bg-lime-500">{{.Security.CVE.Stats.Low}} Low</span>
-                                    {{end}}
-                                    {{if gt .Security.CVE.Stats.KEV 0}}
-                                    <span class="inline-flex items-center justify-center min-w-8 h-5 px-2 rounded text-[11px] font-bold text-white bg-purple-600">{{.Security.CVE.Stats.KEV}} KEV</span>
-                                    {{end}}
-                                </div>
+                        <!-- Metrics -->
+                        <div class="flex flex-col gap-1.5 flex-shrink-0 items-end">
+                            <!-- Est. TruRisk -->
+                            {{if .TrueRiskRange}}
+                            <div class="flex items-center gap-2 justify-end">
+                                <span class="text-xs text-gray-500 leading-none whitespace-nowrap">Est. TruRisk™</span>
+                                <a href="#appendix-trurisk" class="text-gray-400 hover:text-gray-600 no-underline leading-none flex items-center"><i class="far fa-circle-question text-xs"></i></a>
+                                <span class="font-condensed text-xs font-bold text-center leading-none bg-white rounded-full px-3 py-1 border whitespace-nowrap" style="color: {{if ge .TrueRiskRange.Min 850}}#6B2C28{{else if ge .TrueRiskRange.Min 650}}#C13832{{else if ge .TrueRiskRange.Min 400}}#C1603D{{else}}#E5A550{{end}}; border-color: {{if ge .TrueRiskRange.Min 850}}#6B2C28{{else if ge .TrueRiskRange.Min 650}}#C13832{{else if ge .TrueRiskRange.Min 400}}#C1603D{{else}}#E5A550{{end}};">{{.TrueRiskRange.Min}}-{{.TrueRiskRange.Max}}</span>
                             </div>
                             {{end}}
-                            {{end}}
-                            {{if .Security.Weaknesses}}
-                            {{if gt .Security.Weaknesses.Stats.Total 0}}
-                            <div>
-                                <div class="text-[11px] font-bold text-gray-700 uppercase tracking-wide mb-1.5">Common Weaknesses (CWE)</div>
-                                <div class="flex flex-col gap-1">
-                                    {{range .Security.Weaknesses.Stats.TopCategories}}
-                                    <div class="text-[11px] text-gray-700">
-                                        <span class="font-bold text-indigo-600 font-mono">{{.ID}}:</span>
-                                        <span class="font-medium text-gray-800">{{.Name}}</span>
-                                        <span class="text-gray-600">({{.Count}} instances)</span>
-                                    </div>
-                                    {{end}}
-                                </div>
+
+                            <!-- ACS -->
+                            {{if .Criticality}}
+                            <div class="flex items-center gap-2 justify-end">
+                                <span class="text-xs text-gray-500 leading-none">ACS</span>
+                                <a href="#appendix-criticality" class="text-gray-400 hover:text-gray-600 no-underline leading-none flex items-center"><i class="far fa-circle-question text-xs"></i></a>
+                                <span class="font-condensed text-xs font-bold text-center leading-none bg-white rounded-full px-3 py-1 border whitespace-nowrap" style="color: {{if eq .Criticality.Score 5}}#6B2C28{{else if eq .Criticality.Score 4}}#C13832{{else if eq .Criticality.Score 3}}#C1603D{{else if eq .Criticality.Score 2}}#E5A550{{else}}#E5A550{{end}}; border-color: {{if eq .Criticality.Score 5}}#6B2C28{{else if eq .Criticality.Score 4}}#C13832{{else if eq .Criticality.Score 3}}#C1603D{{else if eq .Criticality.Score 2}}#E5A550{{else}}#E5A550{{end}};">{{.Criticality.Score}}</span>
                             </div>
                             {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Findings -->
+                    {{if .FindingItems}}
+                    <div class="mt-3 pt-2 border-t border-gray-100">
+                        <div class="text-xs text-gray-600">
+                            <span class="font-semibold text-gray-700">Findings:</span>
+                            {{if and (eq (len .FindingItems) 1) (eq (index .FindingItems 0).DisplayName "Routing Server")}}
+                            Basic web service detected
+                            {{else}}
+                            {{$maxDisplay := 5}}{{$total := len .FindingItems}}{{range $index, $item := .FindingItems}}{{if lt $index $maxDisplay}}{{if gt $index 0}}, {{end}}{{if and (eq $item.DisplayAs "link") $item.Values}}{{range $vindex, $val := $item.Values}}{{if gt $vindex 0}}, {{end}}<a href="{{$val}}" target="_blank" class="text-blue-500 no-underline hover:text-blue-600">{{$item.DisplayName}}</a>{{end}}{{else}}{{$item.DisplayName}}{{end}}{{end}}{{end}}{{if gt $total $maxDisplay}}<span class="text-gray-500"> +{{subtract $total $maxDisplay}} more</span>{{end}}
                             {{end}}
                         </div>
-                        {{end}}
-                        {{end}}
                     </div>
+                    {{end}}
                 </div>
                 {{end}}
             </div>
         </div>
         {{end}}
+
+        <!-- API Specifications -->
+        {{if .APISpecsFound}}
+        <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-6" id="api-specifications">
+            <h2 class="text-xl font-medium text-gray-700 mb-5">API Specifications Discovered</h2>
+
+            <div class="space-y-3">
+                {{range .APISpecsFound}}
+                <div class="bg-gradient-card-subtle border border-[#e7eaed] rounded-2xl p-4">
+                    <div class="flex items-start justify-between gap-6">
+                        <!-- Domain -->
+                        <div class="flex-1 min-w-0">
+                            <a href="https://{{.Domain}}" target="_blank" class="font-semibold text-sm text-gray-700 hover:text-blue-500 no-underline truncate">{{.Domain}}</a>
+                        </div>
+
+                        <!-- Metrics -->
+                        <div class="flex flex-col gap-1.5 flex-shrink-0 items-end">
+                            <!-- Est. TruRisk -->
+                            {{if .TrueRiskRange}}
+                            <div class="flex items-center gap-2 justify-end">
+                                <span class="text-xs text-gray-500 leading-none whitespace-nowrap">Est. TruRisk™</span>
+                                <a href="#appendix-trurisk" class="text-gray-400 hover:text-gray-600 no-underline leading-none flex items-center"><i class="far fa-circle-question text-xs"></i></a>
+                                <span class="font-condensed text-xs font-bold text-center leading-none bg-white rounded-full px-3 py-1 border whitespace-nowrap" style="color: {{if ge .TrueRiskRange.Min 850}}#6B2C28{{else if ge .TrueRiskRange.Min 650}}#C13832{{else if ge .TrueRiskRange.Min 400}}#C1603D{{else}}#E5A550{{end}}; border-color: {{if ge .TrueRiskRange.Min 850}}#6B2C28{{else if ge .TrueRiskRange.Min 650}}#C13832{{else if ge .TrueRiskRange.Min 400}}#C1603D{{else}}#E5A550{{end}};">{{.TrueRiskRange.Min}}-{{.TrueRiskRange.Max}}</span>
+                            </div>
+                            {{end}}
+
+                            <!-- ACS -->
+                            {{if .Criticality}}
+                            <div class="flex items-center gap-2 justify-end">
+                                <span class="text-xs text-gray-500 leading-none">ACS</span>
+                                <a href="#appendix-criticality" class="text-gray-400 hover:text-gray-600 no-underline leading-none flex items-center"><i class="far fa-circle-question text-xs"></i></a>
+                                <span class="font-condensed text-xs font-bold text-center leading-none bg-white rounded-full px-3 py-1 border whitespace-nowrap" style="color: {{if eq .Criticality.Score 5}}#6B2C28{{else if eq .Criticality.Score 4}}#C13832{{else if eq .Criticality.Score 3}}#C1603D{{else if eq .Criticality.Score 2}}#E5A550{{else}}#E5A550{{end}}; border-color: {{if eq .Criticality.Score 5}}#6B2C28{{else if eq .Criticality.Score 4}}#C13832{{else if eq .Criticality.Score 3}}#C1603D{{else if eq .Criticality.Score 2}}#E5A550{{else}}#E5A550{{end}};">{{.Criticality.Score}}</span>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Findings -->
+                    {{if .FindingItems}}
+                    <div class="mt-3 pt-2 border-t border-gray-100">
+                        <div class="text-xs text-gray-600">
+                            <span class="font-semibold text-gray-700">Findings:</span>
+                            {{$maxDisplay := 5}}{{$total := len .FindingItems}}{{range $index, $item := .FindingItems}}{{if lt $index $maxDisplay}}{{if gt $index 0}}, {{end}}{{if and (eq $item.DisplayAs "link") $item.Values}}{{range $vindex, $val := $item.Values}}{{if gt $vindex 0}}, {{end}}<a href="{{$val}}" target="_blank" class="text-blue-500 no-underline hover:text-blue-600">{{$item.DisplayName}}</a>{{end}}{{else}}{{$item.DisplayName}}{{end}}{{end}}{{end}}{{if gt $total $maxDisplay}}<span class="text-gray-500"> +{{subtract $total $maxDisplay}} more</span>{{end}}
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+                {{end}}
+            </div>
+        </div>
+        {{end}}
+
+        <!-- AI Services -->
+        {{if .AIAssetsFound}}
+        <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-6" id="ai-services">
+            <h2 class="text-xl font-medium text-gray-700 mb-5">AI Services Discovered</h2>
+
+            <div class="space-y-3">
+                {{range .AIAssetsFound}}
+                <div class="bg-gradient-card-subtle border border-[#e7eaed] rounded-2xl p-4">
+                    <div class="flex items-start justify-between gap-6">
+                        <!-- Domain -->
+                        <div class="flex-1 min-w-0">
+                            <a href="https://{{.Domain}}" target="_blank" class="font-semibold text-sm text-gray-700 hover:text-blue-500 no-underline truncate">{{.Domain}}</a>
+                        </div>
+
+                        <!-- Metrics -->
+                        <div class="flex flex-col gap-1.5 flex-shrink-0 items-end">
+                            <!-- Est. TruRisk -->
+                            {{if .TrueRiskRange}}
+                            <div class="flex items-center gap-2 justify-end">
+                                <span class="text-xs text-gray-500 leading-none whitespace-nowrap">Est. TruRisk™</span>
+                                <a href="#appendix-trurisk" class="text-gray-400 hover:text-gray-600 no-underline leading-none flex items-center"><i class="far fa-circle-question text-xs"></i></a>
+                                <span class="font-condensed text-xs font-bold text-center leading-none bg-white rounded-full px-3 py-1 border whitespace-nowrap" style="color: {{if ge .TrueRiskRange.Min 850}}#6B2C28{{else if ge .TrueRiskRange.Min 650}}#C13832{{else if ge .TrueRiskRange.Min 400}}#C1603D{{else}}#E5A550{{end}}; border-color: {{if ge .TrueRiskRange.Min 850}}#6B2C28{{else if ge .TrueRiskRange.Min 650}}#C13832{{else if ge .TrueRiskRange.Min 400}}#C1603D{{else}}#E5A550{{end}};">{{.TrueRiskRange.Min}}-{{.TrueRiskRange.Max}}</span>
+                            </div>
+                            {{end}}
+
+                            <!-- ACS -->
+                            {{if .Criticality}}
+                            <div class="flex items-center gap-2 justify-end">
+                                <span class="text-xs text-gray-500 leading-none">ACS</span>
+                                <a href="#appendix-criticality" class="text-gray-400 hover:text-gray-600 no-underline leading-none flex items-center"><i class="far fa-circle-question text-xs"></i></a>
+                                <span class="font-condensed text-xs font-bold text-center leading-none bg-white rounded-full px-3 py-1 border whitespace-nowrap" style="color: {{if eq .Criticality.Score 5}}#6B2C28{{else if eq .Criticality.Score 4}}#C13832{{else if eq .Criticality.Score 3}}#C1603D{{else if eq .Criticality.Score 2}}#E5A550{{else}}#E5A550{{end}}; border-color: {{if eq .Criticality.Score 5}}#6B2C28{{else if eq .Criticality.Score 4}}#C13832{{else if eq .Criticality.Score 3}}#C1603D{{else if eq .Criticality.Score 2}}#E5A550{{else}}#E5A550{{end}};">{{.Criticality.Score}}</span>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Findings -->
+                    {{if .FindingItems}}
+                    <div class="mt-3 pt-2 border-t border-gray-100">
+                        <div class="text-xs text-gray-600">
+                            <span class="font-semibold text-gray-700">Findings:</span>
+                            {{$maxDisplay := 5}}{{$total := len .FindingItems}}{{range $index, $item := .FindingItems}}{{if lt $index $maxDisplay}}{{if gt $index 0}}, {{end}}{{if and (eq $item.DisplayAs "link") $item.Values}}{{range $vindex, $val := $item.Values}}{{if gt $vindex 0}}, {{end}}<a href="{{$val}}" target="_blank" class="text-blue-500 no-underline hover:text-blue-600">{{$item.DisplayName}}</a>{{end}}{{else}}{{$item.DisplayName}}{{end}}{{end}}{{end}}{{if gt $total $maxDisplay}}<span class="text-gray-500"> +{{subtract $total $maxDisplay}} more</span>{{end}}
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+                {{end}}
+            </div>
+        </div>
+        {{end}}
+
+        <!-- Web Applications -->
+        {{if .WebAppsFound}}
+        <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-6 page-break-before" id="web-apps">
+            <h2 class="text-xl font-medium text-gray-700 mb-5">Web Applications Discovered</h2>
+
+            <div class="space-y-3">
+                {{range .WebAppsFound}}
+                <div class="bg-gradient-card-subtle border border-[#e7eaed] rounded-2xl p-4">
+                    <div class="flex items-start justify-between gap-6">
+                        <!-- Domain + Details -->
+                        <div class="flex-1 min-w-0">
+                            <a href="https://{{.Domain}}" target="_blank" class="font-semibold text-sm text-gray-700 hover:text-blue-500 no-underline block truncate">{{.Domain}}</a>
+                            {{if .Title}}
+                            <div class="text-xs font-medium text-gray-600 mt-1 truncate">{{.Title}}</div>
+                            {{end}}
+                            {{if .Description}}
+                            <div class="text-xs text-gray-500 mt-0.5 leading-snug">{{truncate .Description 180}}</div>
+                            {{end}}
+                        </div>
+
+                        <!-- Metrics -->
+                        <div class="flex flex-col gap-1.5 flex-shrink-0 items-end">
+                            <!-- Est. TruRisk -->
+                            {{if .TrueRiskRange}}
+                            <div class="flex items-center gap-2 justify-end">
+                                <span class="text-xs text-gray-500 leading-none whitespace-nowrap">Est. TruRisk™</span>
+                                <a href="#appendix-trurisk" class="text-gray-400 hover:text-gray-600 no-underline leading-none flex items-center"><i class="far fa-circle-question text-xs"></i></a>
+                                <span class="font-condensed text-xs font-bold text-center leading-none bg-white rounded-full px-3 py-1 border whitespace-nowrap" style="color: {{if ge .TrueRiskRange.Min 850}}#6B2C28{{else if ge .TrueRiskRange.Min 650}}#C13832{{else if ge .TrueRiskRange.Min 400}}#C1603D{{else}}#E5A550{{end}}; border-color: {{if ge .TrueRiskRange.Min 850}}#6B2C28{{else if ge .TrueRiskRange.Min 650}}#C13832{{else if ge .TrueRiskRange.Min 400}}#C1603D{{else}}#E5A550{{end}};">{{.TrueRiskRange.Min}}-{{.TrueRiskRange.Max}}</span>
+                            </div>
+                            {{end}}
+
+                            <!-- ACS -->
+                            {{if .Criticality}}
+                            <div class="flex items-center gap-2 justify-end">
+                                <span class="text-xs text-gray-500 leading-none">ACS</span>
+                                <a href="#appendix-criticality" class="text-gray-400 hover:text-gray-600 no-underline leading-none flex items-center"><i class="far fa-circle-question text-xs"></i></a>
+                                <span class="font-condensed text-xs font-bold text-center leading-none bg-white rounded-full px-3 py-1 border whitespace-nowrap" style="color: {{if eq .Criticality.Score 5}}#6B2C28{{else if eq .Criticality.Score 4}}#C13832{{else if eq .Criticality.Score 3}}#C1603D{{else if eq .Criticality.Score 2}}#E5A550{{else}}#E5A550{{end}}; border-color: {{if eq .Criticality.Score 5}}#6B2C28{{else if eq .Criticality.Score 4}}#C13832{{else if eq .Criticality.Score 3}}#C1603D{{else if eq .Criticality.Score 2}}#E5A550{{else}}#E5A550{{end}};">{{.Criticality.Score}}</span>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Findings -->
+                    {{if .FindingItems}}
+                    <div class="mt-3 pt-2 border-t border-gray-100">
+                        <div class="text-xs text-gray-600">
+                            <span class="font-semibold text-gray-700">Findings:</span>
+                            {{if and (eq (len .FindingItems) 1) (eq (index .FindingItems 0).DisplayName "Web Server")}}
+                            Standard web application
+                            {{else}}
+                            {{$maxDisplay := 5}}{{$total := len .FindingItems}}{{range $index, $item := .FindingItems}}{{if lt $index $maxDisplay}}{{if gt $index 0}}, {{end}}{{if and (eq $item.DisplayAs "link") $item.Values}}{{range $vindex, $val := $item.Values}}{{if gt $vindex 0}}, {{end}}<a href="{{$val}}" target="_blank" class="text-blue-500 no-underline hover:text-blue-600">{{$item.DisplayName}}</a>{{end}}{{else}}{{$item.DisplayName}}{{end}}{{end}}{{end}}{{if gt $total $maxDisplay}}<span class="text-gray-500"> +{{subtract $total $maxDisplay}} more</span>{{end}}
+                            {{end}}
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+                {{end}}
+            </div>
+        </div>
+        {{end}}
+
+        <!-- Other Domains -->
+        {{if .OtherDomains}}
+        <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-6 page-break-before">
+            <div class="flex items-center justify-between mb-5">
+                <h2 class="text-xl font-medium text-gray-700">Other Domains Discovered</h2>
+                {{if and .Technologies .Technologies.AllTechnologies (gt (len .Technologies.AllTechnologies) 0)}}
+                <a href="#technologies-found" class="text-sm text-blue-500 hover:text-blue-600 no-underline font-medium no-print">
+                    <i class="fas fa-arrow-down mr-1"></i>View Technologies Found
+                </a>
+                {{end}}
+            </div>
+
+            <div class="space-y-3">
+                {{range .OtherDomains}}
+                <div class="bg-gradient-card-subtle border border-[#e7eaed] rounded-2xl p-4">
+                    <div class="flex items-start justify-between gap-6">
+                        <!-- Domain + Details -->
+                        <div class="flex-1 min-w-0">
+                            <a href="https://{{.Domain}}" target="_blank" class="font-semibold text-sm text-gray-700 hover:text-blue-500 no-underline block truncate">{{.Domain}}</a>
+                            {{if .Title}}
+                            <div class="text-xs font-medium text-gray-600 mt-1 truncate">{{.Title}}</div>
+                            {{end}}
+                            {{if .Description}}
+                            <div class="text-xs text-gray-500 mt-0.5 leading-snug">{{truncate .Description 180}}</div>
+                            {{end}}
+                        </div>
+
+                        <!-- Metrics -->
+                        <div class="flex flex-col gap-1.5 flex-shrink-0 items-end">
+                            <!-- Est. TruRisk -->
+                            {{if .TrueRiskRange}}
+                            <div class="flex items-center gap-2 justify-end">
+                                <span class="text-xs text-gray-500 leading-none whitespace-nowrap">Est. TruRisk™</span>
+                                <a href="#appendix-trurisk" class="text-gray-400 hover:text-gray-600 no-underline leading-none flex items-center"><i class="far fa-circle-question text-xs"></i></a>
+                                <span class="font-condensed text-xs font-bold text-center leading-none bg-white rounded-full px-3 py-1 border whitespace-nowrap" style="color: {{if ge .TrueRiskRange.Min 850}}#6B2C28{{else if ge .TrueRiskRange.Min 650}}#C13832{{else if ge .TrueRiskRange.Min 400}}#C1603D{{else}}#E5A550{{end}}; border-color: {{if ge .TrueRiskRange.Min 850}}#6B2C28{{else if ge .TrueRiskRange.Min 650}}#C13832{{else if ge .TrueRiskRange.Min 400}}#C1603D{{else}}#E5A550{{end}};">{{.TrueRiskRange.Min}}-{{.TrueRiskRange.Max}}</span>
+                            </div>
+                            {{end}}
+
+                            <!-- ACS -->
+                            {{if .Criticality}}
+                            <div class="flex items-center gap-2 justify-end">
+                                <span class="text-xs text-gray-500 leading-none">ACS</span>
+                                <a href="#appendix-criticality" class="text-gray-400 hover:text-gray-600 no-underline leading-none flex items-center"><i class="far fa-circle-question text-xs"></i></a>
+                                <span class="font-condensed text-xs font-bold text-center leading-none bg-white rounded-full px-3 py-1 border whitespace-nowrap" style="color: {{if eq .Criticality.Score 5}}#6B2C28{{else if eq .Criticality.Score 4}}#C13832{{else if eq .Criticality.Score 3}}#C1603D{{else if eq .Criticality.Score 2}}#E5A550{{else}}#E5A550{{end}}; border-color: {{if eq .Criticality.Score 5}}#6B2C28{{else if eq .Criticality.Score 4}}#C13832{{else if eq .Criticality.Score 3}}#C1603D{{else if eq .Criticality.Score 2}}#E5A550{{else}}#E5A550{{end}};">{{.Criticality.Score}}</span>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Findings -->
+                    {{if .FindingItems}}
+                    <div class="mt-3 pt-2 border-t border-gray-100">
+                        <div class="text-xs text-gray-600">
+                            <span class="font-semibold text-gray-700">Findings:</span>
+                            {{$maxDisplay := 5}}{{$total := len .FindingItems}}{{range $index, $item := .FindingItems}}{{if lt $index $maxDisplay}}{{if gt $index 0}}, {{end}}{{if and (eq $item.DisplayAs "link") $item.Values}}{{range $vindex, $val := $item.Values}}{{if gt $vindex 0}}, {{end}}<a href="{{$val}}" target="_blank" class="text-blue-500 no-underline hover:text-blue-600">{{$item.DisplayName}}</a>{{end}}{{else}}{{$item.DisplayName}}{{end}}{{end}}{{end}}{{if gt $total $maxDisplay}}<span class="text-gray-500"> +{{subtract $total $maxDisplay}} more</span>{{end}}
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+                {{end}}
+            </div>
+
+        </div>
+        {{end}}
+
+        <!-- Technologies Found -->
+        {{if and .Technologies .Technologies.AllTechnologies (gt (len .Technologies.AllTechnologies) 0)}}
+        <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-6 page-break-before" id="technologies-found">
+            <h2 class="text-xl font-medium text-gray-700 mb-1">Technologies Found</h2>
+            <p class="text-xs text-gray-600 mb-3">Overview of technologies and frameworks detected across your applications</p>
+
+            <div class="grid grid-cols-3 gap-3">
+                {{range .Technologies.AllTechnologies}}
+                <div class="border border-[#e7eaed] rounded-2xl p-3 flex flex-col bg-gradient-card-subtle" id="tech-{{.Slug}}">
+                    <!-- Tech Icon and Name -->
+                    <div class="flex items-center gap-2 mb-2">
+                        {{if .Icon}}
+                        <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded">
+                            <img src="./assets/{{.Icon}}" alt="{{.DisplayName}}" class="w-6 h-6 object-contain" onerror="this.style.display='none'">
+                        </div>
+                        {{end}}
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-xs font-medium text-gray-700 leading-tight truncate">{{.DisplayName}}</h3>
+                            <p class="text-xs text-gray-600">{{.Count}} {{if eq .Count 1}}domain{{else}}domains{{end}}</p>
+                        </div>
+                    </div>
+
+                    <!-- Security Info -->
+                    {{if .Security}}
+                    {{if or (and .Security.CVE (gt .Security.CVE.Stats.Critical 0)) (and .Security.Weaknesses (gt .Security.Weaknesses.Stats.Total 0))}}
+                    <div class="text-xs text-gray-600 space-y-0.5">
+                        {{if .Security.CVE}}
+                        {{if gt .Security.CVE.Stats.Critical 0}}
+                        <div><span class="font-medium text-gray-700">{{.Security.CVE.Stats.Critical}}</span> critical vulnerabilities</div>
+                        {{end}}
+                        {{end}}
+                        {{if .Security.Weaknesses}}
+                        {{if gt .Security.Weaknesses.Stats.Total 0}}
+                        <div>{{.Security.Weaknesses.Stats.Total}} weaknesses linked</div>
+                        {{end}}
+                        {{end}}
+                    </div>
+                    {{end}}
+                    {{end}}
+                </div>
+                {{end}}
+            </div>
+        </div>
+        {{end}}
+
+        <!-- Appendix -->
+        <div class="my-7 page-break-before" id="appendix-security-rating">
+            <h2 class="text-gray-800 text-2xl mb-5 font-bold">Appendix</h2>
+
+            <!-- Report Structure Section -->
+            <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-5">
+                <h3 class="text-lg font-bold text-gray-800 mb-3">Understanding This Report</h3>
+
+                <p class="text-sm text-gray-700 mb-4 leading-relaxed">
+                    This report shows assets discovered across your organization's internet presence. Only categories with findings are displayed in the report.
+                </p>
+
+                <div class="space-y-2 text-sm mb-4">
+                    <div class="flex gap-2">
+                        <span class="text-gray-600 font-semibold min-w-32">API Endpoints:</span>
+                        <span class="text-gray-700">RESTful APIs, GraphQL endpoints, and programmatic interfaces</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="text-gray-600 font-semibold min-w-32">API Specifications:</span>
+                        <span class="text-gray-700">OpenAPI/Swagger documentation and API schema files</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="text-gray-600 font-semibold min-w-32">AI Services:</span>
+                        <span class="text-gray-700">Machine learning models, chatbots, and AI applications</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="text-gray-600 font-semibold min-w-32">Web Applications:</span>
+                        <span class="text-gray-700">Web portals, dashboards, and user facing applications</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="text-gray-600 font-semibold min-w-32">Other Domains:</span>
+                        <span class="text-gray-700">Discovered assets not categorized above</span>
+                    </div>
+                </div>
+
+                <p class="text-xs text-gray-600 italic">
+                    Note: If a category is not shown in this report, no assets of that type were discovered.
+                </p>
+            </div>
+
+            <!-- How This Report Works Section -->
+            <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-5">
+                <h3 class="text-lg font-bold text-gray-800 mb-3">How This Report Works</h3>
+
+                <p class="text-sm text-gray-700 mb-4 leading-relaxed">
+                    This report identifies what applications and technologies are visible from the internet for your organization.
+                    It categorizes discovered assets and provides context to help prioritize security efforts.
+                </p>
+
+                <div class="space-y-3">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-search text-blue-500 mt-1"></i>
+                        <div>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                <strong>Discovery:</strong> Identifies web applications, APIs, and services associated with your domain
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-tags text-blue-500 mt-1"></i>
+                        <div>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                <strong>Classification:</strong> Categorizes assets by type and identifies technologies in use
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-chart-line text-blue-500 mt-1"></i>
+                        <div>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                <strong>Assessment:</strong> Evaluates security posture and provides predicted risk indicators
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Asset Criticality Section -->
+            <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-5" id="appendix-criticality">
+                <h3 class="text-lg font-bold text-gray-800 mb-3">Asset Criticality Score (ACS)</h3>
+
+                <p class="text-sm text-gray-700 mb-4 leading-relaxed">
+                    Asset Criticality Score (ACS) is a predicted score that estimates the business importance and risk exposure of each discovered asset based on domain patterns, function, and environment.
+                    The score ranges from 1 (Minimal) to 5 (Critical) and helps prioritize security and remediation efforts.
+                </p>
+
+                <div class="mb-5">
+                    <h4 class="text-base font-bold text-gray-800 mb-2">Criticality Scale</h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-bold" style="color: #6B2C28;">5</span>
+                            <span class="text-gray-700">Critical - Mission critical assets with highest business importance</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-bold" style="color: #C13832;">4</span>
+                            <span class="text-gray-700">High - Important assets with significant business impact</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-bold" style="color: #C1603D;">3</span>
+                            <span class="text-gray-700">Medium - Production baseline for internet exposed assets</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-bold" style="color: #E5A550;">2</span>
+                            <span class="text-gray-700">Low - Assets with limited business impact</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-bold" style="color: #E5A550;">1</span>
+                            <span class="text-gray-700">Minimal - Assets with very low criticality</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <h4 class="text-base font-bold text-gray-800 mb-2">Factors Considered</h4>
+                    <ul class="text-sm text-gray-700 space-y-1 ml-4 list-disc">
+                        <li>Authentication mechanisms</li>
+                        <li>Infrastructure components and security controls</li>
+                        <li>Application type and business function</li>
+                        <li>Domain characteristics and environment indicators</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TruRisk Range Section -->
+            <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-5" id="appendix-trurisk">
+                <h3 class="text-lg font-bold text-gray-800 mb-3">Estimated TruRisk™ Range</h3>
+
+                <p class="text-sm text-gray-700 mb-4 leading-relaxed">
+                    Estimated TruRisk™ Range is a predictive risk scoring system inspired by Qualys TruRisk™ methodology. It provides a numeric risk range (min-max) from 0 to 1000 for each asset without requiring active vulnerability scanning.
+                </p>
+
+                <div class="mb-5">
+                    <h4 class="text-base font-bold text-gray-800 mb-2">Understanding the Score</h4>
+                    <p class="text-sm text-gray-700 mb-3 leading-relaxed">
+                        TruRisk scores range from 0 to 1000, with higher scores indicating greater risk exposure. The score is displayed as a range to account for uncertainty in vulnerability presence and exploitability.
+                    </p>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-bold" style="color: #6B2C28;">850</span><span class="text-sm">-</span><span class="text-sm font-bold" style="color: #6B2C28;">1000</span>
+                            <span class="text-gray-700">Critical - Higher risk likelihood, consider prioritizing for security review</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-bold" style="color: #C13832;">650</span><span class="text-sm">-</span><span class="text-sm font-bold" style="color: #C13832;">849</span>
+                            <span class="text-gray-700">High - Elevated risk indicators, recommended for security assessment</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-bold" style="color: #C1603D;">400</span><span class="text-sm">-</span><span class="text-sm font-bold" style="color: #C1603D;">649</span>
+                            <span class="text-gray-700">Medium - Moderate risk indicators, address in regular security cycles</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-bold" style="color: #E5A550;">200</span><span class="text-sm">-</span><span class="text-sm font-bold" style="color: #E5A550;">399</span>
+                            <span class="text-gray-700">Low - Lower risk indicators, monitor and maintain</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-bold" style="color: #E5A550;">0</span><span class="text-sm">-</span><span class="text-sm font-bold" style="color: #E5A550;">199</span>
+                            <span class="text-gray-700">Minimal - Very low risk indicators, standard maintenance</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <h4 class="text-base font-bold text-gray-800 mb-2">How It's Calculated</h4>
+                    <p class="text-sm text-gray-700 mb-3 leading-relaxed">
+                        The Estimated TruRisk Range uses the formula:
+                    </p>
+                    <div class="bg-gray-50 border border-[#e7eaed] rounded-2xl p-3 mb-3 text-center">
+                        <strong class="text-base">TruRisk = MIN(ACS × Findings × Environmental_Multipliers, 1000)</strong>
+                    </div>
+                    <ul class="text-sm text-gray-700 space-y-1 ml-4 list-disc">
+                        <li><strong>ACS:</strong> Asset Criticality Score</li>
+                        <li><strong>Findings:</strong> Technology vulnerabilities and risk indicators</li>
+                        <li><strong>Environmental Multipliers:</strong> Security controls and exposure factors</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Compliance Frameworks Section -->
+            {{if and .ReportMetadata.Industry .ReportMetadata.Industry.Compliances}}
+            <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-5" id="appendix-compliances">
+                <h3 class="text-lg font-bold text-gray-800 mb-3">Applicable Compliance Frameworks</h3>
+
+                <p class="text-sm text-gray-700 mb-4 leading-relaxed">
+                    Based on the organization's industry, geographic presence, and operations, the following compliance frameworks may apply.
+                    Each framework is accompanied by a specific reason explaining why it is relevant to this organization.
+                </p>
+
+                <div class="space-y-3">
+                    {{range .ReportMetadata.Industry.Compliances}}
+                    <div class="bg-gradient-card-subtle border border-[#e7eaed] rounded-2xl p-4" id="compliance-{{.Name}}">
+                        <h4 class="text-base font-bold text-gray-800 mb-2">{{.Name}}</h4>
+                        <p class="text-sm text-gray-700 leading-relaxed">{{.Reason}}</p>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+            {{end}}
+
+            <!-- TRU (Threat Research Unit) Section -->
+            <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-5">
+                <h3 class="text-lg font-bold text-gray-800 mb-3">TRU (Threat Research Unit)</h3>
+
+                <p class="text-sm text-gray-700 leading-relaxed">
+                    The Qualys Threat Research Unit (TRU) is a global security intelligence team dedicated to researching emerging threats,
+                    vulnerabilities, and attack trends. TRU analysts continuously monitor global threat activity, analyze real world attacks,
+                    and research vulnerabilities to provide actionable intelligence. The team translates complex security research into
+                    practical insights that help organizations understand which threats are most relevant to their specific environment.
+                </p>
+            </div>
+
+        </div>
 
         <!-- Footer -->
         <footer class="mt-5 pt-2.5 border-t border-gray-300 text-center text-gray-500 text-[8px]">

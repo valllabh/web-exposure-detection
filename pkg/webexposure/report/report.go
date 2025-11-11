@@ -1,31 +1,36 @@
 package report
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/valllabh/domain-scan/pkg/domainscan"
 
+	"web-exposure-detection/pkg/webexposure/common"
 	"web-exposure-detection/pkg/webexposure/criticality"
 	"web-exposure-detection/pkg/webexposure/findings"
 	"web-exposure-detection/pkg/webexposure/logger"
 	"web-exposure-detection/pkg/webexposure/nuclei"
-	"web-exposure-detection/pkg/webexposure/common"
+	"web-exposure-detection/pkg/webexposure/truerisk"
 )
 
 // ResultProcessor centralizes all report generation logic
 type ResultProcessor struct {
-	summary      *common.Summary
-	apis         []*findings.Discovery
-	apiSpecs     []*findings.Discovery
-	aiAssets     []*findings.Discovery
-	webApps      []*findings.Discovery
-	otherDomains []*findings.Discovery
-	technologies map[string]bool                // set for deduplication
-	techCounts   map[string]int                 // count of domains using each technology
-	grouped      *nuclei.GroupedResults         // stored for populating technology values
+	summary        *common.Summary
+	apis           []*findings.Discovery
+	apiSpecs       []*findings.Discovery
+	aiAssets       []*findings.Discovery
+	webApps        []*findings.Discovery
+	otherDomains   []*findings.Discovery
+	technologies   map[string]bool                // set for deduplication
+	techCounts     map[string]int                 // count of domains using each technology
+	grouped        *nuclei.GroupedResults         // stored for populating technology values
+	industryInfo   *common.IndustryInfo           // industry classification for risk calculations
+	falsePositives map[string]bool                // set of slugs marked as false positives
 }
 
 // GenerateReport creates an exposure report from grouped Nuclei results
@@ -35,6 +40,8 @@ func GenerateReport(grouped *nuclei.GroupedResults, targetDomain string, industr
 
 	// Use the new ResultProcessor for efficient single-pass processing
 	processor := NewResultProcessor()
+	processor.industryInfo = industryClassification // Set industry info for TRR calculations
+	processor.falsePositives = LoadFalsePositives(targetDomain) // Load false positives for filtering
 
 	// Process all domains in one pass and build the report
 	report := processor.ProcessAllDomains(grouped)
@@ -43,7 +50,7 @@ func GenerateReport(grouped *nuclei.GroupedResults, targetDomain string, industr
 	report.SchemaVersion = "v1"
 	report.ReportMetadata = &common.ReportMetadata{
 		Title:        fmt.Sprintf("External Application Discovery for %s", targetDomain),
-		Date:         time.Now().Format("2 Jan 2006 3:04pm"),
+		Date:         time.Now().UTC().Format("2 Jan 2006 3:04pm MST"),
 		TargetDomain: targetDomain,
 		Timestamp:    time.Now(),
 	}
@@ -69,7 +76,7 @@ func GenerateReport(grouped *nuclei.GroupedResults, targetDomain string, industr
 	}
 
 	logger.Info().Msgf("Report generated successfully for %s: %d apps, %d APIs, %d API specs, %d AI assets",
-		targetDomain, report.Summary.TotalApps, report.Summary.APIsFound,
+		targetDomain, report.Summary.TotalApps, report.Summary.APIServers,
 		report.Summary.APISpecificationsFound, report.Summary.AIAssetsFound)
 
 	return report, nil
@@ -248,18 +255,36 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *common.DomainResult, tem
 		assetCriticality := criticality.CalculateCriticality(domainResult.Domain, domainResult.Title, slugs)
 		logger.Debug().Msgf("WebApp %s criticality: %.2f (%s)", domainResult.Domain, assetCriticality.Score, assetCriticality.Category)
 
+		// Build finding items
+		findingItems := rp.buildFindingItems(finalFindings, finalMap, templates)
+
+		// Calculate headers grade
+		findingsDB := findings.GetGlobalFindingsMap()
+		headersGrade := findings.CalculateHeadersGrade(findingItems, findingsDB)
+		logger.Debug().Msgf("WebApp %s headers grade: %s (%d/100)", domainResult.Domain, headersGrade.Grade, headersGrade.Score)
+
+		// Calculate True Risk Range
+		trueRiskRange := truerisk.CalculateTrueRiskRange(
+			float64(assetCriticality.Score),
+			findingItems,
+			rp.industryInfo,
+		)
+		logger.Debug().Msgf("WebApp %s TRR: %d-%d (%s)", domainResult.Domain, trueRiskRange.Min, trueRiskRange.Max, trueRiskRange.Category)
+
 		// Extract URL metadata from first available template result
 		url, ip := rp.extractURLMetadata(templates)
 
 		rp.webApps = append(rp.webApps, &findings.Discovery{
-			Domain:       domainResult.Domain,
-			Title:        domainResult.Title,
-			Description:  domainResult.Description,
-			Discovered:   webAppClassification,
-			FindingItems: rp.buildFindingItems(finalFindings, finalMap, templates),
-			Criticality:  assetCriticality,
-			URL:          url,
-			IP:           ip,
+			Domain:        domainResult.Domain,
+			Title:         domainResult.Title,
+			Description:   domainResult.Description,
+			Discovered:    webAppClassification,
+			FindingItems:  findingItems,
+			Criticality:   assetCriticality,
+			TrueRiskRange: trueRiskRange,
+			HeadersGrade:  headersGrade,
+			URL:           url,
+			IP:            ip,
 		})
 		domainResult.Discovered = "WebApp"
 	}
@@ -287,18 +312,36 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *common.DomainResult, tem
 		assetCriticality := criticality.CalculateCriticality(domainResult.Domain, domainResult.Title, slugs)
 		logger.Debug().Msgf("API %s criticality: %.2f (%s)", domainResult.Domain, assetCriticality.Score, assetCriticality.Category)
 
+		// Build finding items
+		findingItems := rp.buildFindingItems(finalFindings, finalMap, templates)
+
+		// Calculate headers grade
+		findingsDB := findings.GetGlobalFindingsMap()
+		headersGrade := findings.CalculateHeadersGrade(findingItems, findingsDB)
+		logger.Debug().Msgf("API %s headers grade: %s (%d/100)", domainResult.Domain, headersGrade.Grade, headersGrade.Score)
+
+		// Calculate True Risk Range
+		trueRiskRange := truerisk.CalculateTrueRiskRange(
+			float64(assetCriticality.Score),
+			findingItems,
+			rp.industryInfo,
+		)
+		logger.Debug().Msgf("API %s TRR: %d-%d (%s)", domainResult.Domain, trueRiskRange.Min, trueRiskRange.Max, trueRiskRange.Category)
+
 		// Extract URL metadata from first available template result
 		url, ip := rp.extractURLMetadata(templates)
 
 		rp.apis = append(rp.apis, &findings.Discovery{
-			Domain:       domainResult.Domain,
-			Title:        domainResult.Title,
-			Description:  domainResult.Description,
-			Discovered:   apiClassification,
-			FindingItems: rp.buildFindingItems(finalFindings, finalMap, templates),
-			Criticality:  assetCriticality,
-			URL:          url,
-			IP:           ip,
+			Domain:        domainResult.Domain,
+			Title:         domainResult.Title,
+			Description:   domainResult.Description,
+			Discovered:    apiClassification,
+			FindingItems:  findingItems,
+			Criticality:   assetCriticality,
+			TrueRiskRange: trueRiskRange,
+			HeadersGrade:  headersGrade,
+			URL:           url,
+			IP:            ip,
 		})
 		if domainResult.Discovered == "" {
 			domainResult.Discovered = "API"
@@ -327,18 +370,36 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *common.DomainResult, tem
 		assetCriticality := criticality.CalculateCriticality(domainResult.Domain, domainResult.Title, slugs)
 		logger.Debug().Msgf("API Spec %s criticality: %.2f (%s)", domainResult.Domain, assetCriticality.Score, assetCriticality.Category)
 
+		// Build finding items
+		findingItems := rp.buildFindingItems(finalFindings, finalMap, templates)
+
+		// Calculate headers grade
+		findingsDB := findings.GetGlobalFindingsMap()
+		headersGrade := findings.CalculateHeadersGrade(findingItems, findingsDB)
+		logger.Debug().Msgf("API Spec %s headers grade: %s (%d/100)", domainResult.Domain, headersGrade.Grade, headersGrade.Score)
+
+		// Calculate True Risk Range
+		trueRiskRange := truerisk.CalculateTrueRiskRange(
+			float64(assetCriticality.Score),
+			findingItems,
+			rp.industryInfo,
+		)
+		logger.Debug().Msgf("API Spec %s TRR: %d-%d (%s)", domainResult.Domain, trueRiskRange.Min, trueRiskRange.Max, trueRiskRange.Category)
+
 		// Extract URL metadata from first available template result
 		url, ip := rp.extractURLMetadata(templates)
 
 		rp.apiSpecs = append(rp.apiSpecs, &findings.Discovery{
-			Domain:       domainResult.Domain,
-			Title:        domainResult.Title,
-			Description:  domainResult.Description,
-			Discovered:   apiSpecClassification,
-			FindingItems: rp.buildFindingItems(finalFindings, finalMap, templates),
-			Criticality:  assetCriticality,
-			URL:          url,
-			IP:           ip,
+			Domain:        domainResult.Domain,
+			Title:         domainResult.Title,
+			Description:   domainResult.Description,
+			Discovered:    apiSpecClassification,
+			FindingItems:  findingItems,
+			Criticality:   assetCriticality,
+			TrueRiskRange: trueRiskRange,
+			HeadersGrade:  headersGrade,
+			URL:           url,
+			IP:            ip,
 		})
 		if domainResult.Discovered == "" {
 			domainResult.Discovered = "APISpec"
@@ -367,18 +428,36 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *common.DomainResult, tem
 		assetCriticality := criticality.CalculateCriticality(domainResult.Domain, domainResult.Title, slugs)
 		logger.Debug().Msgf("AI Asset %s criticality: %.2f (%s)", domainResult.Domain, assetCriticality.Score, assetCriticality.Category)
 
+		// Build finding items
+		findingItems := rp.buildFindingItems(finalFindings, finalMap, templates)
+
+		// Calculate headers grade
+		findingsDB := findings.GetGlobalFindingsMap()
+		headersGrade := findings.CalculateHeadersGrade(findingItems, findingsDB)
+		logger.Debug().Msgf("AI Asset %s headers grade: %s (%d/100)", domainResult.Domain, headersGrade.Grade, headersGrade.Score)
+
+		// Calculate True Risk Range
+		trueRiskRange := truerisk.CalculateTrueRiskRange(
+			float64(assetCriticality.Score),
+			findingItems,
+			rp.industryInfo,
+		)
+		logger.Debug().Msgf("AI Asset %s TRR: %d-%d (%s)", domainResult.Domain, trueRiskRange.Min, trueRiskRange.Max, trueRiskRange.Category)
+
 		// Extract URL metadata from first available template result
 		url, ip := rp.extractURLMetadata(templates)
 
 		rp.aiAssets = append(rp.aiAssets, &findings.Discovery{
-			Domain:       domainResult.Domain,
-			Title:        domainResult.Title,
-			Description:  domainResult.Description,
-			Discovered:   aiClassification,
-			FindingItems: rp.buildFindingItems(finalFindings, finalMap, templates),
-			Criticality:  assetCriticality,
-			URL:          url,
-			IP:           ip,
+			Domain:        domainResult.Domain,
+			Title:         domainResult.Title,
+			Description:   domainResult.Description,
+			Discovered:    aiClassification,
+			FindingItems:  findingItems,
+			Criticality:   assetCriticality,
+			TrueRiskRange: trueRiskRange,
+			HeadersGrade:  headersGrade,
+			URL:           url,
+			IP:            ip,
 		})
 		if domainResult.Discovered == "" {
 			domainResult.Discovered = "AI"
@@ -410,19 +489,35 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *common.DomainResult, tem
 		slugs := rp.extractSlugs(finalFindings, finalMap)
 		assetCriticality := criticality.CalculateCriticality(domainResult.Domain, domainResult.Title, slugs)
 
+		// Build finding items
+		findingItems := rp.buildFindingItems(finalFindings, finalMap, templates)
+
+		// Calculate headers grade
+		findingsDB := findings.GetGlobalFindingsMap()
+		headersGrade := findings.CalculateHeadersGrade(findingItems, findingsDB)
+
+		// Calculate True Risk Range
+		trueRiskRange := truerisk.CalculateTrueRiskRange(
+			float64(assetCriticality.Score),
+			findingItems,
+			rp.industryInfo,
+		)
+
 		// Extract URL metadata
 		url, ip := rp.extractURLMetadata(templates)
 
 		// Add to other domains collection
 		rp.otherDomains = append(rp.otherDomains, &findings.Discovery{
-			Domain:       domainResult.Domain,
-			Title:        domainResult.Title,
-			Description:  domainResult.Description,
-			Discovered:   "Other",
-			FindingItems: rp.buildFindingItems(finalFindings, finalMap, templates),
-			Criticality:  assetCriticality,
-			URL:          url,
-			IP:           ip,
+			Domain:        domainResult.Domain,
+			Title:         domainResult.Title,
+			Description:   domainResult.Description,
+			Discovered:    "Other",
+			FindingItems:  findingItems,
+			Criticality:   assetCriticality,
+			TrueRiskRange: trueRiskRange,
+			HeadersGrade:  headersGrade,
+			URL:           url,
+			IP:            ip,
 		})
 	}
 }
@@ -465,20 +560,47 @@ func (rp *ResultProcessor) extractFindingsWithSlugs(findings map[string]bool) *f
 func (rp *ResultProcessor) buildFindingItems(displayNames []string, findingsMap *findingsWithSlugs, templates map[string]*nuclei.StoredResult) []*findings.FindingItem {
 	logger := logger.GetLogger()
 	items := make([]*findings.FindingItem, 0, len(displayNames))
+
+	// Get the domain from the first template result (all templates are for the same domain)
+	var currentDomain string
+	for _, template := range templates {
+		if template.Host != "" {
+			currentDomain = template.Host
+			break
+		}
+	}
+
 	for _, displayName := range displayNames {
 		slug, exists := findingsMap.displayNameToSlug[displayName]
 		if !exists {
 			logger.Debug().Msgf("Slug not found for display name %s, using fallback", displayName)
 			slug = strings.ToLower(strings.ReplaceAll(displayName, " ", "-"))
 		}
+
+		// Skip if marked as false positive
+		if rp.falsePositives != nil && rp.falsePositives[slug] {
+			logger.Debug().Msgf("Skipping false positive: %s (display: %s)", slug, displayName)
+			continue
+		}
+
 		item := findings.NewFindingItem(slug)
 
 		// If display_as is "link", populate Values from nuclei results
+		// Only include URLs that belong to the current domain
 		if item.DisplayAs == "link" {
+			valueSet := make(map[string]bool) // Deduplicate URLs
 			for _, template := range templates {
 				if template.Findings != nil {
 					if urls, ok := template.Findings[slug]; ok {
-						item.Values = append(item.Values, urls...)
+						for _, url := range urls {
+							// Only include URLs that contain the current domain
+							if currentDomain != "" && strings.Contains(url, currentDomain) {
+								if !valueSet[url] {
+									item.Values = append(item.Values, url)
+									valueSet[url] = true
+								}
+							}
+						}
 					}
 				}
 			}
@@ -512,58 +634,76 @@ func (rp *ResultProcessor) updateSummary(domainResult *common.DomainResult) {
 	}
 }
 
+// securityGradeToSortValue converts security rating grade to numeric value for sorting
+// Lower values = worse security (F=0, D=1, C=2, B=3, A=4, A+=5)
+func securityGradeToSortValue(grade string) int {
+	switch grade {
+	case "F":
+		return 0
+	case "D":
+		return 1
+	case "C":
+		return 2
+	case "B":
+		return 3
+	case "A":
+		return 4
+	case "A+":
+		return 5
+	default:
+		return -1 // No grade
+	}
+}
+
 // buildReport constructs the final report
 func (rp *ResultProcessor) buildReport() *common.ExposureReport {
 	logger := logger.GetLogger()
 	logger.Debug().Msgf("Building final report: %d APIs, %d API specs, %d AI assets, %d web apps",
 		len(rp.apis), len(rp.apiSpecs), len(rp.aiAssets), len(rp.webApps))
 
-	// Sort results by criticality (descending) and confirmed APIs first
+	// Sort results by TruRisk score descending (highest risk first)
 	sort.Slice(rp.apis, func(i, j int) bool {
-		// Confirmed APIs first, then by criticality descending
-		if rp.apis[i].Discovered != rp.apis[j].Discovered {
-			return rp.apis[i].Discovered == "Confirmed API Endpoint"
-		}
-		// If both confirmed or both potential, sort by criticality descending
-		if rp.apis[i].Criticality != nil && rp.apis[j].Criticality != nil {
-			if rp.apis[i].Criticality.Score != rp.apis[j].Criticality.Score {
-				return rp.apis[i].Criticality.Score > rp.apis[j].Criticality.Score
+		// Sort by TruRisk Max score descending (highest risk first)
+		if rp.apis[i].TrueRiskRange != nil && rp.apis[j].TrueRiskRange != nil {
+			if rp.apis[i].TrueRiskRange.Max != rp.apis[j].TrueRiskRange.Max {
+				return rp.apis[i].TrueRiskRange.Max > rp.apis[j].TrueRiskRange.Max
 			}
 		}
+		// Fallback to domain name for ties
 		return rp.apis[i].Domain < rp.apis[j].Domain
 	})
 	sort.Slice(rp.apiSpecs, func(i, j int) bool {
-		// Sort by criticality descending
-		if rp.apiSpecs[i].Criticality != nil && rp.apiSpecs[j].Criticality != nil {
-			if rp.apiSpecs[i].Criticality.Score != rp.apiSpecs[j].Criticality.Score {
-				return rp.apiSpecs[i].Criticality.Score > rp.apiSpecs[j].Criticality.Score
+		// Sort by TruRisk Max score descending (highest risk first)
+		if rp.apiSpecs[i].TrueRiskRange != nil && rp.apiSpecs[j].TrueRiskRange != nil {
+			if rp.apiSpecs[i].TrueRiskRange.Max != rp.apiSpecs[j].TrueRiskRange.Max {
+				return rp.apiSpecs[i].TrueRiskRange.Max > rp.apiSpecs[j].TrueRiskRange.Max
 			}
 		}
 		return rp.apiSpecs[i].Domain < rp.apiSpecs[j].Domain
 	})
 	sort.Slice(rp.aiAssets, func(i, j int) bool {
-		// Sort by criticality descending
-		if rp.aiAssets[i].Criticality != nil && rp.aiAssets[j].Criticality != nil {
-			if rp.aiAssets[i].Criticality.Score != rp.aiAssets[j].Criticality.Score {
-				return rp.aiAssets[i].Criticality.Score > rp.aiAssets[j].Criticality.Score
+		// Sort by TruRisk Max score descending (highest risk first)
+		if rp.aiAssets[i].TrueRiskRange != nil && rp.aiAssets[j].TrueRiskRange != nil {
+			if rp.aiAssets[i].TrueRiskRange.Max != rp.aiAssets[j].TrueRiskRange.Max {
+				return rp.aiAssets[i].TrueRiskRange.Max > rp.aiAssets[j].TrueRiskRange.Max
 			}
 		}
 		return rp.aiAssets[i].Domain < rp.aiAssets[j].Domain
 	})
 	sort.Slice(rp.webApps, func(i, j int) bool {
-		// Sort by criticality descending
-		if rp.webApps[i].Criticality != nil && rp.webApps[j].Criticality != nil {
-			if rp.webApps[i].Criticality.Score != rp.webApps[j].Criticality.Score {
-				return rp.webApps[i].Criticality.Score > rp.webApps[j].Criticality.Score
+		// Sort by TruRisk Max score descending (highest risk first)
+		if rp.webApps[i].TrueRiskRange != nil && rp.webApps[j].TrueRiskRange != nil {
+			if rp.webApps[i].TrueRiskRange.Max != rp.webApps[j].TrueRiskRange.Max {
+				return rp.webApps[i].TrueRiskRange.Max > rp.webApps[j].TrueRiskRange.Max
 			}
 		}
 		return rp.webApps[i].Domain < rp.webApps[j].Domain
 	})
 	sort.Slice(rp.otherDomains, func(i, j int) bool {
-		// Sort by criticality descending
-		if rp.otherDomains[i].Criticality != nil && rp.otherDomains[j].Criticality != nil {
-			if rp.otherDomains[i].Criticality.Score != rp.otherDomains[j].Criticality.Score {
-				return rp.otherDomains[i].Criticality.Score > rp.otherDomains[j].Criticality.Score
+		// Sort by TruRisk Max score descending (highest risk first)
+		if rp.otherDomains[i].TrueRiskRange != nil && rp.otherDomains[j].TrueRiskRange != nil {
+			if rp.otherDomains[i].TrueRiskRange.Max != rp.otherDomains[j].TrueRiskRange.Max {
+				return rp.otherDomains[i].TrueRiskRange.Max > rp.otherDomains[j].TrueRiskRange.Max
 			}
 		}
 		return rp.otherDomains[i].Domain < rp.otherDomains[j].Domain
@@ -573,6 +713,12 @@ func (rp *ResultProcessor) buildReport() *common.ExposureReport {
 	// and setting their usage counts
 	var techItems []*findings.FindingItem
 	for slug := range rp.technologies {
+		// Skip if marked as false positive
+		if rp.falsePositives != nil && rp.falsePositives[slug] {
+			logger.Debug().Msgf("Skipping false positive technology (top 5): %s", slug)
+			continue
+		}
+
 		item := findings.NewFindingItem(slug)
 		if item.ShowInTech {
 			// Set the count from techCounts map
@@ -598,6 +744,12 @@ func (rp *ResultProcessor) buildReport() *common.ExposureReport {
 	// Build technologies list for detailed section (only show_in_tech=true)
 	var allTechItems []*findings.FindingItem
 	for slug := range rp.technologies {
+		// Skip if marked as false positive
+		if rp.falsePositives != nil && rp.falsePositives[slug] {
+			logger.Debug().Msgf("Skipping false positive technology: %s", slug)
+			continue
+		}
+
 		item := findings.NewFindingItem(slug)
 		// Only include technologies marked as show_in_tech=true
 		if !item.ShowInTech {
@@ -617,7 +769,7 @@ func (rp *ResultProcessor) buildReport() *common.ExposureReport {
 	})
 
 	// Calculate summary counts from actual collections
-	rp.summary.APIsFound = len(rp.apis)
+	rp.summary.APIServers = len(rp.apis)
 	rp.summary.APISpecificationsFound = len(rp.apiSpecs)
 	rp.summary.AIAssetsFound = len(rp.aiAssets)
 	rp.summary.WebAppsFound = len(rp.webApps)
@@ -644,6 +796,9 @@ func (rp *ResultProcessor) buildReport() *common.ExposureReport {
 	rp.summary.AIAssetCriticality = rp.calculateCriticalityDistribution(rp.aiAssets)
 	rp.summary.WebAppCriticality = rp.calculateCriticalityDistribution(rp.webApps)
 
+	// Calculate security metrics from technology vulnerabilities
+	rp.summary.Security = rp.calculateSecurityMetrics(allTechItems)
+
 	logger.Debug().Msgf("Summary calculated: %d total apps, %d live domains, %d detections",
 		rp.summary.TotalApps, rp.summary.LiveExposedDomains, rp.summary.TotalDetections)
 
@@ -654,7 +809,7 @@ func (rp *ResultProcessor) buildReport() *common.ExposureReport {
 			Technologies:    top5,         // Top 5 for first page (show_in_tech=true only)
 			AllTechnologies: allTechItems, // All technologies for detailed section (show_in_tech=true only)
 		},
-		APIsFound:     rp.apis,
+		APIServers:    rp.apis,
 		APISpecsFound: rp.apiSpecs,
 		AIAssetsFound: rp.aiAssets,
 		WebAppsFound:  rp.webApps,
@@ -925,6 +1080,92 @@ func (rp *ResultProcessor) calculateCriticalityDistribution(assets []*findings.D
 	return dist
 }
 
+// calculateSecurityMetrics aggregates vulnerability and weakness data from technologies
+func (rp *ResultProcessor) calculateSecurityMetrics(techItems []*findings.FindingItem) *common.SecurityMetrics {
+	if len(techItems) == 0 {
+		return nil
+	}
+
+	metrics := &common.SecurityMetrics{}
+	weaknessMap := make(map[string]*common.WeaknessPattern) // ID -> pattern for aggregation
+
+	// Aggregate vulnerability stats and weaknesses from all technologies
+	for _, tech := range techItems {
+		if tech.Security == nil {
+			continue
+		}
+
+		// Aggregate CVE stats
+		if tech.Security.CVE != nil {
+			metrics.TotalVulnerabilities += tech.Security.CVE.Stats.Total
+			metrics.CriticalCount += tech.Security.CVE.Stats.Critical
+			metrics.HighCount += tech.Security.CVE.Stats.High
+			metrics.MediumCount += tech.Security.CVE.Stats.Medium
+			metrics.LowCount += tech.Security.CVE.Stats.Low
+			metrics.KEVCount += tech.Security.CVE.Stats.KEV
+		}
+
+		// Aggregate weaknesses
+		if tech.Security.Weaknesses != nil {
+			for _, cwe := range tech.Security.Weaknesses.Stats.TopCategories {
+				if existing, ok := weaknessMap[cwe.ID]; ok {
+					// Add to existing count
+					existing.Count += cwe.Count
+				} else {
+					// Add new weakness
+					weaknessMap[cwe.ID] = &common.WeaknessPattern{
+						ID:    cwe.ID,
+						Name:  cwe.Name,
+						Count: cwe.Count,
+					}
+				}
+			}
+		}
+	}
+
+	// Convert weakness map to sorted slice (top 10 by count)
+	weaknesses := make([]*common.WeaknessPattern, 0, len(weaknessMap))
+	for _, pattern := range weaknessMap {
+		weaknesses = append(weaknesses, pattern)
+	}
+
+	// Sort by count descending
+	sort.Slice(weaknesses, func(i, j int) bool {
+		if weaknesses[i].Count != weaknesses[j].Count {
+			return weaknesses[i].Count > weaknesses[j].Count
+		}
+		return weaknesses[i].ID < weaknesses[j].ID // Tie break by ID
+	})
+
+	// Keep top 10
+	if len(weaknesses) > 10 {
+		weaknesses = weaknesses[:10]
+	}
+
+	// Calculate total count for percentage calculation
+	totalCount := 0
+	for _, wp := range weaknesses {
+		totalCount += wp.Count
+	}
+
+	// Convert to []WeaknessPattern (not pointers) and calculate percentages
+	metrics.TopWeaknesses = make([]common.WeaknessPattern, len(weaknesses))
+	for i, wp := range weaknesses {
+		percentage := 0.0
+		if totalCount > 0 {
+			percentage = float64(wp.Count) / float64(totalCount) * 100.0
+		}
+		metrics.TopWeaknesses[i] = common.WeaknessPattern{
+			ID:         wp.ID,
+			Name:       wp.Name,
+			Count:      wp.Count,
+			Percentage: percentage,
+		}
+	}
+
+	return metrics
+}
+
 // CalculateDomainMetrics calculates domain categorization metrics from AssetDiscoveryResult
 func CalculateDomainMetrics(result *domainscan.AssetDiscoveryResult) *common.DomainMetrics {
 	if result == nil || result.Domains == nil {
@@ -994,4 +1235,32 @@ func (rp *ResultProcessor) extractURLMetadata(templates map[string]*nuclei.Store
 		}
 	}
 	return "", ""
+}
+
+// LoadTRUInsights loads threat landscape assessment JSON from results directory
+func LoadTRUInsights(domain string) (*TRUInsightsData, error) {
+	logger := logger.GetLogger()
+
+	// Load threat landscape JSON
+	jsonPath := fmt.Sprintf("results/%s/tru-insights-TAS.json", domain)
+
+	data, err := os.ReadFile(jsonPath)
+	if err != nil {
+		// File doesn't exist - threat landscape not generated yet
+		logger.Debug().Msgf("Threat landscape not found at %s", jsonPath)
+		return nil, nil
+	}
+
+	// Parse threat_landscape structure
+	var landscapeData struct {
+		ThreatLandscape TRUInsightsData `json:"threat_landscape"`
+	}
+
+	if err := json.Unmarshal(data, &landscapeData); err != nil {
+		logger.Warning().Msgf("Failed to parse threat landscape JSON: %v", err)
+		return nil, fmt.Errorf("failed to parse threat landscape: %w", err)
+	}
+
+	logger.Info().Msgf("Loaded threat landscape with %d top insights", len(landscapeData.ThreatLandscape.ThreatAssessment.TopInsights))
+	return &landscapeData.ThreatLandscape, nil
 }

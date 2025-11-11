@@ -68,7 +68,10 @@ Examples:
 			logger.Info().Msgf("✓ Sub-industry: %s", result.SubIndustry)
 		}
 		if len(result.Compliances) > 0 {
-			logger.Info().Msgf("✓ Compliances: %v", result.Compliances)
+			logger.Info().Msg("✓ Applicable Compliances:")
+			for _, compliance := range result.Compliances {
+				logger.Info().Msgf("  - %s: %s", compliance.Name, compliance.Reason)
+			}
 		}
 
 		return nil

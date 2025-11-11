@@ -60,7 +60,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 83.68
   },
   "frontend.angular": {
     "slug": "frontend.angular",
@@ -122,7 +125,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 82.24
   },
   "frontend.vuejs": {
     "slug": "frontend.vuejs",
@@ -185,7 +191,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 93.08
   },
   "frontend.svelte": {
     "slug": "frontend.svelte",
@@ -247,7 +256,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 53.0
   },
   "frontend.ember": {
     "slug": "frontend.ember",
@@ -310,7 +322,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 75.88
   },
   "frontend.preact": {
     "slug": "frontend.preact",
@@ -373,7 +388,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
   },
   "frontend.solidjs": {
     "slug": "frontend.solidjs",
@@ -436,7 +454,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
   },
   "frontend.backbone": {
     "slug": "frontend.backbone",
@@ -499,7 +520,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 73.5
   },
   "frontend.alpine": {
     "slug": "frontend.alpine",
@@ -561,7 +585,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 81.65
   },
   "frontend.lit": {
     "slug": "frontend.lit",
@@ -624,7 +651,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 73.0
   },
   "frontend.marko": {
     "slug": "frontend.marko",
@@ -687,7 +717,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 51.0
   },
   "frontend.mithril": {
     "slug": "frontend.mithril",
@@ -750,7 +783,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
   },
   "frontend.inferno": {
     "slug": "frontend.inferno",
@@ -813,7 +849,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 51.0
   },
   "frontend.hyperapp": {
     "slug": "frontend.hyperapp",
@@ -876,7 +915,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
   },
   "frontend.dojo": {
     "slug": "frontend.dojo",
@@ -939,7 +981,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
   },
   "frontend.knockout": {
     "slug": "frontend.knockout",
@@ -1003,7 +1048,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 72.0
   },
   "frontend.meteor": {
     "slug": "frontend.meteor",
@@ -1066,7 +1114,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 16.05
   },
   "frontend.nextjs": {
     "slug": "frontend.nextjs",
@@ -1129,7 +1180,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 100
   },
   "frontend.nuxtjs": {
     "slug": "frontend.nuxtjs",
@@ -1192,7 +1246,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 76.92
   },
   "frontend.gatsby": {
     "slug": "frontend.gatsby",
@@ -1255,7 +1312,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 53.5
   },
   "frontend.remix": {
     "slug": "frontend.remix",
@@ -1318,7 +1378,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 74.0
   },
   "frontend.astro": {
     "slug": "frontend.astro",
@@ -1380,7 +1443,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 76.58
   },
   "frontend.qwik": {
     "slug": "frontend.qwik",
@@ -1443,7 +1509,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 73.5
   },
   "frontend.fresh": {
     "slug": "frontend.fresh",
@@ -1506,7 +1575,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 76.4
   },
   "backend.cms.wordpress": {
     "slug": "backend.cms.wordpress",
@@ -1569,7 +1641,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 90
   },
   "backend.cms.drupal": {
     "slug": "backend.cms.drupal",
@@ -1632,7 +1707,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 100
   },
   "backend.cms.joomla": {
     "slug": "backend.cms.joomla",
@@ -1695,7 +1773,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 90
   },
   "backend.cms.typo3": {
     "slug": "backend.cms.typo3",
@@ -1759,7 +1840,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 100
   },
   "backend.cms.ghost": {
     "slug": "backend.cms.ghost",
@@ -1823,7 +1907,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 85.36
   },
   "backend.cms.kentico": {
     "slug": "backend.cms.kentico",
@@ -1887,7 +1974,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 94.38
   },
   "backend.ecommerce.shopify": {
     "slug": "backend.ecommerce.shopify",
@@ -1904,8 +1994,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-79",
+              "name": "Cross-Site Scripting (XSS)",
+              "count": 5
+            },
+            {
+              "id": "CWE-89",
+              "name": "SQL Injection",
+              "count": 4
+            },
+            {
+              "id": "CWE-285",
+              "name": "Improper Authorization",
+              "count": 4
+            },
+            {
+              "id": "CWE-20",
+              "name": "Improper Input Validation",
+              "count": 4
+            },
+            {
+              "id": "CWE-22",
+              "name": "Path Traversal",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
   },
   "backend.ecommerce.magento": {
     "slug": "backend.ecommerce.magento",
@@ -1968,7 +2094,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 90
   },
   "backend.ecommerce.woocommerce": {
     "slug": "backend.ecommerce.woocommerce",
@@ -2032,7 +2161,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 100
   },
   "backend.ecommerce.prestashop": {
     "slug": "backend.ecommerce.prestashop",
@@ -2095,7 +2227,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 90
   },
   "backend.ecommerce.bigcommerce": {
     "slug": "backend.ecommerce.bigcommerce",
@@ -2112,8 +2247,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-79",
+              "name": "Cross-Site Scripting (XSS)",
+              "count": 5
+            },
+            {
+              "id": "CWE-89",
+              "name": "SQL Injection",
+              "count": 4
+            },
+            {
+              "id": "CWE-285",
+              "name": "Improper Authorization",
+              "count": 4
+            },
+            {
+              "id": "CWE-20",
+              "name": "Improper Input Validation",
+              "count": 4
+            },
+            {
+              "id": "CWE-22",
+              "name": "Path Traversal",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
   },
   "backend.ecommerce.opencart": {
     "slug": "backend.ecommerce.opencart",
@@ -2176,7 +2347,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 82.48
   },
   "backend.sitebuilder.wix": {
     "slug": "backend.sitebuilder.wix",
@@ -2193,8 +2367,39 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 4,
+          "top_categories": [
+            {
+              "id": "CWE-79",
+              "name": "Cross-Site Scripting (XSS)",
+              "count": 5
+            },
+            {
+              "id": "CWE-20",
+              "name": "Improper Input Validation",
+              "count": 4
+            },
+            {
+              "id": "CWE-601",
+              "name": "URL Redirection to Untrusted Site",
+              "count": 3
+            },
+            {
+              "id": "CWE-1021",
+              "name": "Improper Restriction of Rendered UI Layers",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
   },
   "backend.sitebuilder.squarespace": {
     "slug": "backend.sitebuilder.squarespace",
@@ -2211,8 +2416,39 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 4,
+          "top_categories": [
+            {
+              "id": "CWE-79",
+              "name": "Cross-Site Scripting (XSS)",
+              "count": 5
+            },
+            {
+              "id": "CWE-20",
+              "name": "Improper Input Validation",
+              "count": 4
+            },
+            {
+              "id": "CWE-601",
+              "name": "URL Redirection to Untrusted Site",
+              "count": 3
+            },
+            {
+              "id": "CWE-1021",
+              "name": "Improper Restriction of Rendered UI Layers",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
   },
   "backend.framework.laravel": {
     "slug": "backend.framework.laravel",
@@ -2275,7 +2511,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 87.64
   },
   "backend.framework.django": {
     "slug": "backend.framework.django",
@@ -2338,7 +2577,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 90
   },
   "backend.framework.aspnet": {
     "slug": "backend.framework.aspnet",
@@ -2401,7 +2643,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 90
   },
   "backend.framework.rails": {
     "slug": "backend.framework.rails",
@@ -2464,7 +2709,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
   },
   "backend.framework.express": {
     "slug": "backend.framework.express",
@@ -2528,7 +2776,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 100
   },
   "backend.framework.jsp": {
     "slug": "backend.framework.jsp",
@@ -2591,7 +2842,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 90
   },
   "backend.framework.php": {
     "slug": "backend.framework.php",
@@ -2654,7 +2908,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 100
   },
   "backend.framework.spring": {
     "slug": "backend.framework.spring",
@@ -2717,13 +2974,19 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 71.0
   },
   "auth.traditional.basic_auth": {
     "slug": "auth.traditional.basic_auth",
     "display_name": "Traditional Login",
     "icon": "traditional-login-forms.svg",
     "show_in_tech": false,
+    "classification": [
+      "webapp"
+    ],
     "description": "Traditional username and password authentication forms for user login and session management.",
     "labels": [
       "Authentication",
@@ -2731,14 +2994,53 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 5
+            },
+            {
+              "id": "CWE-522",
+              "name": "Insufficiently Protected Credentials",
+              "count": 5
+            },
+            {
+              "id": "CWE-319",
+              "name": "Cleartext Transmission of Sensitive Information",
+              "count": 4
+            },
+            {
+              "id": "CWE-798",
+              "name": "Use of Hard-coded Credentials",
+              "count": 3
+            },
+            {
+              "id": "CWE-307",
+              "name": "Improper Restriction of Excessive Authentication Attempts",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 3.0,
+    "weighted_severity_score": 0.0
   },
   "auth.traditional.registration": {
     "slug": "auth.traditional.registration",
     "display_name": "User Registration",
     "icon": "user-registration.svg",
     "show_in_tech": false,
+    "classification": [
+      "webapp"
+    ],
     "description": "User registration forms allowing new users to create accounts with credentials.",
     "labels": [
       "Authentication",
@@ -2746,14 +3048,53 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-521",
+              "name": "Weak Password Requirements",
+              "count": 5
+            },
+            {
+              "id": "CWE-640",
+              "name": "Weak Password Recovery Mechanism for Forgotten Password",
+              "count": 4
+            },
+            {
+              "id": "CWE-307",
+              "name": "Improper Restriction of Excessive Authentication Attempts",
+              "count": 4
+            },
+            {
+              "id": "CWE-799",
+              "name": "Improper Control of Interaction Frequency",
+              "count": 3
+            },
+            {
+              "id": "CWE-916",
+              "name": "Use of Password Hash With Insufficient Computational Effort",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 3.0,
+    "weighted_severity_score": 0.0
   },
   "auth.traditional.password_recovery": {
     "slug": "auth.traditional.password_recovery",
     "display_name": "Password Recovery",
     "icon": "password-recovery.svg",
     "show_in_tech": false,
+    "classification": [
+      "webapp"
+    ],
     "description": "Password reset and recovery mechanisms for users who have forgotten their credentials.",
     "labels": [
       "Authentication",
@@ -2761,8 +3102,34 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 3,
+          "top_categories": [
+            {
+              "id": "CWE-640",
+              "name": "Weak Password Recovery Mechanism for Forgotten Password",
+              "count": 5
+            },
+            {
+              "id": "CWE-307",
+              "name": "Improper Restriction of Excessive Authentication Attempts",
+              "count": 4
+            },
+            {
+              "id": "CWE-285",
+              "name": "Improper Authorization",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.0,
+    "weighted_severity_score": 0.0
   },
   "auth.enterprise.saml_sso": {
     "slug": "auth.enterprise.saml_sso",
@@ -2779,8 +3146,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-347",
+              "name": "Improper Verification of Cryptographic Signature",
+              "count": 5
+            },
+            {
+              "id": "CWE-611",
+              "name": "Improper Restriction of XML External Entity Reference",
+              "count": 4
+            },
+            {
+              "id": "CWE-776",
+              "name": "Improper Restriction of Recursive Entity References in DTDs",
+              "count": 3
+            },
+            {
+              "id": "CWE-290",
+              "name": "Authentication Bypass by Spoofing",
+              "count": 4
+            },
+            {
+              "id": "CWE-345",
+              "name": "Insufficient Verification of Data Authenticity",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.6,
+    "technology_weight": 3.0,
+    "weighted_severity_score": 0.0
   },
   "auth.enterprise.microsoft": {
     "slug": "auth.enterprise.microsoft",
@@ -2797,8 +3200,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-601",
+              "name": "URL Redirection to Untrusted Site",
+              "count": 5
+            },
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 4
+            },
+            {
+              "id": "CWE-346",
+              "name": "Origin Validation Error",
+              "count": 4
+            },
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 4
+            },
+            {
+              "id": "CWE-384",
+              "name": "Session Fixation",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 3.0,
+    "weighted_severity_score": 0.0
   },
   "auth.enterprise.okta": {
     "slug": "auth.enterprise.okta",
@@ -2815,8 +3254,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-601",
+              "name": "URL Redirection to Untrusted Site",
+              "count": 5
+            },
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 4
+            },
+            {
+              "id": "CWE-346",
+              "name": "Origin Validation Error",
+              "count": 4
+            },
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 4
+            },
+            {
+              "id": "CWE-384",
+              "name": "Session Fixation",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 3.0,
+    "weighted_severity_score": 0.0
   },
   "auth.enterprise.auth0": {
     "slug": "auth.enterprise.auth0",
@@ -2833,8 +3308,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-601",
+              "name": "URL Redirection to Untrusted Site",
+              "count": 5
+            },
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 4
+            },
+            {
+              "id": "CWE-346",
+              "name": "Origin Validation Error",
+              "count": 4
+            },
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 4
+            },
+            {
+              "id": "CWE-384",
+              "name": "Session Fixation",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 3.0,
+    "weighted_severity_score": 0.0
   },
   "auth.enterprise.onelogin": {
     "slug": "auth.enterprise.onelogin",
@@ -2851,8 +3362,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-601",
+              "name": "URL Redirection to Untrusted Site",
+              "count": 5
+            },
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 4
+            },
+            {
+              "id": "CWE-346",
+              "name": "Origin Validation Error",
+              "count": 4
+            },
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 4
+            },
+            {
+              "id": "CWE-347",
+              "name": "Improper Verification of Cryptographic Signature",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 3.0,
+    "weighted_severity_score": 0.0
   },
   "auth.enterprise.keycloak": {
     "slug": "auth.enterprise.keycloak",
@@ -2870,8 +3417,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-601",
+              "name": "URL Redirection to Untrusted Site",
+              "count": 5
+            },
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 4
+            },
+            {
+              "id": "CWE-346",
+              "name": "Origin Validation Error",
+              "count": 4
+            },
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 4
+            },
+            {
+              "id": "CWE-384",
+              "name": "Session Fixation",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 3.0,
+    "weighted_severity_score": 0.0
   },
   "auth.enterprise.adfs": {
     "slug": "auth.enterprise.adfs",
@@ -2889,8 +3472,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-347",
+              "name": "Improper Verification of Cryptographic Signature",
+              "count": 5
+            },
+            {
+              "id": "CWE-290",
+              "name": "Authentication Bypass by Spoofing",
+              "count": 4
+            },
+            {
+              "id": "CWE-345",
+              "name": "Insufficient Verification of Data Authenticity",
+              "count": 4
+            },
+            {
+              "id": "CWE-601",
+              "name": "URL Redirection to Untrusted Site",
+              "count": 3
+            },
+            {
+              "id": "CWE-384",
+              "name": "Session Fixation",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 3.0,
+    "weighted_severity_score": 0.0
   },
   "auth.social.google": {
     "slug": "auth.social.google",
@@ -2907,8 +3526,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-601",
+              "name": "URL Redirection to Untrusted Site",
+              "count": 5
+            },
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 4
+            },
+            {
+              "id": "CWE-346",
+              "name": "Origin Validation Error",
+              "count": 4
+            },
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 4
+            },
+            {
+              "id": "CWE-384",
+              "name": "Session Fixation",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.0,
+    "weighted_severity_score": 0.0
   },
   "auth.social.facebook": {
     "slug": "auth.social.facebook",
@@ -2925,8 +3580,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-601",
+              "name": "URL Redirection to Untrusted Site",
+              "count": 5
+            },
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 4
+            },
+            {
+              "id": "CWE-346",
+              "name": "Origin Validation Error",
+              "count": 4
+            },
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 4
+            },
+            {
+              "id": "CWE-384",
+              "name": "Session Fixation",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.0,
+    "weighted_severity_score": 0.0
   },
   "auth.social.twitter": {
     "slug": "auth.social.twitter",
@@ -2943,8 +3634,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-601",
+              "name": "URL Redirection to Untrusted Site",
+              "count": 5
+            },
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 4
+            },
+            {
+              "id": "CWE-346",
+              "name": "Origin Validation Error",
+              "count": 4
+            },
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 4
+            },
+            {
+              "id": "CWE-384",
+              "name": "Session Fixation",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.0,
+    "weighted_severity_score": 0.0
   },
   "auth.social.linkedin": {
     "slug": "auth.social.linkedin",
@@ -2961,8 +3688,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-601",
+              "name": "URL Redirection to Untrusted Site",
+              "count": 5
+            },
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 4
+            },
+            {
+              "id": "CWE-346",
+              "name": "Origin Validation Error",
+              "count": 4
+            },
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 4
+            },
+            {
+              "id": "CWE-384",
+              "name": "Session Fixation",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.0,
+    "weighted_severity_score": 0.0
   },
   "auth.social.github": {
     "slug": "auth.social.github",
@@ -2979,8 +3742,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-601",
+              "name": "URL Redirection to Untrusted Site",
+              "count": 5
+            },
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 4
+            },
+            {
+              "id": "CWE-346",
+              "name": "Origin Validation Error",
+              "count": 4
+            },
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 4
+            },
+            {
+              "id": "CWE-384",
+              "name": "Session Fixation",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.0,
+    "weighted_severity_score": 0.0
   },
   "auth.social.apple": {
     "slug": "auth.social.apple",
@@ -2997,14 +3796,53 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-601",
+              "name": "URL Redirection to Untrusted Site",
+              "count": 5
+            },
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 4
+            },
+            {
+              "id": "CWE-346",
+              "name": "Origin Validation Error",
+              "count": 4
+            },
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 4
+            },
+            {
+              "id": "CWE-347",
+              "name": "Improper Verification of Cryptographic Signature",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.0,
+    "weighted_severity_score": 0.0
   },
   "auth.mfa": {
     "slug": "auth.mfa",
     "display_name": "Multi-Factor Auth",
     "icon": "multi-factor-auth.svg",
     "show_in_tech": false,
+    "classification": [
+      "webapp"
+    ],
     "description": "Multi-factor authentication requiring multiple verification methods for enhanced security.",
     "labels": [
       "Authentication",
@@ -3012,14 +3850,53 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-288",
+              "name": "Authentication Bypass Using an Alternate Path or Channel",
+              "count": 5
+            },
+            {
+              "id": "CWE-306",
+              "name": "Missing Authentication for Critical Function",
+              "count": 4
+            },
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 4
+            },
+            {
+              "id": "CWE-640",
+              "name": "Weak Password Recovery Mechanism for Forgotten Password",
+              "count": 3
+            },
+            {
+              "id": "CWE-384",
+              "name": "Session Fixation",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 3.0,
+    "weighted_severity_score": 0.0
   },
   "auth.passwordless": {
     "slug": "auth.passwordless",
     "display_name": "Passwordless Auth",
     "icon": "passwordless-auth.svg",
     "show_in_tech": false,
+    "classification": [
+      "webapp"
+    ],
     "description": "Passwordless authentication using methods like biometrics, magic links, or one-time codes instead of passwords.",
     "labels": [
       "Authentication",
@@ -3027,27 +3904,89 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-290",
+              "name": "Authentication Bypass by Spoofing",
+              "count": 5
+            },
+            {
+              "id": "CWE-346",
+              "name": "Origin Validation Error",
+              "count": 4
+            },
+            {
+              "id": "CWE-384",
+              "name": "Session Fixation",
+              "count": 4
+            },
+            {
+              "id": "CWE-640",
+              "name": "Weak Password Recovery Mechanism for Forgotten Password",
+              "count": 3
+            },
+            {
+              "id": "CWE-601",
+              "name": "URL Redirection to Untrusted Site",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 3.0,
+    "weighted_severity_score": 0.0
   },
   "api.domain_pattern": {
     "slug": "api.domain_pattern",
-    "display_name": "API Domain Pattern",
+    "display_name": "API Domain Pattern (Potential)",
     "icon": "api-domain-pattern.svg",
     "show_in_tech": false,
     "classification": [
       "api"
     ],
-    "description": "Domain names following API naming patterns (e.g., api.*, *-api.*, graphql.*, etc.).",
+    "description": "Domain names following API naming patterns (e.g., api.*, *-api.*, graphql.*, etc.). Potential API endpoint requiring further verification.",
     "labels": [
       "API",
-      "Domain Pattern"
+      "Domain Pattern",
+      "Potential"
     ],
     "criticality_delta": 0.4,
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 3,
+          "top_categories": [
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-548",
+              "name": "Exposure of Information Through Directory Listing",
+              "count": 4
+            },
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
   },
   "api.spec.openapi": {
     "slug": "api.spec.openapi",
@@ -3065,8 +4004,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-548",
+              "name": "Exposure of Information Through Directory Listing",
+              "count": 4
+            },
+            {
+              "id": "CWE-862",
+              "name": "Missing Authorization",
+              "count": 4
+            },
+            {
+              "id": "CWE-285",
+              "name": "Improper Authorization",
+              "count": 4
+            },
+            {
+              "id": "CWE-639",
+              "name": "Authorization Bypass Through User-Controlled Key",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
   },
   "api.spec.swagger": {
     "slug": "api.spec.swagger",
@@ -3084,8 +4059,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-548",
+              "name": "Exposure of Information Through Directory Listing",
+              "count": 4
+            },
+            {
+              "id": "CWE-862",
+              "name": "Missing Authorization",
+              "count": 4
+            },
+            {
+              "id": "CWE-285",
+              "name": "Improper Authorization",
+              "count": 4
+            },
+            {
+              "id": "CWE-639",
+              "name": "Authorization Bypass Through User-Controlled Key",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
   },
   "api.spec.postman": {
     "slug": "api.spec.postman",
@@ -3103,8 +4114,39 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 4,
+          "top_categories": [
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-522",
+              "name": "Insufficiently Protected Credentials",
+              "count": 5
+            },
+            {
+              "id": "CWE-798",
+              "name": "Use of Hard-coded Credentials",
+              "count": 4
+            },
+            {
+              "id": "CWE-540",
+              "name": "Inclusion of Sensitive Information in Source Code",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
   },
   "api.spec.wadl": {
     "slug": "api.spec.wadl",
@@ -3122,8 +4164,39 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 4,
+          "top_categories": [
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-548",
+              "name": "Exposure of Information Through Directory Listing",
+              "count": 4
+            },
+            {
+              "id": "CWE-862",
+              "name": "Missing Authorization",
+              "count": 3
+            },
+            {
+              "id": "CWE-611",
+              "name": "Improper Restriction of XML External Entity Reference",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
   },
   "api.spec.wsdl": {
     "slug": "api.spec.wsdl",
@@ -3141,44 +4214,154 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-548",
+              "name": "Exposure of Information Through Directory Listing",
+              "count": 4
+            },
+            {
+              "id": "CWE-611",
+              "name": "Improper Restriction of XML External Entity Reference",
+              "count": 4
+            },
+            {
+              "id": "CWE-776",
+              "name": "Improper Restriction of Recursive Entity References in DTDs",
+              "count": 3
+            },
+            {
+              "id": "CWE-91",
+              "name": "XML Injection",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
   },
   "api.server.json": {
     "slug": "api.server.json",
-    "display_name": "JSON API",
+    "display_name": "JSON API (Confirmed)",
     "icon": "serving-json-xml.svg",
     "show_in_tech": false,
     "classification": [
       "api"
     ],
-    "description": "API endpoints serving data in JSON format, the most common data interchange format for web APIs.",
+    "description": "Confirmed API endpoints serving data in JSON format, the most common data interchange format for web APIs. Verified through server response analysis.",
     "labels": [
       "API Server",
-      "JSON"
+      "JSON",
+      "Confirmed"
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-285",
+              "name": "Improper Authorization",
+              "count": 4
+            },
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 4
+            },
+            {
+              "id": "CWE-918",
+              "name": "Server-Side Request Forgery (SSRF)",
+              "count": 4
+            },
+            {
+              "id": "CWE-20",
+              "name": "Improper Input Validation",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
   },
   "api.server.xml": {
     "slug": "api.server.xml",
-    "display_name": "XML API",
+    "display_name": "XML API (Confirmed)",
     "icon": "serving-json-xml.svg",
     "show_in_tech": false,
     "classification": [
       "api"
     ],
-    "description": "API endpoints serving data in XML format, commonly used in enterprise and legacy systems.",
+    "description": "Confirmed API endpoints serving data in XML format, commonly used in enterprise and legacy systems. Verified through server response analysis.",
     "labels": [
       "API Server",
-      "XML"
+      "XML",
+      "Confirmed"
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-611",
+              "name": "Improper Restriction of XML External Entity Reference",
+              "count": 5
+            },
+            {
+              "id": "CWE-776",
+              "name": "Improper Restriction of Recursive Entity References in DTDs",
+              "count": 4
+            },
+            {
+              "id": "CWE-91",
+              "name": "XML Injection",
+              "count": 4
+            },
+            {
+              "id": "CWE-285",
+              "name": "Improper Authorization",
+              "count": 4
+            },
+            {
+              "id": "CWE-20",
+              "name": "Improper Input Validation",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
   },
   "api.server.fastapi": {
     "slug": "api.server.fastapi",
@@ -3242,7 +4425,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 54.5
   },
   "api.server.flask": {
     "slug": "api.server.flask",
@@ -3306,7 +4492,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 90
   },
   "api.server.gin": {
     "slug": "api.server.gin",
@@ -3370,7 +4559,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 76.58
   },
   "api.server.koa": {
     "slug": "api.server.koa",
@@ -3434,7 +4626,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 54.0
   },
   "api.server.nestjs": {
     "slug": "api.server.nestjs",
@@ -3499,7 +4694,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 83.0
   },
   "api.ai.mcp_server": {
     "slug": "api.ai.mcp_server",
@@ -3562,7 +4760,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
   },
   "api.ai.openai_endpoint": {
     "slug": "api.ai.openai_endpoint",
@@ -3580,8 +4781,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-522",
+              "name": "Insufficiently Protected Credentials",
+              "count": 5
+            },
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-77",
+              "name": "Command Injection",
+              "count": 4
+            },
+            {
+              "id": "CWE-20",
+              "name": "Improper Input Validation",
+              "count": 4
+            },
+            {
+              "id": "CWE-770",
+              "name": "Allocation of Resources Without Limits or Throttling",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
   },
   "api.ai.ollama_server": {
     "slug": "api.ai.ollama_server",
@@ -3645,7 +4882,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 76.4
   },
   "api.ai.anthropic_endpoint": {
     "slug": "api.ai.anthropic_endpoint",
@@ -3663,8 +4903,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-522",
+              "name": "Insufficiently Protected Credentials",
+              "count": 5
+            },
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-77",
+              "name": "Command Injection",
+              "count": 4
+            },
+            {
+              "id": "CWE-20",
+              "name": "Improper Input Validation",
+              "count": 4
+            },
+            {
+              "id": "CWE-770",
+              "name": "Allocation of Resources Without Limits or Throttling",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
   },
   "api.ai.vector_db.pinecone": {
     "slug": "api.ai.vector_db.pinecone",
@@ -3682,8 +4958,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-77",
+              "name": "Command Injection",
+              "count": 5
+            },
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-306",
+              "name": "Missing Authentication for Critical Function",
+              "count": 4
+            },
+            {
+              "id": "CWE-502",
+              "name": "Deserialization of Untrusted Data",
+              "count": 4
+            },
+            {
+              "id": "CWE-284",
+              "name": "Improper Access Control",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
   },
   "api.ai.vector_db.weaviate": {
     "slug": "api.ai.vector_db.weaviate",
@@ -3747,7 +5059,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 51.5
   },
   "api.ai.vector_db.qdrant": {
     "slug": "api.ai.vector_db.qdrant",
@@ -3811,7 +5126,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 72.5
   },
   "api.ai.vector_db.milvus": {
     "slug": "api.ai.vector_db.milvus",
@@ -3875,7 +5193,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 10.5
   },
   "api.ai.vector_db.chroma": {
     "slug": "api.ai.vector_db.chroma",
@@ -3939,7 +5260,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 50.5
   },
   "gateway.nginx": {
     "slug": "gateway.nginx",
@@ -4004,7 +5328,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.1,
+    "technology_weight": 2.5,
+    "weighted_severity_score": 100
   },
   "gateway.kong": {
     "slug": "gateway.kong",
@@ -4068,7 +5395,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 1.5,
+    "weighted_severity_score": 76.05
   },
   "gateway.envoy": {
     "slug": "gateway.envoy",
@@ -4133,7 +5463,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 1.5,
+    "weighted_severity_score": 90
   },
   "gateway.traefik": {
     "slug": "gateway.traefik",
@@ -4198,7 +5531,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 1.5,
+    "weighted_severity_score": 78.15
   },
   "gateway.cloudflare": {
     "slug": "gateway.cloudflare",
@@ -4217,8 +5553,39 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 4,
+          "top_categories": [
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 5
+            },
+            {
+              "id": "CWE-693",
+              "name": "Protection Mechanism Failure",
+              "count": 4
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 4
+            },
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 1.5,
+    "weighted_severity_score": 0.0
   },
   "gateway.akamai": {
     "slug": "gateway.akamai",
@@ -4237,8 +5604,39 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 4,
+          "top_categories": [
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 5
+            },
+            {
+              "id": "CWE-693",
+              "name": "Protection Mechanism Failure",
+              "count": 4
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 4
+            },
+            {
+              "id": "CWE-444",
+              "name": "Inconsistent Interpretation of HTTP Requests",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 1.5,
+    "weighted_severity_score": 0.0
   },
   "gateway.haproxy": {
     "slug": "gateway.haproxy",
@@ -4302,7 +5700,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.1,
+    "technology_weight": 1.5,
+    "weighted_severity_score": 91.65
   },
   "gateway.zuul": {
     "slug": "gateway.zuul",
@@ -4367,7 +5768,10 @@
         },
         "updated": "2025-10-23T14:23:14Z"
       }
-    }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 1.5,
+    "weighted_severity_score": 72.0
   },
   "gateway.apigee": {
     "slug": "gateway.apigee",
@@ -4386,8 +5790,44 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 5
+            },
+            {
+              "id": "CWE-285",
+              "name": "Improper Authorization",
+              "count": 4
+            },
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 4
+            },
+            {
+              "id": "CWE-918",
+              "name": "Server-Side Request Forgery (SSRF)",
+              "count": 4
+            },
+            {
+              "id": "CWE-770",
+              "name": "Allocation of Resources Without Limits or Throttling",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
   },
   "page.title": {
     "slug": "page.title",
@@ -4401,8 +5841,28 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-209",
+              "name": "Generation of Error Message Containing Sensitive Information",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
   },
   "page.description": {
     "slug": "page.description",
@@ -4416,8 +5876,28 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-209",
+              "name": "Generation of Error Message Containing Sensitive Information",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
   },
   "server.blank_root_status": {
     "slug": "server.blank_root_status",
@@ -4430,7 +5910,2637 @@
     ],
     "security": {
       "cve_applicable": false,
-      "cwe_applicable": false
-    }
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 3,
+          "top_categories": [
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-548",
+              "name": "Exposure of Information Through Directory Listing",
+              "count": 4
+            },
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "security.sri_coverage": {
+    "slug": "security.sri_coverage",
+    "display_name": "Subresource Integrity",
+    "icon": "shield-check.svg",
+    "show_in_tech": false,
+    "description": "Subresource Integrity (SRI) protects against CDN compromises by verifying cryptographic hashes of external scripts and stylesheets. Higher coverage indicates better protection against supply chain attacks.",
+    "labels": [
+      "Security Feature",
+      "Best Practice"
+    ],
+    "rating_weight": 20,
+    "rating_rules": {
+      "0%": -20,
+      "1-49%": -10,
+      "50-79%": 0,
+      "80-99%": 10,
+      "100%": 20
+    },
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 3,
+          "top_categories": [
+            {
+              "id": "CWE-494",
+              "name": "Download of Code Without Integrity Check",
+              "count": 5
+            },
+            {
+              "id": "CWE-829",
+              "name": "Inclusion of Functionality from Untrusted Control Sphere",
+              "count": 4
+            },
+            {
+              "id": "CWE-346",
+              "name": "Origin Validation Error",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "security.mixed_content": {
+    "slug": "security.mixed_content",
+    "display_name": "Mixed Content Detection",
+    "icon": "alert-triangle.svg",
+    "show_in_tech": false,
+    "description": "Mixed content occurs when HTTPS pages load HTTP resources, creating security vulnerabilities. Secure sites should load all resources over HTTPS to prevent man-in-the-middle attacks.",
+    "labels": [
+      "Security Issue",
+      "HTTPS"
+    ],
+    "rating_weight": 25,
+    "rating_rules": {
+      "has-mixed-content": -25,
+      "not-https": -25,
+      "secure": 25
+    },
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 3,
+          "top_categories": [
+            {
+              "id": "CWE-319",
+              "name": "Cleartext Transmission of Sensitive Information",
+              "count": 5
+            },
+            {
+              "id": "CWE-311",
+              "name": "Missing Encryption of Sensitive Data",
+              "count": 4
+            },
+            {
+              "id": "CWE-300",
+              "name": "Channel Accessible by Non-Endpoint",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "security.https_status": {
+    "slug": "security.https_status",
+    "display_name": "HTTPS Status",
+    "icon": "lock.svg",
+    "show_in_tech": false,
+    "description": "HTTPS ensures encrypted communication between browser and server. Secure context indicates the site is served over HTTPS and has access to modern security APIs.",
+    "labels": [
+      "Transport Security",
+      "HTTPS"
+    ],
+    "rating_weight": 30,
+    "rating_rules": {
+      "isSecureContext:true": 30,
+      "isSecureContext:false": -30
+    },
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 3,
+          "top_categories": [
+            {
+              "id": "CWE-319",
+              "name": "Cleartext Transmission of Sensitive Information",
+              "count": 5
+            },
+            {
+              "id": "CWE-311",
+              "name": "Missing Encryption of Sensitive Data",
+              "count": 4
+            },
+            {
+              "id": "CWE-326",
+              "name": "Inadequate Encryption Strength",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "security.form_security": {
+    "slug": "security.form_security",
+    "display_name": "Form Security",
+    "icon": "form-input.svg",
+    "show_in_tech": false,
+    "description": "Forms should submit data over HTTPS to protect sensitive information from interception. Insecure form submissions expose user data to man-in-the-middle attacks.",
+    "labels": [
+      "Form Security",
+      "Data Protection"
+    ],
+    "rating_weight": 15,
+    "rating_rules": {
+      "insecure": -15,
+      "secure": 15,
+      "no-forms": 0
+    },
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 3,
+          "top_categories": [
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 5
+            },
+            {
+              "id": "CWE-319",
+              "name": "Cleartext Transmission of Sensitive Information",
+              "count": 4
+            },
+            {
+              "id": "CWE-640",
+              "name": "Weak Password Recovery Mechanism for Forgotten Password",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "security.meta_policies": {
+    "slug": "security.meta_policies",
+    "display_name": "Security Meta Policies",
+    "icon": "file-shield.svg",
+    "show_in_tech": false,
+    "description": "Security meta tags (CSP, X-Frame-Options, Referrer-Policy) provide client-side security controls. Multiple policies indicate defense-in-depth security implementation.",
+    "labels": [
+      "Security Headers",
+      "CSP"
+    ],
+    "rating_weight": 10,
+    "rating_rules": {
+      "none": -10,
+      "1-policy": 0,
+      "2-policies": 5,
+      "3-policies": 10
+    },
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 3,
+          "top_categories": [
+            {
+              "id": "CWE-1021",
+              "name": "Improper Restriction of Rendered UI Layers",
+              "count": 5
+            },
+            {
+              "id": "CWE-79",
+              "name": "Cross-Site Scripting (XSS)",
+              "count": 4
+            },
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "security.hsts": {
+    "slug": "security.hsts",
+    "display_name": "HTTP Strict Transport Security (HSTS)",
+    "icon": "shield-lock.svg",
+    "show_in_tech": false,
+    "description": "HSTS forces browsers to only connect via HTTPS, preventing protocol downgrade attacks. Required for A+ security rating. Should include max-age, includeSubDomains, and preload directives.",
+    "labels": [
+      "Security Header",
+      "HTTPS",
+      "Required"
+    ],
+    "rating_weight": 20,
+    "rating_rules": {
+      "missing": -20,
+      "present": 20
+    },
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 3,
+          "top_categories": [
+            {
+              "id": "CWE-319",
+              "name": "Cleartext Transmission of Sensitive Information",
+              "count": 5
+            },
+            {
+              "id": "CWE-523",
+              "name": "Unprotected Transport of Credentials",
+              "count": 4
+            },
+            {
+              "id": "CWE-757",
+              "name": "Selection of Less-Secure Algorithm During Negotiation",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "security.csp_header": {
+    "slug": "security.csp_header",
+    "display_name": "Content Security Policy Header",
+    "icon": "shield-check.svg",
+    "show_in_tech": false,
+    "description": "CSP is the most important security header, controlling which resources browsers can load. Prevents XSS, injection attacks, and unauthorized resource loading. Header version is preferred over meta tag.",
+    "labels": [
+      "Security Header",
+      "XSS Protection",
+      "Critical"
+    ],
+    "rating_weight": 20,
+    "rating_rules": {
+      "missing": -20,
+      "present": 20
+    },
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 4,
+          "top_categories": [
+            {
+              "id": "CWE-79",
+              "name": "Cross-Site Scripting (XSS)",
+              "count": 5
+            },
+            {
+              "id": "CWE-1021",
+              "name": "Improper Restriction of Rendered UI Layers",
+              "count": 4
+            },
+            {
+              "id": "CWE-829",
+              "name": "Inclusion of Functionality from Untrusted Control Sphere",
+              "count": 4
+            },
+            {
+              "id": "CWE-494",
+              "name": "Download of Code Without Integrity Check",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "security.xfo": {
+    "slug": "security.xfo",
+    "display_name": "X-Frame-Options",
+    "icon": "frame-x.svg",
+    "show_in_tech": false,
+    "description": "Prevents clickjacking attacks by controlling whether the page can be framed. Use DENY or SAMEORIGIN. Can be replaced by CSP frame-ancestors directive.",
+    "labels": [
+      "Security Header",
+      "Clickjacking Protection"
+    ],
+    "rating_weight": 10,
+    "rating_rules": {
+      "missing": -10,
+      "present": 10
+    },
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-1021",
+              "name": "Improper Restriction of Rendered UI Layers",
+              "count": 5
+            },
+            {
+              "id": "CWE-451",
+              "name": "User Interface Misrepresentation of Critical Information",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "security.xcto": {
+    "slug": "security.xcto",
+    "display_name": "X-Content-Type-Options",
+    "icon": "file-type.svg",
+    "show_in_tech": false,
+    "description": "Prevents MIME type sniffing attacks by forcing browsers to respect declared content types. Should always be set to 'nosniff'. Easy to implement with significant security benefit.",
+    "labels": [
+      "Security Header",
+      "MIME Protection"
+    ],
+    "rating_weight": 10,
+    "rating_rules": {
+      "missing": -10,
+      "present": 10
+    },
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 3,
+          "top_categories": [
+            {
+              "id": "CWE-430",
+              "name": "Deployment of Wrong Handler",
+              "count": 5
+            },
+            {
+              "id": "CWE-434",
+              "name": "Unrestricted Upload of File with Dangerous Type",
+              "count": 4
+            },
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "security.referrer_header": {
+    "slug": "security.referrer_header",
+    "display_name": "Referrer Policy Header",
+    "icon": "link-break.svg",
+    "show_in_tech": false,
+    "description": "Controls how much referrer information is shared with other sites. Recommended value is 'strict-origin-when-cross-origin' to balance privacy and functionality.",
+    "labels": [
+      "Security Header",
+      "Privacy"
+    ],
+    "rating_weight": 5,
+    "rating_rules": {
+      "missing": -5,
+      "present": 5
+    },
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 3,
+          "top_categories": [
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-359",
+              "name": "Exposure of Private Personal Information to an Unauthorized Actor",
+              "count": 4
+            },
+            {
+              "id": "CWE-598",
+              "name": "Use of GET Request Method With Sensitive Query Strings",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "security.permissions_policy": {
+    "slug": "security.permissions_policy",
+    "display_name": "Permissions Policy",
+    "icon": "sliders.svg",
+    "show_in_tech": false,
+    "description": "Controls which browser features can be used (camera, microphone, geolocation, etc.). Replaces deprecated Feature-Policy. Required for A+ rating on modern security scanners.",
+    "labels": [
+      "Security Header",
+      "Feature Control",
+      "Required"
+    ],
+    "rating_weight": 10,
+    "rating_rules": {
+      "missing": -10,
+      "present": 10
+    },
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 3,
+          "top_categories": [
+            {
+              "id": "CWE-250",
+              "name": "Execution with Unnecessary Privileges",
+              "count": 5
+            },
+            {
+              "id": "CWE-269",
+              "name": "Improper Privilege Management",
+              "count": 4
+            },
+            {
+              "id": "CWE-862",
+              "name": "Missing Authorization",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "security.coop": {
+    "slug": "security.coop",
+    "display_name": "Cross-Origin-Opener-Policy",
+    "icon": "window-cross.svg",
+    "show_in_tech": false,
+    "description": "Isolates browsing context from cross-origin windows. Recommended value is 'same-origin'. Part of modern cross-origin isolation security architecture.",
+    "labels": [
+      "Security Header",
+      "Cross-Origin",
+      "Modern"
+    ],
+    "rating_weight": 5,
+    "rating_rules": {
+      "present": 5
+    },
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 3,
+          "top_categories": [
+            {
+              "id": "CWE-346",
+              "name": "Origin Validation Error",
+              "count": 5
+            },
+            {
+              "id": "CWE-942",
+              "name": "Permissive Cross-domain Policy with Untrusted Domains",
+              "count": 4
+            },
+            {
+              "id": "CWE-1021",
+              "name": "Improper Restriction of Rendered UI Layers",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "security.coep": {
+    "slug": "security.coep",
+    "display_name": "Cross-Origin-Embedder-Policy",
+    "icon": "layers-linked.svg",
+    "show_in_tech": false,
+    "description": "Prevents loading cross-origin resources without explicit permission. Recommended value is 'require-corp'. Enables powerful browser features like SharedArrayBuffer.",
+    "labels": [
+      "Security Header",
+      "Cross-Origin",
+      "Modern"
+    ],
+    "rating_weight": 5,
+    "rating_rules": {
+      "present": 5
+    },
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 3,
+          "top_categories": [
+            {
+              "id": "CWE-346",
+              "name": "Origin Validation Error",
+              "count": 5
+            },
+            {
+              "id": "CWE-829",
+              "name": "Inclusion of Functionality from Untrusted Control Sphere",
+              "count": 4
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "security.corp": {
+    "slug": "security.corp",
+    "display_name": "Cross-Origin-Resource-Policy",
+    "icon": "shield-alert.svg",
+    "show_in_tech": false,
+    "description": "Protects resources from being loaded by other origins. Recommended value is 'same-site'. Prevents resource theft and side-channel attacks.",
+    "labels": [
+      "Security Header",
+      "Cross-Origin",
+      "Modern"
+    ],
+    "rating_weight": 5,
+    "rating_rules": {
+      "present": 5
+    },
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 3,
+          "top_categories": [
+            {
+              "id": "CWE-346",
+              "name": "Origin Validation Error",
+              "count": 5
+            },
+            {
+              "id": "CWE-942",
+              "name": "Permissive Cross-domain Policy with Untrusted Domains",
+              "count": 4
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "security.server_disclosure": {
+    "slug": "security.server_disclosure",
+    "display_name": "Server Header Disclosure",
+    "icon": "alert-triangle.svg",
+    "show_in_tech": false,
+    "description": "Server header reveals web server software and version, aiding attackers in reconnaissance. Should be removed or set to generic values for security through obscurity.",
+    "labels": [
+      "Information Disclosure",
+      "Security Risk"
+    ],
+    "rating_weight": -5,
+    "rating_rules": {
+      "present": -5
+    },
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 3,
+          "top_categories": [
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-209",
+              "name": "Generation of Error Message Containing Sensitive Information",
+              "count": 4
+            },
+            {
+              "id": "CWE-497",
+              "name": "Exposure of Sensitive System Information to an Unauthorized Control Sphere",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "security.powered_by_disclosure": {
+    "slug": "security.powered_by_disclosure",
+    "display_name": "X-Powered-By Disclosure",
+    "icon": "alert-circle.svg",
+    "show_in_tech": false,
+    "description": "X-Powered-By header reveals technology stack details (PHP, ASP.NET, Express, etc.), providing attackers with valuable reconnaissance information. Should always be removed.",
+    "labels": [
+      "Information Disclosure",
+      "Security Risk"
+    ],
+    "rating_weight": -5,
+    "rating_rules": {
+      "present": -5
+    },
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 3,
+          "top_categories": [
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-209",
+              "name": "Generation of Error Message Containing Sensitive Information",
+              "count": 4
+            },
+            {
+              "id": "CWE-497",
+              "name": "Exposure of Sensitive System Information to an Unauthorized Control Sphere",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "http.reachable": {
+    "slug": "http.reachable",
+    "display_name": "HTTP Reachable",
+    "icon": "web-technology.svg",
+    "show_in_tech": false,
+    "description": "Domain is accessible via HTTP or HTTPS protocol.",
+    "labels": [
+      "Infrastructure",
+      "Connectivity"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "api.storage.file_api": {
+    "slug": "api.storage.file_api",
+    "display_name": "File Storage API",
+    "icon": "storage-api.svg",
+    "show_in_tech": false,
+    "classification": [
+      "api"
+    ],
+    "description": "File storage and management API endpoints for upload, download, and file operations.",
+    "labels": [
+      "API",
+      "Storage",
+      "File Management"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-22",
+              "name": "Path Traversal",
+              "count": 5
+            },
+            {
+              "id": "CWE-434",
+              "name": "Unrestricted Upload of File with Dangerous Type",
+              "count": 5
+            },
+            {
+              "id": "CWE-73",
+              "name": "External Control of File Name or Path",
+              "count": 4
+            },
+            {
+              "id": "CWE-284",
+              "name": "Improper Access Control",
+              "count": 4
+            },
+            {
+              "id": "CWE-732",
+              "name": "Incorrect Permission Assignment for Critical Resource",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
+  },
+  "webapp.type.payment_processing": {
+    "slug": "webapp.type.payment_processing",
+    "display_name": "Payment Processing",
+    "icon": "payment-processing.svg",
+    "show_in_tech": false,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Web applications handling payment transactions, billing, and financial data processing.",
+    "labels": [
+      "Business Function",
+      "Payment",
+      "Financial"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-311",
+              "name": "Missing Encryption of Sensitive Data",
+              "count": 5
+            },
+            {
+              "id": "CWE-319",
+              "name": "Cleartext Transmission of Sensitive Information",
+              "count": 5
+            },
+            {
+              "id": "CWE-522",
+              "name": "Insufficiently Protected Credentials",
+              "count": 4
+            },
+            {
+              "id": "CWE-359",
+              "name": "Exposure of Private Personal Information to an Unauthorized Actor",
+              "count": 4
+            },
+            {
+              "id": "CWE-209",
+              "name": "Generation of Error Message Containing Sensitive Information",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 1.0,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "webapp.type.saas_dashboard": {
+    "slug": "webapp.type.saas_dashboard",
+    "display_name": "SaaS Dashboard",
+    "icon": "saas-dashboard.svg",
+    "show_in_tech": false,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Software-as-a-Service dashboard applications providing analytics, monitoring, and control interfaces.",
+    "labels": [
+      "Business Function",
+      "SaaS",
+      "Dashboard"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-285",
+              "name": "Improper Authorization",
+              "count": 5
+            },
+            {
+              "id": "CWE-639",
+              "name": "Authorization Bypass Through User-Controlled Key",
+              "count": 5
+            },
+            {
+              "id": "CWE-862",
+              "name": "Missing Authorization",
+              "count": 4
+            },
+            {
+              "id": "CWE-384",
+              "name": "Session Fixation",
+              "count": 4
+            },
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "webapp.type.developer_portal": {
+    "slug": "webapp.type.developer_portal",
+    "display_name": "Developer Portal",
+    "icon": "developer-portal.svg",
+    "show_in_tech": false,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Developer-focused portals providing API documentation, SDK downloads, and integration resources.",
+    "labels": [
+      "Business Function",
+      "Developer Tools"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 4,
+          "top_categories": [
+            {
+              "id": "CWE-522",
+              "name": "Insufficiently Protected Credentials",
+              "count": 5
+            },
+            {
+              "id": "CWE-798",
+              "name": "Use of Hard-coded Credentials",
+              "count": 4
+            },
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-284",
+              "name": "Improper Access Control",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "webapp.type.marketing": {
+    "slug": "webapp.type.marketing",
+    "display_name": "Marketing Website",
+    "icon": "marketing-website.svg",
+    "show_in_tech": false,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Marketing-focused websites designed for lead generation, product promotion, and campaigns.",
+    "labels": [
+      "Business Function",
+      "Marketing"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 4,
+          "top_categories": [
+            {
+              "id": "CWE-79",
+              "name": "Cross-Site Scripting (XSS)",
+              "count": 5
+            },
+            {
+              "id": "CWE-601",
+              "name": "URL Redirection to Untrusted Site",
+              "count": 4
+            },
+            {
+              "id": "CWE-1021",
+              "name": "Improper Restriction of Rendered UI Layers",
+              "count": 3
+            },
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.1,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "webapp.type.blog": {
+    "slug": "webapp.type.blog",
+    "display_name": "Blog",
+    "icon": "blog.svg",
+    "show_in_tech": false,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Blog websites publishing articles, news, and content for readers and subscribers.",
+    "labels": [
+      "Business Function",
+      "Content"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 4,
+          "top_categories": [
+            {
+              "id": "CWE-79",
+              "name": "Cross-Site Scripting (XSS)",
+              "count": 5
+            },
+            {
+              "id": "CWE-89",
+              "name": "SQL Injection",
+              "count": 4
+            },
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 4
+            },
+            {
+              "id": "CWE-284",
+              "name": "Improper Access Control",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.1,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "webapp.type.documentation": {
+    "slug": "webapp.type.documentation",
+    "display_name": "Documentation Site",
+    "icon": "documentation-site.svg",
+    "show_in_tech": false,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Documentation websites providing technical guides, API references, and user manuals.",
+    "labels": [
+      "Business Function",
+      "Documentation"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 3,
+          "top_categories": [
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-79",
+              "name": "Cross-Site Scripting (XSS)",
+              "count": 4
+            },
+            {
+              "id": "CWE-601",
+              "name": "URL Redirection to Untrusted Site",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.0,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "webapp.type.landing_page": {
+    "slug": "webapp.type.landing_page",
+    "display_name": "Landing Page",
+    "icon": "landing-page.svg",
+    "show_in_tech": false,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Single-page websites focused on specific campaigns, products, or conversion goals.",
+    "labels": [
+      "Business Function",
+      "Marketing"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 4,
+          "top_categories": [
+            {
+              "id": "CWE-79",
+              "name": "Cross-Site Scripting (XSS)",
+              "count": 5
+            },
+            {
+              "id": "CWE-601",
+              "name": "URL Redirection to Untrusted Site",
+              "count": 4
+            },
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 4
+            },
+            {
+              "id": "CWE-1021",
+              "name": "Improper Restriction of Rendered UI Layers",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.0,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "api.storage.s3": {
+    "slug": "api.storage.s3",
+    "display_name": "AWS S3 Storage",
+    "icon": "storage-api.svg",
+    "show_in_tech": true,
+    "classification": [
+      "api"
+    ],
+    "description": "Amazon S3 compatible object storage API endpoints detected, indicating cloud storage infrastructure exposure.",
+    "labels": [
+      "API",
+      "Storage",
+      "Cloud Infrastructure"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-284",
+              "name": "Improper Access Control",
+              "count": 1
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
+  },
+  "api.storage.minio": {
+    "slug": "api.storage.minio",
+    "display_name": "MinIO Storage",
+    "icon": "storage-api.svg",
+    "show_in_tech": true,
+    "classification": [
+      "api"
+    ],
+    "description": "MinIO object storage API detected, often used for self-hosted S3 compatible storage solutions.",
+    "labels": [
+      "API",
+      "Storage",
+      "Self-Hosted"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-284",
+              "name": "Improper Access Control",
+              "count": 1
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
+  },
+  "api.storage.azure_blob": {
+    "slug": "api.storage.azure_blob",
+    "display_name": "Azure Blob Storage",
+    "icon": "storage-blob.svg",
+    "show_in_tech": true,
+    "classification": [
+      "api"
+    ],
+    "description": "Microsoft Azure Blob Storage API endpoints detected, indicating Azure cloud storage infrastructure.",
+    "labels": [
+      "API",
+      "Storage",
+      "Azure Cloud"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-284",
+              "name": "Improper Access Control",
+              "count": 1
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
+  },
+  "api.storage.gcs": {
+    "slug": "api.storage.gcs",
+    "display_name": "Google Cloud Storage",
+    "icon": "storage-api.svg",
+    "show_in_tech": true,
+    "classification": [
+      "api"
+    ],
+    "description": "Google Cloud Storage API endpoints detected, indicating GCP storage infrastructure exposure.",
+    "labels": [
+      "API",
+      "Storage",
+      "Google Cloud"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-284",
+              "name": "Improper Access Control",
+              "count": 1
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
+  },
+  "api.storage.directory_listing": {
+    "slug": "api.storage.directory_listing",
+    "display_name": "Storage Directory Listing",
+    "icon": "storage-api.svg",
+    "show_in_tech": true,
+    "classification": [
+      "api"
+    ],
+    "description": "Storage API with directory listing enabled, potentially exposing file structure and contents.",
+    "labels": [
+      "API",
+      "Storage",
+      "Information Disclosure"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-548",
+              "name": "Exposure of Information Through Directory Listing",
+              "count": 1
+            },
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.8,
+    "technology_weight": 3.5,
+    "weighted_severity_score": 0.0
+  },
+  "domain.function.auth": {
+    "slug": "domain.function.auth",
+    "display_name": "Authentication Service",
+    "icon": "auth.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates authentication service (sso, auth, login, signin, oauth). Critical security function exposed to internet.",
+    "labels": [
+      "Domain Pattern",
+      "Authentication",
+      "Security Service"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 5
+            },
+            {
+              "id": "CWE-522",
+              "name": "Insufficiently Protected Credentials",
+              "count": 5
+            },
+            {
+              "id": "CWE-307",
+              "name": "Improper Restriction of Excessive Authentication Attempts",
+              "count": 4
+            },
+            {
+              "id": "CWE-384",
+              "name": "Session Fixation",
+              "count": 4
+            },
+            {
+              "id": "CWE-640",
+              "name": "Weak Password Recovery Mechanism for Forgotten Password",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.function.identity": {
+    "slug": "domain.function.identity",
+    "display_name": "Identity Provider",
+    "icon": "auth.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates identity provider service (identity, idp, keycloak, okta). Critical identity management exposed.",
+    "labels": [
+      "Domain Pattern",
+      "Identity",
+      "Security Service"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 5
+            },
+            {
+              "id": "CWE-347",
+              "name": "Improper Verification of Cryptographic Signature",
+              "count": 5
+            },
+            {
+              "id": "CWE-290",
+              "name": "Authentication Bypass by Spoofing",
+              "count": 4
+            },
+            {
+              "id": "CWE-384",
+              "name": "Session Fixation",
+              "count": 4
+            },
+            {
+              "id": "CWE-285",
+              "name": "Improper Authorization",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.function.vault": {
+    "slug": "domain.function.vault",
+    "display_name": "Vault/Secrets Service",
+    "icon": "vault.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates vault or secrets management service. Highly sensitive infrastructure exposed to internet.",
+    "labels": [
+      "Domain Pattern",
+      "Secrets Management",
+      "Critical Infrastructure"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-522",
+              "name": "Insufficiently Protected Credentials",
+              "count": 1
+            },
+            {
+              "id": "CWE-284",
+              "name": "Improper Access Control",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 1.0,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.function.vpn": {
+    "slug": "domain.function.vpn",
+    "display_name": "VPN Service",
+    "icon": "vpn.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates VPN service. Network access gateway exposed to internet.",
+    "labels": [
+      "Domain Pattern",
+      "Network Access",
+      "Security Service"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 1
+            },
+            {
+              "id": "CWE-284",
+              "name": "Improper Access Control",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 1.0,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.function.admin": {
+    "slug": "domain.function.admin",
+    "display_name": "Admin Portal",
+    "icon": "admin-panel.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates administrative portal or console. Privileged access interface exposed to internet.",
+    "labels": [
+      "Domain Pattern",
+      "Admin Access",
+      "Privileged Interface"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-425",
+              "name": "Direct Request (Forced Browsing)",
+              "count": 1
+            },
+            {
+              "id": "CWE-284",
+              "name": "Improper Access Control",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 2.0,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.function.gateway": {
+    "slug": "domain.function.gateway",
+    "display_name": "Gateway Service",
+    "icon": "gateway.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates API gateway or service gateway. Critical infrastructure routing component exposed.",
+    "labels": [
+      "Domain Pattern",
+      "Gateway",
+      "Infrastructure"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-918",
+              "name": "Server-Side Request Forgery (SSRF)",
+              "count": 5
+            },
+            {
+              "id": "CWE-444",
+              "name": "Inconsistent Interpretation of HTTP Requests",
+              "count": 5
+            },
+            {
+              "id": "CWE-770",
+              "name": "Allocation of Resources Without Limits or Throttling",
+              "count": 4
+            },
+            {
+              "id": "CWE-285",
+              "name": "Improper Authorization",
+              "count": 4
+            },
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.function.customer_portal": {
+    "slug": "domain.function.customer_portal",
+    "display_name": "Customer Portal",
+    "icon": "customer-portal.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates customer facing portal (customer, portal, my). User data and account access exposed.",
+    "labels": [
+      "Domain Pattern",
+      "Customer Access",
+      "Portal"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-639",
+              "name": "Authorization Bypass Through User-Controlled Key",
+              "count": 5
+            },
+            {
+              "id": "CWE-285",
+              "name": "Improper Authorization",
+              "count": 5
+            },
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 4
+            },
+            {
+              "id": "CWE-384",
+              "name": "Session Fixation",
+              "count": 4
+            },
+            {
+              "id": "CWE-359",
+              "name": "Exposure of Private Personal Information to an Unauthorized Actor",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.2,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.function.api": {
+    "slug": "domain.function.api",
+    "display_name": "API Service Domain",
+    "icon": "api.svg",
+    "show_in_tech": true,
+    "classification": [
+      "api"
+    ],
+    "description": "Domain pattern indicates API service endpoint. Programmatic interface to backend services exposed.",
+    "labels": [
+      "Domain Pattern",
+      "API",
+      "Service Interface"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-285",
+              "name": "Improper Authorization",
+              "count": 5
+            },
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 5
+            },
+            {
+              "id": "CWE-918",
+              "name": "Server-Side Request Forgery (SSRF)",
+              "count": 4
+            },
+            {
+              "id": "CWE-770",
+              "name": "Allocation of Resources Without Limits or Throttling",
+              "count": 4
+            },
+            {
+              "id": "CWE-200",
+              "name": "Exposure of Sensitive Information to an Unauthorized Actor",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.function.mobile": {
+    "slug": "domain.function.mobile",
+    "display_name": "Mobile Service",
+    "icon": "mobile.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates mobile app backend service. Mobile application API exposed to internet.",
+    "labels": [
+      "Domain Pattern",
+      "Mobile",
+      "Backend Service"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 4,
+          "top_categories": [
+            {
+              "id": "CWE-798",
+              "name": "Use of Hard-coded Credentials",
+              "count": 5
+            },
+            {
+              "id": "CWE-311",
+              "name": "Missing Encryption of Sensitive Data",
+              "count": 5
+            },
+            {
+              "id": "CWE-295",
+              "name": "Improper Certificate Validation",
+              "count": 4
+            },
+            {
+              "id": "CWE-749",
+              "name": "Exposed Dangerous Method or Function",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.function.secure": {
+    "slug": "domain.function.secure",
+    "display_name": "Secure Portal",
+    "icon": "secure.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates secure portal or protected area. Authenticated access interface exposed.",
+    "labels": [
+      "Domain Pattern",
+      "Secure Access",
+      "Portal"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 4,
+          "top_categories": [
+            {
+              "id": "CWE-285",
+              "name": "Improper Authorization",
+              "count": 5
+            },
+            {
+              "id": "CWE-287",
+              "name": "Improper Authentication",
+              "count": 5
+            },
+            {
+              "id": "CWE-522",
+              "name": "Insufficiently Protected Credentials",
+              "count": 4
+            },
+            {
+              "id": "CWE-384",
+              "name": "Session Fixation",
+              "count": 3
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.function.devops": {
+    "slug": "domain.function.devops",
+    "display_name": "DevOps Infrastructure",
+    "icon": "devops.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates DevOps tooling (jenkins, gitlab, github, argocd, nexus, artifactory, registry, docker). Critical development infrastructure exposed.",
+    "labels": [
+      "Domain Pattern",
+      "DevOps",
+      "Critical Infrastructure"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-1188",
+              "name": "Insecure Default Initialization of Resource",
+              "count": 1
+            },
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 1.5,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.function.payment": {
+    "slug": "domain.function.payment",
+    "display_name": "Payment Service",
+    "icon": "payment-processing.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates payment processing service (payment, pay, checkout, billing). Financial transaction handling exposed.",
+    "labels": [
+      "Domain Pattern",
+      "Payment",
+      "Financial"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-311",
+              "name": "Missing Encryption of Sensitive Data",
+              "count": 5
+            },
+            {
+              "id": "CWE-359",
+              "name": "Exposure of Private Personal Information to an Unauthorized Actor",
+              "count": 5
+            },
+            {
+              "id": "CWE-522",
+              "name": "Insufficiently Protected Credentials",
+              "count": 4
+            },
+            {
+              "id": "CWE-285",
+              "name": "Improper Authorization",
+              "count": 4
+            },
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.8,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.environment.dev": {
+    "slug": "domain.environment.dev",
+    "display_name": "Development Environment",
+    "icon": "environment-dev.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates development environment exposed to internet. Security risk due to debug features, weak controls, and test credentials.",
+    "labels": [
+      "Domain Pattern",
+      "Development",
+      "Non Production"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 1
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.environment.test": {
+    "slug": "domain.environment.test",
+    "display_name": "Test Environment",
+    "icon": "environment-test.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates test environment exposed to internet. Security risk due to relaxed controls and potential information disclosure.",
+    "labels": [
+      "Domain Pattern",
+      "Testing",
+      "Non Production"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 1
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.environment.staging": {
+    "slug": "domain.environment.staging",
+    "display_name": "Staging Environment",
+    "icon": "environment-staging.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates staging environment exposed to internet. Security risk as it mirrors production configuration with weaker security controls.",
+    "labels": [
+      "Domain Pattern",
+      "Staging",
+      "Pre Production"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 1
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.6,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.environment.preprod": {
+    "slug": "domain.environment.preprod",
+    "display_name": "Pre Production Environment",
+    "icon": "environment-preprod.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates pre production environment exposed to internet. Security risk as it closely mirrors production with reduced monitoring.",
+    "labels": [
+      "Domain Pattern",
+      "Pre Production",
+      "Testing"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 1
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.6,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.environment.stg": {
+    "slug": "domain.environment.stg",
+    "display_name": "STG Environment",
+    "icon": "environment-staging.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates staging environment exposed to internet. Security risk as it mirrors production with weaker security controls.",
+    "labels": [
+      "Domain Pattern",
+      "Staging",
+      "Pre Production"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 1
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.6,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.environment.sit": {
+    "slug": "domain.environment.sit",
+    "display_name": "SIT Environment",
+    "icon": "environment-test.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates System Integration Testing environment exposed to internet. Security risk due to integration complexity and weaker controls.",
+    "labels": [
+      "Domain Pattern",
+      "Integration Testing",
+      "Pre Production"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 1
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.6,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.environment.integration": {
+    "slug": "domain.environment.integration",
+    "display_name": "Integration Environment",
+    "icon": "environment-test.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates integration testing environment exposed to internet. Security risk due to multiple system connections and relaxed access controls.",
+    "labels": [
+      "Domain Pattern",
+      "Integration",
+      "Testing"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 1
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.6,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.environment.uat": {
+    "slug": "domain.environment.uat",
+    "display_name": "UAT Environment",
+    "icon": "environment-uat.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates User Acceptance Testing environment exposed to internet. Security risk as UAT often contains production like data with weaker security.",
+    "labels": [
+      "Domain Pattern",
+      "UAT",
+      "Non Production"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 1
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.environment.qa": {
+    "slug": "domain.environment.qa",
+    "display_name": "QA Environment",
+    "icon": "environment-qa.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates Quality Assurance environment exposed to internet. Security risk due to testing focused controls and potential data exposure.",
+    "labels": [
+      "Domain Pattern",
+      "QA",
+      "Non Production"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 1
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.environment.preview": {
+    "slug": "domain.environment.preview",
+    "display_name": "Preview Environment",
+    "icon": "environment-preview.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates preview environment exposed to internet. Security risk due to temporary nature and potentially incomplete security configurations.",
+    "labels": [
+      "Domain Pattern",
+      "Preview",
+      "Non Production"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 1
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.environment.beta": {
+    "slug": "domain.environment.beta",
+    "display_name": "Beta Environment",
+    "icon": "environment-beta.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates beta testing environment exposed to internet. Security risk due to unfinished features and less mature security controls.",
+    "labels": [
+      "Domain Pattern",
+      "Beta",
+      "Testing"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 1
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.environment.demo": {
+    "slug": "domain.environment.demo",
+    "display_name": "Demo Environment",
+    "icon": "environment-demo.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates demonstration environment exposed to internet. Security risk due to demo focused configuration and relaxed access controls.",
+    "labels": [
+      "Domain Pattern",
+      "Demo",
+      "Non Production"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 1
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "domain.environment.sandbox": {
+    "slug": "domain.environment.sandbox",
+    "display_name": "Sandbox Environment",
+    "icon": "environment-sandbox.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Domain indicates sandbox environment exposed to internet. Security risk as sandboxes often have minimal security controls for experimentation.",
+    "labels": [
+      "Domain Pattern",
+      "Sandbox",
+      "Non Production"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-16",
+              "name": "Configuration",
+              "count": 1
+            },
+            {
+              "id": "CWE-668",
+              "name": "Exposure of Resource to Wrong Sphere",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.5,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "webapp.type.ecommerce": {
+    "slug": "webapp.type.ecommerce",
+    "display_name": "E-Commerce Platform",
+    "icon": "ecommerce.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "E-commerce web application handling online sales, transactions, and customer data.",
+    "labels": [
+      "Business Function",
+      "E-Commerce",
+      "Transactional"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-639",
+              "name": "Authorization Bypass Through User-Controlled Key",
+              "count": 5
+            },
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 5
+            },
+            {
+              "id": "CWE-89",
+              "name": "SQL Injection",
+              "count": 4
+            },
+            {
+              "id": "CWE-79",
+              "name": "Cross-Site Scripting (XSS)",
+              "count": 4
+            },
+            {
+              "id": "CWE-311",
+              "name": "Missing Encryption of Sensitive Data",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.4,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "webapp.type.admin_panel": {
+    "slug": "webapp.type.admin_panel",
+    "display_name": "Admin Panel",
+    "icon": "admin-panel.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Administrative control panel for managing application settings, users, and system configuration.",
+    "labels": [
+      "Business Function",
+      "Administration",
+      "Privileged Access"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 2,
+          "top_categories": [
+            {
+              "id": "CWE-425",
+              "name": "Direct Request (Forced Browsing)",
+              "count": 1
+            },
+            {
+              "id": "CWE-284",
+              "name": "Improper Access Control",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "criticality_delta": 0.6,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
+  },
+  "webapp.type.customer_portal": {
+    "slug": "webapp.type.customer_portal",
+    "display_name": "Customer Portal",
+    "icon": "customer-portal.svg",
+    "show_in_tech": true,
+    "classification": [
+      "webapp"
+    ],
+    "description": "Customer self service portal for account management, support, and service access.",
+    "labels": [
+      "Business Function",
+      "Customer Service",
+      "Portal"
+    ],
+    "security": {
+      "cve_applicable": false,
+      "cwe_applicable": true,
+      "weaknesses": {
+        "stats": {
+          "total": 5,
+          "top_categories": [
+            {
+              "id": "CWE-639",
+              "name": "Authorization Bypass Through User-Controlled Key",
+              "count": 5
+            },
+            {
+              "id": "CWE-285",
+              "name": "Improper Authorization",
+              "count": 5
+            },
+            {
+              "id": "CWE-352",
+              "name": "Cross-Site Request Forgery (CSRF)",
+              "count": 4
+            },
+            {
+              "id": "CWE-384",
+              "name": "Session Fixation",
+              "count": 4
+            },
+            {
+              "id": "CWE-359",
+              "name": "Exposure of Private Personal Information to an Unauthorized Actor",
+              "count": 4
+            }
+          ]
+        },
+        "updated": "2025-11-04T09:06:08Z"
+      }
+    },
+    "criticality_delta": 0.3,
+    "technology_weight": 2.0,
+    "weighted_severity_score": 0.0
   }
 }

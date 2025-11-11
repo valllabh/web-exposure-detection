@@ -135,6 +135,59 @@ This creates a findings map with hierarchical keys:
 - `show_in_tech` - Show in technologies section
 - `display_as` - Rendering style: `tag` or `link`
 
+### Adding New Findings
+
+When adding new findings to `findings.json`, ensure proper classification to avoid misclassification:
+
+**Classification Requirements:**
+
+1. **Authentication Related Findings** - Must have `"classification": ["webapp"]`
+   - Traditional login forms (`auth.traditional.*`)
+   - Enterprise SSO (`auth.enterprise.*`)
+   - Social login (`auth.social.*`)
+   - MFA and passwordless auth
+
+2. **Frontend/Backend Technologies** - Must have `"classification": ["webapp"]`
+   - Frontend frameworks (React, Angular, Vue, etc.)
+   - Backend frameworks (Laravel, Django, Rails, etc.)
+   - CMS systems (WordPress, Drupal, etc.)
+
+3. **API Related Findings** - Must have `"classification": ["api"]`
+   - API servers and frameworks
+   - API domain patterns
+   - JSON/XML endpoints
+
+4. **API Specifications** - Must have `"classification": ["api-spec"]`
+   - OpenAPI/Swagger
+   - Postman collections
+   - WADL/WSDL
+
+5. **AI Related Findings** - Must have `"classification": ["ai"]`
+   - MCP servers
+   - Vector databases
+   - AI endpoints
+
+6. **Infrastructure** - Should NOT have classification field
+   - Security headers (all `security.*`)
+   - Page metadata (`page.title`, `page.description`)
+   - Server information
+
+**Impact:** Findings without proper classification cause domains to be categorized as "Other" instead of their correct type (Web App, API, AI Asset, or API Spec).
+
+**Example:**
+```json
+{
+  "auth.traditional.basic_auth": {
+    "slug": "auth.traditional.basic_auth",
+    "display_name": "Traditional Login",
+    "icon": "traditional-login-forms.svg",
+    "show_in_tech": false,
+    "classification": ["webapp"],  // REQUIRED for proper classification
+    "description": "Traditional username and password authentication forms."
+  }
+}
+```
+
 ## Classification Logic
 
 ### API Classification Rules
@@ -245,6 +298,15 @@ Web applications are identified by:
 **Table Styling:**
 - Criticality column values aligned to top
 - All inline styles moved to CSS classes for maintainability
+
+**TruRisk Range:**
+- Predictive risk scoring (0-1000 scale) displayed as numeric ranges (e.g., "536-820")
+- Replaces Headers Grade column in all asset tables
+- Color coded using Qualys standards (red for 850-1000, orange for 650-849, etc.)
+- Assets sorted by TruRisk Max score descending (highest risk first)
+- Calculated based on Asset Criticality Score, technology vulnerabilities, KEV data, and environmental factors
+- See [trurisk-range.md](./trurisk-range.md) for complete methodology
+- Note: Ranges subject to recalibration based on real-world validation
 
 ### Technology Extraction
 

@@ -143,9 +143,14 @@ Examples:
 			logger.Info().Msg("Discovery: Full discovery enabled (passive + certificate)")
 		}
 
-		err = scanner.ScanWithPreset(domains, domainKeywords, templates, force, preset, skipDiscoveryAll, skipDiscoveryPassive, skipDiscoveryCertificate)
-		if err != nil {
-			return fmt.Errorf("scan failed: %w", err)
+		// Use unified pipeline (handles caching automatically)
+		// Loop through domains if multiple are provided
+		for _, domain := range domains {
+			logger.Info().Msgf("Processing domain: %s", domain)
+			err = scanner.RunCompletePipeline(domain, force, domainKeywords, templates, skipDiscoveryAll, skipDiscoveryPassive, skipDiscoveryCertificate, preset)
+			if err != nil {
+				return fmt.Errorf("scan failed for domain %s: %w", domain, err)
+			}
 		}
 
 		logger.Info().Msg("Scan completed successfully")

@@ -1,106 +1,86 @@
 package industry
 
 import (
-	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"strings"
-	"time"
 
-	"github.com/spf13/viper"
+	"web-exposure-detection/pkg/webexposure/ai"
 )
 
 const (
-	openRouterURL                = "https://openrouter.ai/api/v1/chat/completions"
-	defaultIndustryPreset        = "@preset/industry-classification-prompt"
-	requestTimeout               = 30 * time.Second
+	defaultIndustryPreset = "@preset/industry-classification-prompt"
 )
 
-// OpenRouterClassifier implements IndustryClassifier using OpenRouter API
-type OpenRouterClassifier struct {
-	apiKey     string
-	model      string
-	httpClient *http.Client
+// AIBasedClassifier implements IndustryClassifier using any AI provider
+type AIBasedClassifier struct {
+	provider ai.Provider
 }
 
-// OpenRouterRequest represents the request payload for OpenRouter API
-type OpenRouterRequest struct {
-	Model    string              `json:"model"`
-	Messages []OpenRouterMessage `json:"messages"`
-}
-
-// OpenRouterMessage represents a message in the chat
-type OpenRouterMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
-// OpenRouterResponse represents the response from OpenRouter API
-type OpenRouterResponse struct {
-	Choices []struct {
-		Message struct {
-			Content string `json:"content"`
-		} `json:"message"`
-	} `json:"choices"`
-	Error *struct {
-		Message string `json:"message"`
-	} `json:"error,omitempty"`
-}
-
-// NewOpenRouterClassifier creates a new OpenRouter classifier
-func NewOpenRouterClassifier() (*OpenRouterClassifier, error) {
+// NewAIBasedClassifier creates a new AI based classifier using the default provider
+func NewAIBasedClassifier() (*AIBasedClassifier, error) {
 	logger := GetLogger()
 
-	// Try to get API key from viper (config file or env)
-	apiKey := viper.GetString("openrouter_api_key")
-	if apiKey == "" {
-		// Fallback to environment variable
-		apiKey = os.Getenv("OPENROUTER_API_KEY")
+	// Load default provider from configuration
+	provider, err := ai.LoadDefaultProvider()
+	if err != nil {
+		// Try Perplexity as fallback (preferred for industry classification)
+		provider, err = ai.LoadPerplexityProvider()
+		if err != nil {
+			logger.Debug().Msgf("Perplexity not available: %v, trying OpenRouter", err)
+			// OpenRouter as secondary fallback for backward compatibility
+			provider, err = ai.LoadOpenRouterProvider()
+			if err != nil {
+				return nil, fmt.Errorf("failed to load AI provider: %w", err)
+			}
+		}
 	}
 
-	if apiKey == "" {
-		return nil, fmt.Errorf("OPENROUTER_API_KEY not configured (use config file or environment variable)")
-	}
+	logger.Debug().Msgf("Using AI provider: %s (model: %s)",
+		provider.GetProviderName(), provider.GetDefaultModel())
 
-	// Use preset as model by default, allow override via config
-	model := viper.GetString("openrouter_model")
-	if model == "" {
-		model = defaultIndustryPreset
-		logger.Debug().Msgf("Using default industry classification preset: %s", model)
-	} else {
-		logger.Debug().Msgf("Using custom model/preset: %s", model)
-	}
-
-	return &OpenRouterClassifier{
-		apiKey: apiKey,
-		model:  model,
-		httpClient: &http.Client{
-			Timeout: requestTimeout,
-		},
+	return &AIBasedClassifier{
+		provider: provider,
 	}, nil
 }
 
-// GetProviderName returns the provider name
-func (c *OpenRouterClassifier) GetProviderName() string {
-	return "openrouter"
+// NewAIBasedClassifierWithProvider creates a new AI based classifier with a specific provider
+func NewAIBasedClassifierWithProvider(provider ai.Provider) *AIBasedClassifier {
+	return &AIBasedClassifier{
+		provider: provider,
+	}
 }
 
-// ClassifyDomain classifies a domain using OpenRouter API
-func (c *OpenRouterClassifier) ClassifyDomain(domain string) (*IndustryClassification, error) {
+// GetProviderName returns the provider name
+func (c *AIBasedClassifier) GetProviderName() string {
+	return c.provider.GetProviderName()
+}
+
+// ClassifyDomain classifies a domain using the configured AI provider
+func (c *AIBasedClassifier) ClassifyDomain(domain string) (*IndustryClassification, error) {
 	logger := GetLogger()
-	logger.Debug().Msgf("Classifying domain with OpenRouter: %s", domain)
+	logger.Debug().Msgf("Classifying domain with %s: %s", c.provider.GetProviderName(), domain)
 
 	// Clean domain
 	cleanDomain := strings.TrimPrefix(strings.TrimPrefix(domain, "https://"), "http://")
 	cleanDomain = strings.TrimPrefix(cleanDomain, "www.")
 
-	// Create request - preset is used as the model parameter
-	reqBody := OpenRouterRequest{
-		Model: c.model,
-		Messages: []OpenRouterMessage{
+	// Load industry classification prompt
+	systemPrompt, err := GetIndustryClassificationPrompt()
+	if err != nil {
+		logger.Warning().Msgf("Failed to load industry classification prompt, using basic prompt: %v", err)
+		systemPrompt = "You are an industry classification expert. Classify the domain into one of the predefined industry categories and return JSON with industry, subIndustry, and compliances fields."
+	}
+
+	// Create completion request with system prompt
+	req := &ai.CompletionRequest{
+		Messages: []ai.Message{
+			{
+				Role:    "system",
+				Content: systemPrompt,
+			},
 			{
 				Role:    "user",
 				Content: cleanDomain,
@@ -108,63 +88,34 @@ func (c *OpenRouterClassifier) ClassifyDomain(domain string) (*IndustryClassific
 		},
 	}
 
-	jsonData, err := json.Marshal(reqBody)
+	// Configure model based on provider
+	switch c.provider.GetProviderName() {
+	case ai.ProviderPerplexity:
+		// Use Perplexity's Sonar model with web search grounding for industry classification
+		req.Model = "sonar"
+		logger.Debug().Msg("Using Perplexity Sonar model with web search grounding")
+	case ai.ProviderOpenRouter:
+		// Use OpenAI o1 model via OpenRouter
+		req.Model = "openai/o1"
+		logger.Debug().Msg("Using OpenAI o1 model via OpenRouter")
+	}
+
+	// Send request
+	ctx := context.Background()
+	resp, err := c.provider.Complete(ctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request: %w", err)
+		return nil, fmt.Errorf("AI completion failed: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", openRouterURL, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.Header.Set("Authorization", "Bearer "+c.apiKey)
-	req.Header.Set("Content-Type", "application/json")
-
-	// Make request
-	startTime := time.Now()
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to send request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	duration := time.Since(startTime)
-	logger.Debug().Msgf("OpenRouter API response time: %v", duration)
-
-	// Read response
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response: %w", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("API returned non-200 status: %d, body: %s", resp.StatusCode, string(body))
-	}
-
-	// Parse response
-	var apiResp OpenRouterResponse
-	if err := json.Unmarshal(body, &apiResp); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
-	}
-
-	if apiResp.Error != nil {
-		return nil, fmt.Errorf("API error: %s", apiResp.Error.Message)
-	}
-
-	if len(apiResp.Choices) == 0 {
-		return nil, fmt.Errorf("no choices in API response")
-	}
-
-	// Extract JSON from response content
-	content := apiResp.Choices[0].Message.Content
-	logger.Debug().Msgf("OpenRouter response content: %s", content)
+	logger.Debug().Msgf("%s response content: %s", c.provider.GetProviderName(), resp.Content)
 
 	// Parse industry classification from content
 	var result IndustryClassification
+	content := resp.Content
+
 	if err := json.Unmarshal([]byte(content), &result); err != nil {
 		// Try to extract JSON from markdown code blocks
-		content = extractJSONFromMarkdown(content)
+		content = ai.ExtractJSONFromMarkdown(content)
 		if err := json.Unmarshal([]byte(content), &result); err != nil {
 			return nil, fmt.Errorf("failed to parse industry classification from response: %w, content: %s", err, content)
 		}
@@ -172,49 +123,12 @@ func (c *OpenRouterClassifier) ClassifyDomain(domain string) (*IndustryClassific
 
 	// Set metadata
 	result.Domain = cleanDomain
-	result.Provider = "openrouter"
-	result.ProviderMeta = c.model
+	result.Provider = resp.ProviderName
+	result.ProviderMeta = resp.Model
 
 	logger.Debug().Msgf("Successfully classified %s as: %s (sub: %s)", cleanDomain, result.Industry, result.SubIndustry)
 
 	return &result, nil
-}
-
-// extractJSONFromMarkdown extracts JSON from markdown code blocks
-func extractJSONFromMarkdown(content string) string {
-	// Look for ```json ... ``` or ``` ... ```
-	if strings.Contains(content, "```") {
-		lines := strings.Split(content, "\n")
-		var jsonLines []string
-		inCodeBlock := false
-		for _, line := range lines {
-			if strings.HasPrefix(strings.TrimSpace(line), "```") {
-				inCodeBlock = !inCodeBlock
-				continue
-			}
-			if inCodeBlock {
-				jsonLines = append(jsonLines, line)
-			}
-		}
-		if len(jsonLines) > 0 {
-			return strings.Join(jsonLines, "\n")
-		}
-	}
-	return content
-}
-
-// getIndustryClassifier returns a configured industry classifier or nil (private)
-func getIndustryClassifier() IndustryClassifier {
-	logger := GetLogger()
-
-	// Try OpenRouter first
-	classifier, err := NewOpenRouterClassifier()
-	if err != nil {
-		logger.Debug().Msgf("OpenRouter classifier not available: %v", err)
-		return nil
-	}
-
-	return classifier
 }
 
 // ClassifyDomainIndustryWithCache classifies a domain with caching support
@@ -240,9 +154,9 @@ func ClassifyDomainIndustryWithCache(domain string, cacheFilePath string, force 
 	}
 
 	// Perform fresh classification
-	classifier := getIndustryClassifier()
-	if classifier == nil {
-		return nil, fmt.Errorf("no industry classifier configured")
+	classifier, err := NewAIBasedClassifier()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create classifier: %w", err)
 	}
 
 	result, err := classifier.ClassifyDomain(domain)

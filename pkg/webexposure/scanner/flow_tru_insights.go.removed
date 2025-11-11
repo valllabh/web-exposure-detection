@@ -1,0 +1,26 @@
+package scanner
+
+import (
+	"fmt"
+
+	"web-exposure-detection/pkg/webexposure/common"
+	"web-exposure-detection/pkg/webexposure/logger"
+)
+
+// RunTRUInsightsFlow orchestrates the TRU Insights generation flow
+// Flow: TRU Insights Subflow (handles all dependencies automatically)
+// This is the flow for the standalone tru-insights command
+func (s *scanner) RunTRUInsightsFlow(domain string, force bool, keywords []string, templates []string, skipPassive bool, skipCertificate bool, preset common.ScanPreset) error {
+	log := logger.GetLogger()
+	log.Info().Msgf("Starting TRU Insights Flow for domain: %s", domain)
+
+	// Just call the TRU Insights subflow - it handles dependency resolution
+	// (Discovery, Industry, Nuclei subflows are called automatically)
+	_, err := s.runTRUInsightsSubflow(domain, force, keywords, templates, skipPassive, skipCertificate, preset)
+	if err != nil {
+		return fmt.Errorf("TRU Insights subflow failed: %w", err)
+	}
+
+	log.Info().Msg("TRU Insights Flow completed successfully")
+	return nil
+}

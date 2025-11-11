@@ -1,0 +1,48 @@
+package scanner
+
+import (
+	"fmt"
+
+	"web-exposure-detection/pkg/webexposure/common"
+	"web-exposure-detection/pkg/webexposure/logger"
+)
+
+// RunReportFlow orchestrates the report generation flow
+// Flow: TRU Insights → Report JSON → HTML → PDF
+// This flow is called by scan command and report command
+func (s *scanner) RunReportFlow(domain string, force bool, keywords []string, templates []string, skipPassive bool, skipCertificate bool, preset common.ScanPreset) error {
+	log := logger.GetLogger()
+	log.Info().Msg("Starting Report Flow")
+
+	// Step 1: TRU Insights Subflow (with dependency resolution)
+	_, err := s.runTRUInsightsSubflow(domain, force, keywords, templates, skipPassive, skipCertificate, preset)
+	if err != nil {
+		log.Warning().Msgf("TRU Insights generation failed: %v (continuing without TRU insights)", err)
+		// Non-blocking, continue without TRU insights
+	}
+
+	// Step 2: Report JSON Subflow
+	_, err = s.runReportJSONSubflow(domain, force, keywords, templates, skipPassive, skipCertificate, preset)
+	if err != nil {
+		return fmt.Errorf("report JSON generation failed: %w", err)
+	}
+
+	// Step 3: HTML Subflow
+	_, err = s.runHTMLSubflow(domain, force, keywords, templates, skipPassive, skipCertificate, preset)
+	if err != nil {
+		log.Warning().Msgf("HTML generation failed: %v (continuing)", err)
+		// Non-blocking for HTML, continue to try PDF
+	}
+
+	// Step 4: PDF Subflow
+	pdfPath, err := s.runPDFSubflow(domain, force, keywords, templates, skipPassive, skipCertificate, preset)
+	if err != nil {
+		log.Warning().Msgf("PDF generation failed: %v", err)
+		// Non-blocking, report flow can succeed without PDF
+	} else {
+		log.Info().Msgf("Report complete: %s", pdfPath)
+	}
+
+	log.Info().Msg("Report Flow completed")
+	return nil
+}

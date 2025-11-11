@@ -22,13 +22,8 @@ type ProgressCallback interface {
 
 // Scanner is the main interface for web exposure detection
 type Scanner interface {
-	// Complete scan pipeline
-	Scan(domains []string, keywords []string) error
-	ScanWithOptions(domains []string, keywords []string, templates []string, force bool) error
-	ScanWithPreset(domains []string, keywords []string, templates []string, force bool, preset ScanPreset, skipDiscoveryAll bool, skipDiscoveryPassive bool, skipDiscoveryCertificate bool) error
-
-	// Report generation
-	GenerateReportFromExistingResults(domains []string, debug bool) error
+	// Unified pipeline (recommended - handles all operations with automatic caching)
+	RunCompletePipeline(domain string, force bool, keywords []string, templates []string, skipDiscoveryAll bool, skipDiscoveryPassive bool, skipDiscoveryCertificate bool, preset ScanPreset) error
 
 	// Domain discovery only
 	RunDiscoveryOnly(domains []string, keywords []string, force bool) error

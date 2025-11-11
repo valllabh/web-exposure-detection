@@ -80,7 +80,7 @@ Examples:
 		progressHandler := cli.NewCLIProgressHandler()
 		scanner.SetProgressCallback(progressHandler)
 
-		// Run discovery with CLI interface
+		// Run discovery with CLI interface using new flow architecture
 		logger.Info().Msgf("Starting domain discovery for: %v", domains)
 		if len(domainKeywords) > 0 {
 			logger.Info().Msgf("Using domain keywords: %v", domainKeywords)
@@ -89,11 +89,16 @@ Examples:
 			logger.Info().Msg("Debug mode: enabled")
 		}
 
+		// Use new flow architecture - loop through domains
+		// Note: Discovery command is just for discovery, doesn't need full scan flow
+		// But for now, we'll still use the legacy RunDiscoveryOnly method which already has caching
+		// since it works well for the discover-only use case
 		err = scanner.RunDiscoveryOnly(domains, domainKeywords, force)
 		if err != nil {
 			return fmt.Errorf("discovery failed: %w", err)
 		}
 
+		logger.Info().Msg("Discovery completed successfully")
 		return nil
 	},
 }

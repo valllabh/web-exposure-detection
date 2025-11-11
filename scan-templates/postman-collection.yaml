@@ -106,7 +106,7 @@ http:
         name: postman_content_type
         part: header
         regex:
-          - '(?i)content-type:\s*application/(json|vnd\.postman\.'
+          - '(?i)content-type:\s*application/(json|vnd\.postman\.collection\+json)'
     extractors:
       - type: regex
         name: postman_schema

@@ -19,7 +19,183 @@ headless:
           url: "{{BaseURL}}"
       - action: waitload
       - action: waitstable
+
+      # Security checks using JavaScript execution
+      - action: script
+        name: sri_check
+        args:
+          code: |
+            () => {
+              const scripts = document.querySelectorAll('script[src]');
+              const links = document.querySelectorAll('link[rel="stylesheet"]');
+              let withIntegrity = 0;
+              let total = scripts.length + links.length;
+
+              scripts.forEach(s => { if (s.integrity) withIntegrity++; });
+              links.forEach(l => { if (l.integrity) withIntegrity++; });
+
+              if (total === 0) return 'no-external-resources';
+              const percentage = Math.round((withIntegrity / total) * 100);
+              return percentage + '%';
+            }
+
+      - action: script
+        name: mixed_content_check
+        args:
+          code: |
+            () => {
+              if (window.location.protocol !== 'https:') return 'not-https';
+
+              const insecureResources = [];
+              document.querySelectorAll('[src], [href]').forEach(el => {
+                const url = el.src || el.href;
+                if (url && url.startsWith('http://') && !url.startsWith('http://localhost')) {
+                  insecureResources.push(el.tagName);
+                }
+              });
+
+              return insecureResources.length > 0 ? 'has-mixed-content:' + insecureResources.length : 'secure';
+            }
+
+      - action: script
+        name: secure_context_check
+        args:
+          code: |
+            () => {
+              return JSON.stringify({
+                protocol: window.location.protocol,
+                isSecureContext: window.isSecureContext,
+                hostname: window.location.hostname
+              });
+            }
+
+      - action: script
+        name: form_security_check
+        args:
+          code: |
+            () => {
+              const forms = document.querySelectorAll('form');
+              if (forms.length === 0) return 'no-forms';
+
+              let insecureForms = 0;
+              forms.forEach(form => {
+                const action = form.action;
+                if (action && action.startsWith('http://') && !action.startsWith('http://localhost')) {
+                  insecureForms++;
+                }
+              });
+
+              return insecureForms === 0 ? 'secure:' + forms.length : 'insecure:' + insecureForms + '/' + forms.length;
+            }
+
+      - action: script
+        name: csp_meta_check
+        args:
+          code: |
+            () => {
+              const cspMeta = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+              const xFrameMeta = document.querySelector('meta[http-equiv="X-Frame-Options"]');
+              const referrerMeta = document.querySelector('meta[name="referrer"]');
+
+              const policies = [];
+              if (cspMeta) policies.push('CSP');
+              if (xFrameMeta) policies.push('X-Frame-Options');
+              if (referrerMeta) policies.push('Referrer-Policy');
+
+              return policies.length > 0 ? policies.join(',') : 'none';
+            }
+
     extractors:
+      # HTTP Security Headers Extraction
+      - type: regex
+        name: hsts_header
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)strict-transport-security:\\s*(.+)"
+
+      - type: regex
+        name: csp_header
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)content-security-policy:\\s*(.+)"
+
+      - type: regex
+        name: xfo_header
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)x-frame-options:\\s*(.+)"
+
+      - type: regex
+        name: xcto_header
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)x-content-type-options:\\s*(.+)"
+
+      - type: regex
+        name: referrer_header
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)referrer-policy:\\s*(.+)"
+
+      - type: regex
+        name: permissions_header
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)permissions-policy:\\s*(.+)"
+
+      - type: regex
+        name: coop_header
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)cross-origin-opener-policy:\\s*(.+)"
+
+      - type: regex
+        name: coep_header
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)cross-origin-embedder-policy:\\s*(.+)"
+
+      - type: regex
+        name: corp_header
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)cross-origin-resource-policy:\\s*(.+)"
+
+      # Information disclosure headers (for penalties)
+      - type: regex
+        name: server_header
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)^server:\\s*(.+)"
+
+      - type: regex
+        name: powered_by_header
+        part: header
+        group: 1
+        internal: true
+        regex:
+          - "(?i)x-powered-by:\\s*(.+)"
+
       # Extractor for React.js
       - type: regex
         name: react
@@ -1117,4 +1293,67 @@ headless:
       - type: dsl
         dsl:
           - 'len(landing_indicators) > 0 ? to_value_group("webapp.type.landing_page", landing_indicators) : ""'
+
+      # Security findings from JavaScript checks
+      - type: dsl
+        dsl:
+          - 'len(sri_check) > 0 ? to_value_group("security.sri_coverage", sri_check) : ""'
+      - type: dsl
+        dsl:
+          - 'len(mixed_content_check) > 0 ? to_value_group("security.mixed_content", mixed_content_check) : ""'
+      - type: dsl
+        dsl:
+          - 'len(secure_context_check) > 0 ? to_value_group("security.https_status", secure_context_check) : ""'
+      - type: dsl
+        dsl:
+          - 'len(form_security_check) > 0 ? to_value_group("security.form_security", form_security_check) : ""'
+      - type: dsl
+        dsl:
+          - 'len(csp_meta_check) > 0 ? to_value_group("security.meta_policies", csp_meta_check) : ""'
+
+      # HTTP Security Headers
+      - type: dsl
+        dsl:
+          - 'len(hsts_header) > 0 ? to_value_group("security.hsts", hsts_header) : to_value_group("security.hsts", "missing")'
+
+      - type: dsl
+        dsl:
+          - 'len(csp_header) > 0 ? to_value_group("security.csp_header", csp_header) : to_value_group("security.csp_header", "missing")'
+
+      - type: dsl
+        dsl:
+          - 'len(xfo_header) > 0 ? to_value_group("security.xfo", xfo_header) : to_value_group("security.xfo", "missing")'
+
+      - type: dsl
+        dsl:
+          - 'len(xcto_header) > 0 ? to_value_group("security.xcto", xcto_header) : to_value_group("security.xcto", "missing")'
+
+      - type: dsl
+        dsl:
+          - 'len(referrer_header) > 0 ? to_value_group("security.referrer_header", referrer_header) : to_value_group("security.referrer_header", "missing")'
+
+      - type: dsl
+        dsl:
+          - 'len(permissions_header) > 0 ? to_value_group("security.permissions_policy", permissions_header) : to_value_group("security.permissions_policy", "missing")'
+
+      - type: dsl
+        dsl:
+          - 'len(coop_header) > 0 ? to_value_group("security.coop", coop_header) : ""'
+
+      - type: dsl
+        dsl:
+          - 'len(coep_header) > 0 ? to_value_group("security.coep", coep_header) : ""'
+
+      - type: dsl
+        dsl:
+          - 'len(corp_header) > 0 ? to_value_group("security.corp", corp_header) : ""'
+
+      # Information disclosure headers (penalties)
+      - type: dsl
+        dsl:
+          - 'len(server_header) > 0 ? to_value_group("security.server_disclosure", server_header) : ""'
+
+      - type: dsl
+        dsl:
+          - 'len(powered_by_header) > 0 ? to_value_group("security.powered_by_disclosure", powered_by_header) : ""'
 

@@ -9,6 +9,7 @@ import (
 	"web-exposure-detection/pkg/webexposure/report"
 	"web-exposure-detection/pkg/webexposure/scanner"
 	"web-exposure-detection/pkg/webexposure/common"
+	"web-exposure-detection/pkg/webexposure/truinsights"
 )
 
 // Re-export types from subpackages for easier access
@@ -60,6 +61,12 @@ type (
 	IndustryClassifier     = industry.IndustryClassifier
 )
 
+// TRU Insights types
+type (
+	TRUInsightsResult = truinsights.TRUInsightsResult
+	TRUInsightsGenerator = truinsights.Generator
+)
+
 // PDF types
 type (
 	PDFGenerator     = common.PDFGenerator
@@ -94,8 +101,27 @@ var (
 	ClassifyDomainIndustryWithCache = industry.ClassifyDomainIndustryWithCache
 )
 
+// TRU Insights functions
+var (
+	NewTRUInsightsGenerator = truinsights.NewGenerator
+)
+
 // PDF functions
 var NewPDFGenerator = report.NewPDFGenerator
 
 // DSL package auto-registers functions on import via init()
 // No exported functions needed - just import _ "web-exposure-detection/pkg/webexposure/nuclei"
+
+// GenerateTRUInsights generates TRU insights for a domain with caching
+func GenerateTRUInsights(domain string, force bool) (*TRUInsightsResult, error) {
+	return GenerateTRUInsightsWithDebug(domain, force, false)
+}
+
+// GenerateTRUInsightsWithDebug generates TRU insights with optional debug mode
+func GenerateTRUInsightsWithDebug(domain string, force bool, debug bool) (*TRUInsightsResult, error) {
+	generator, err := truinsights.NewGenerator()
+	if err != nil {
+		return nil, err
+	}
+	return generator.GenerateWithDebug(domain, force, debug)
+}

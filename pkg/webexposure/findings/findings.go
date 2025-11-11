@@ -32,21 +32,30 @@ func loadFindings() error {
 	return nil
 }
 
-// NewFindingItem creates a FindingItem from a slug
-func NewFindingItem(slug string) *FindingItem {
+// GetGlobalFindingsMap returns the global findings map, loading it if necessary
+func GetGlobalFindingsMap() map[string]*FindingItem {
 	logger := GetLogger()
 
 	// Load findings map on first use
 	if globalFindingsMap == nil {
 		if err := loadFindings(); err != nil {
-			// Fallback to empty map if loading fails
 			logger.Warning().Msgf("Failed to load findings.json, using empty findings map: %v", err)
 			globalFindingsMap = make(map[string]*FindingItem)
 		}
 	}
 
+	return globalFindingsMap
+}
+
+// NewFindingItem creates a FindingItem from a slug
+func NewFindingItem(slug string) *FindingItem {
+	logger := GetLogger()
+
+	// Get the global findings map
+	findingsMap := GetGlobalFindingsMap()
+
 	// Check if this slug exists in the loaded map
-	if existing, ok := globalFindingsMap[slug]; ok {
+	if existing, ok := findingsMap[slug]; ok {
 		logger.Debug().Msgf("Found existing finding item for slug: %s", slug)
 		return existing
 	}
