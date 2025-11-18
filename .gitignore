@@ -63,3 +63,4 @@ results/*
 gosec-report.json
 trivy-results.sarif
 nancy-report.txt
+web-exposure-detection
