@@ -8,17 +8,17 @@ import (
 
 // WebExposureSummary represents a compact summary of web exposure data
 type WebExposureSummary struct {
-	TotalDomains           int                    `json:"total_domains"`
-	LiveExposedDomains     int                    `json:"live_exposed_domains"`
-	TotalDetections        int                    `json:"total_detections"`
-	APIsFound              int                    `json:"apis_found"`
-	APISpecsFound          int                    `json:"api_specifications_found"`
-	AIAssetsFound          int                    `json:"ai_assets_found"`
-	WebAppsFound           int                    `json:"web_apps_found"`
-	Technologies           map[string]int         `json:"technologies"`           // tech_name -> count
-	AuthenticationMethods  map[string]int         `json:"authentication_methods"` // auth_type -> count
-	SecurityIssues         []string               `json:"security_issues"`
-	DomainFindings         map[string][]string    `json:"domain_findings"` // domain -> finding_slugs
+	TotalDomains          int                 `json:"total_domains"`
+	LiveExposedDomains    int                 `json:"live_exposed_domains"`
+	TotalDetections       int                 `json:"total_detections"`
+	APIsFound             int                 `json:"apis_found"`
+	APISpecsFound         int                 `json:"api_specifications_found"`
+	AIAssetsFound         int                 `json:"ai_assets_found"`
+	WebAppsFound          int                 `json:"web_apps_found"`
+	Technologies          map[string]int      `json:"technologies"`           // tech_name -> count
+	AuthenticationMethods map[string]int      `json:"authentication_methods"` // auth_type -> count
+	SecurityIssues        []string            `json:"security_issues"`
+	DomainFindings        map[string][]string `json:"domain_findings"` // domain -> finding_slugs
 }
 
 // extractWebExposureSummary extracts a compact summary from web-exposure-result.json

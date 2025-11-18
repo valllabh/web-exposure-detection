@@ -1,0 +1,35 @@
+How to Get AppEx Report
+
+What to Ask Your Prospect
+
+Simple question: "What is your main company website domain?"
+
+Most of the time, just one domain:
+acmecorp.com
+
+Only ask for multiple if they own separate companies:
+Think Broadcom after acquiring VMware. They need both:
+broadcom.com
+vmware.com
+
+Important: Just ask for the main domain. Do not ask about subdomains like portal.acmecorp.com or api.acmecorp.com. Our tech automatically finds all of those.
+
+Who This Works Best For
+
+Great fit:
+- Companies running their own websites, apps, or APIs
+- Businesses with customer portals or internal tools
+
+Not a good fit:
+- MSSPs or security vendors (very less footprint)
+- Organizations with everything locked down behind firewalls
+
+Sometimes organizations have very little internet facing or everything is behind walls. We may not find much but we will still share the report. Use your judgement on whether to proceed with the prospect.
+
+Before You Ask
+
+Our analysis visits their public websites to look for security signals. This is lightweight and non intrusive, but depending on how critical the deal is, you might want to give them a heads up or get their okay first.
+
+---
+
+Email the domain(s) to vajoshi@qualys.com

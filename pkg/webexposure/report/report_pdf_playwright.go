@@ -1,9 +1,9 @@
 package report
 
 import (
-	"web-exposure-detection/pkg/webexposure/logger"
 	"fmt"
 	"path/filepath"
+	"web-exposure-detection/pkg/webexposure/logger"
 
 	"github.com/playwright-community/playwright-go"
 

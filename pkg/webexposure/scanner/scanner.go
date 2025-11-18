@@ -528,7 +528,7 @@ func (s *scanner) GenerateReportFromExistingResults(domains []string, debug bool
 
 	// Step 3: Generate report from grouped results
 	logger.Info().Msgf("Generating report from %d grouped results", len(groupedResults.Domains))
-	
+
 	// Convert industry classification to IndustryInfo type
 	var industryInfo *common.IndustryInfo
 	if s.industryClassification != nil {
@@ -569,7 +569,7 @@ func (s *scanner) generateReportsFromNucleiResults(nucleiResults []*output.Resul
 
 	// Step 2: Generate Report Structure
 	logger.Debug().Msgf("Generated report structure for %s", targetDomain)
-	
+
 	// Convert industry classification to IndustryInfo type
 	var industryInfo *common.IndustryInfo
 	if s.industryClassification != nil {

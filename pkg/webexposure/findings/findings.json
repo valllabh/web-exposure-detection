@@ -7305,7 +7305,7 @@
     "slug": "domain.function.auth",
     "display_name": "Authentication Service",
     "icon": "auth.svg",
-    "show_in_tech": true,
+    "show_in_tech": false,
     "classification": [
       "webapp"
     ],
@@ -7360,7 +7360,7 @@
     "slug": "domain.function.identity",
     "display_name": "Identity Provider",
     "icon": "auth.svg",
-    "show_in_tech": true,
+    "show_in_tech": false,
     "classification": [
       "webapp"
     ],
@@ -7415,7 +7415,7 @@
     "slug": "domain.function.vault",
     "display_name": "Vault/Secrets Service",
     "icon": "vault.svg",
-    "show_in_tech": true,
+    "show_in_tech": false,
     "classification": [
       "webapp"
     ],
@@ -7454,7 +7454,7 @@
     "slug": "domain.function.vpn",
     "display_name": "VPN Service",
     "icon": "vpn.svg",
-    "show_in_tech": true,
+    "show_in_tech": false,
     "classification": [
       "webapp"
     ],
@@ -7493,7 +7493,7 @@
     "slug": "domain.function.admin",
     "display_name": "Admin Portal",
     "icon": "admin-panel.svg",
-    "show_in_tech": true,
+    "show_in_tech": false,
     "classification": [
       "webapp"
     ],
@@ -7532,7 +7532,7 @@
     "slug": "domain.function.gateway",
     "display_name": "Gateway Service",
     "icon": "gateway.svg",
-    "show_in_tech": true,
+    "show_in_tech": false,
     "classification": [
       "webapp"
     ],
@@ -7587,7 +7587,7 @@
     "slug": "domain.function.customer_portal",
     "display_name": "Customer Portal",
     "icon": "customer-portal.svg",
-    "show_in_tech": true,
+    "show_in_tech": false,
     "classification": [
       "webapp"
     ],
@@ -7642,7 +7642,7 @@
     "slug": "domain.function.api",
     "display_name": "API Service Domain",
     "icon": "api.svg",
-    "show_in_tech": true,
+    "show_in_tech": false,
     "classification": [
       "api"
     ],
@@ -7697,7 +7697,7 @@
     "slug": "domain.function.mobile",
     "display_name": "Mobile Service",
     "icon": "mobile.svg",
-    "show_in_tech": true,
+    "show_in_tech": false,
     "classification": [
       "webapp"
     ],
@@ -7747,7 +7747,7 @@
     "slug": "domain.function.secure",
     "display_name": "Secure Portal",
     "icon": "secure.svg",
-    "show_in_tech": true,
+    "show_in_tech": false,
     "classification": [
       "webapp"
     ],
@@ -7797,7 +7797,7 @@
     "slug": "domain.function.devops",
     "display_name": "DevOps Infrastructure",
     "icon": "devops.svg",
-    "show_in_tech": true,
+    "show_in_tech": false,
     "classification": [
       "webapp"
     ],
@@ -7836,7 +7836,7 @@
     "slug": "domain.function.payment",
     "display_name": "Payment Service",
     "icon": "payment-processing.svg",
-    "show_in_tech": true,
+    "show_in_tech": false,
     "classification": [
       "webapp"
     ],
@@ -8398,7 +8398,7 @@
     "slug": "webapp.type.ecommerce",
     "display_name": "E-Commerce Platform",
     "icon": "ecommerce.svg",
-    "show_in_tech": true,
+    "show_in_tech": false,
     "classification": [
       "webapp"
     ],
@@ -8453,7 +8453,7 @@
     "slug": "webapp.type.admin_panel",
     "display_name": "Admin Panel",
     "icon": "admin-panel.svg",
-    "show_in_tech": true,
+    "show_in_tech": false,
     "classification": [
       "webapp"
     ],
@@ -8492,7 +8492,7 @@
     "slug": "webapp.type.customer_portal",
     "display_name": "Customer Portal",
     "icon": "customer-portal.svg",
-    "show_in_tech": true,
+    "show_in_tech": false,
     "classification": [
       "webapp"
     ],

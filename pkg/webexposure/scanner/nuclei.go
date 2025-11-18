@@ -32,17 +32,17 @@ func (s *scanner) RunNucleiScan(targets []string, opts *nuclei.NucleiOptions) ([
 	ctx := context.Background()
 
 	// Create Nuclei engine configuration with template filtering
-var templateFilters nuclei_lib.TemplateFilters
+	var templateFilters nuclei_lib.TemplateFilters
 
 	// If specific templates are provided, use them instead of tag-based filtering
 	if len(opts.SpecificTemplates) > 0 {
-templateFilters = nuclei_lib.TemplateFilters{
+		templateFilters = nuclei_lib.TemplateFilters{
 			IDs: opts.SpecificTemplates,
 		}
 		log.Debug().Msgf("Using specific templates: %v", opts.SpecificTemplates)
 	} else {
 		// Use default tag-based filtering
-templateFilters = nuclei_lib.TemplateFilters{
+		templateFilters = nuclei_lib.TemplateFilters{
 			Tags:        opts.IncludeTags,
 			ExcludeTags: opts.ExcludeTags,
 		}

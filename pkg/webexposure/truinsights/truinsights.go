@@ -152,9 +152,9 @@ func (g *Generator) GenerateWithDebug(domain string, force bool, debug bool) (*T
 			},
 		},
 		Model:          "sonar-reasoning", // Use sonar-reasoning for research tasks
-		Temperature:    0.3,                // Lower temperature for more consistent results
-		Stream:         true,               // Enable streaming
-		StreamCallback: streamCallback,     // Real-time callback
+		Temperature:    0.3,               // Lower temperature for more consistent results
+		Stream:         true,              // Enable streaming
+		StreamCallback: streamCallback,    // Real-time callback
 	}
 
 	// Use context with extended timeout (6 minutes to buffer beyond HTTP timeout)

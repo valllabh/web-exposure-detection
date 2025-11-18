@@ -404,87 +404,11 @@
             </div>
         </div>
 
-        <!-- Navigation Section -->
-        <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-6 page-break-before">
-            <h2 class="text-xl font-medium text-gray-700 mb-4">Report Navigation</h2>
-            <p class="text-xs text-gray-600 mb-4">Quick links to navigate through the report sections</p>
-
-            <div class="grid grid-cols-2 gap-3">
-                <!-- Assets Section -->
-                <div class="border border-[#C4CFE8] rounded-2xl p-3 bg-gradient-card-subtle">
-                    <h3 class="text-sm font-semibold text-gray-800 mb-2">Discovered Assets</h3>
-                    <div class="space-y-1.5">
-                        {{if .MainDomains}}
-                        <a href="#main-domains-coverage" class="flex items-center gap-2 text-xs text-blue-500 hover:text-blue-600 no-underline">
-                            <i class="fas fa-network-wired text-xs w-3"></i>
-                            <span>Main Domains Coverage ({{len .MainDomains}})</span>
-                        </a>
-                        {{end}}
-                        {{if .APIServers}}
-                        <a href="#api-servers" class="flex items-center gap-2 text-xs text-blue-500 hover:text-blue-600 no-underline">
-                            <i class="fas fa-server text-xs w-3"></i>
-                            <span>API Servers ({{.Summary.APIServers}})</span>
-                        </a>
-                        {{end}}
-                        {{if .APISpecsFound}}
-                        <a href="#api-specifications" class="flex items-center gap-2 text-xs text-blue-500 hover:text-blue-600 no-underline">
-                            <i class="fas fa-file-code text-xs w-3"></i>
-                            <span>API Specifications ({{.Summary.APISpecificationsFound}})</span>
-                        </a>
-                        {{end}}
-                        {{if .AIAssetsFound}}
-                        <a href="#ai-services" class="flex items-center gap-2 text-xs text-blue-500 hover:text-blue-600 no-underline">
-                            <i class="fas fa-brain text-xs w-3"></i>
-                            <span>AI Services ({{.Summary.AIAssetsFound}})</span>
-                        </a>
-                        {{end}}
-                        {{if .WebAppsFound}}
-                        <a href="#web-apps" class="flex items-center gap-2 text-xs text-blue-500 hover:text-blue-600 no-underline">
-                            <i class="fas fa-globe text-xs w-3"></i>
-                            <span>Web Applications ({{.Summary.WebAppsFound}})</span>
-                        </a>
-                        {{end}}
-                        {{if and .Technologies .Technologies.AllTechnologies (gt (len .Technologies.AllTechnologies) 0)}}
-                        <a href="#technologies-found" class="flex items-center gap-2 text-xs text-blue-500 hover:text-blue-600 no-underline">
-                            <i class="fas fa-code text-xs w-3"></i>
-                            <span>Technologies Found ({{.Technologies.Count}})</span>
-                        </a>
-                        {{end}}
-                    </div>
-                </div>
-
-                <!-- Reference Section -->
-                <div class="border border-[#C4CFE8] rounded-2xl p-3 bg-gradient-card-subtle">
-                    <h3 class="text-sm font-semibold text-gray-800 mb-2">Reference Information</h3>
-                    <div class="space-y-1.5">
-                        <a href="#appendix-security-rating" class="flex items-center gap-2 text-xs text-blue-500 hover:text-blue-600 no-underline">
-                            <i class="fas fa-book text-xs w-3"></i>
-                            <span>Understanding This Report</span>
-                        </a>
-                        <a href="#appendix-criticality" class="flex items-center gap-2 text-xs text-blue-500 hover:text-blue-600 no-underline">
-                            <i class="fas fa-chart-bar text-xs w-3"></i>
-                            <span>Asset Criticality Score (ACS)</span>
-                        </a>
-                        <a href="#appendix-trurisk" class="flex items-center gap-2 text-xs text-blue-500 hover:text-blue-600 no-underline">
-                            <i class="fas fa-shield-alt text-xs w-3"></i>
-                            <span>Estimated TruRisk™ Range</span>
-                        </a>
-                        {{if and .ReportMetadata.Industry .ReportMetadata.Industry.Compliances}}
-                        <a href="#appendix-compliances" class="flex items-center gap-2 text-xs text-blue-500 hover:text-blue-600 no-underline">
-                            <i class="fas fa-clipboard-check text-xs w-3"></i>
-                            <span>Compliance Frameworks</span>
-                        </a>
-                        {{end}}
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- API Endpoints -->
         {{if .APIServers}}
-        <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-6" id="api-servers">
+        <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-6 page-break-before" id="api-servers">
             <div class="flex items-center justify-between mb-5">
-                <h2 class="text-xl font-medium text-gray-700">API Servers Discovered</h2>
+                <h2 class="text-xl font-medium text-gray-700">Top 5 API Servers Discovered</h2>
                 <a href="#" class="text-xs text-blue-500 hover:text-blue-600 no-underline inline-flex items-center gap-1 no-print">
                     <i class="fas fa-arrow-up text-xs"></i>
                     <span>Back to Top</span>
@@ -492,7 +416,7 @@
             </div>
 
             <div class="space-y-3">
-                {{range .APIServers}}
+                {{range $idx, $asset := .APIServers}}{{if lt $idx 5}}
                 <div class="bg-gradient-card-subtle border border-[#e7eaed] rounded-2xl p-4">
                     <div class="flex items-start justify-between gap-6">
                         <!-- Status + Domain -->
@@ -542,6 +466,13 @@
                     {{end}}
                 </div>
                 {{end}}
+        {{if gt (len $.APIServers) 5}}
+        <div class="text-sm text-gray-600 mt-3 px-5 pb-3">
+            <hr class="border-gray-200 mb-3">
+            And {{subtract (len $.APIServers) 5}} more...
+        </div>
+        {{end}}
+        {{end}}
             </div>
         </div>
         {{end}}
@@ -550,7 +481,7 @@
         {{if .APISpecsFound}}
         <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-6" id="api-specifications">
             <div class="flex items-center justify-between mb-5">
-                <h2 class="text-xl font-medium text-gray-700">API Specifications Discovered</h2>
+                <h2 class="text-xl font-medium text-gray-700">Top 5 API Specifications Discovered</h2>
                 <a href="#" class="text-xs text-blue-500 hover:text-blue-600 no-underline inline-flex items-center gap-1 no-print">
                     <i class="fas fa-arrow-up text-xs"></i>
                     <span>Back to Top</span>
@@ -558,7 +489,7 @@
             </div>
 
             <div class="space-y-3">
-                {{range .APISpecsFound}}
+                {{range $idx, $asset := .APISpecsFound}}{{if lt $idx 5}}
                 <div class="bg-gradient-card-subtle border border-[#e7eaed] rounded-2xl p-4">
                     <div class="flex items-start justify-between gap-6">
                         <!-- Domain -->
@@ -599,6 +530,13 @@
                     {{end}}
                 </div>
                 {{end}}
+        {{if gt (len $.APISpecsFound) 5}}
+        <div class="text-sm text-gray-600 mt-3 px-5 pb-3">
+            <hr class="border-gray-200 mb-3">
+            And {{subtract (len $.APISpecsFound) 5}} more...
+        </div>
+        {{end}}
+        {{end}}
             </div>
         </div>
         {{end}}
@@ -607,7 +545,7 @@
         {{if .AIAssetsFound}}
         <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-6" id="ai-services">
             <div class="flex items-center justify-between mb-5">
-                <h2 class="text-xl font-medium text-gray-700">AI Services Discovered</h2>
+                <h2 class="text-xl font-medium text-gray-700">Top 5 AI Services Discovered</h2>
                 <a href="#" class="text-xs text-blue-500 hover:text-blue-600 no-underline inline-flex items-center gap-1 no-print">
                     <i class="fas fa-arrow-up text-xs"></i>
                     <span>Back to Top</span>
@@ -615,7 +553,7 @@
             </div>
 
             <div class="space-y-3">
-                {{range .AIAssetsFound}}
+                {{range $idx, $asset := .AIAssetsFound}}{{if lt $idx 5}}
                 <div class="bg-gradient-card-subtle border border-[#e7eaed] rounded-2xl p-4">
                     <div class="flex items-start justify-between gap-6">
                         <!-- Domain -->
@@ -656,6 +594,13 @@
                     {{end}}
                 </div>
                 {{end}}
+        {{if gt (len $.AIAssetsFound) 5}}
+        <div class="text-sm text-gray-600 mt-3 px-5 pb-3">
+            <hr class="border-gray-200 mb-3">
+            And {{subtract (len $.AIAssetsFound) 5}} more...
+        </div>
+        {{end}}
+        {{end}}
             </div>
         </div>
         {{end}}
@@ -664,7 +609,7 @@
         {{if .WebAppsFound}}
         <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-6 page-break-before" id="web-apps">
             <div class="flex items-center justify-between mb-5">
-                <h2 class="text-xl font-medium text-gray-700">Web Applications Discovered</h2>
+                <h2 class="text-xl font-medium text-gray-700">Top 5 Web Applications Discovered</h2>
                 <a href="#" class="text-xs text-blue-500 hover:text-blue-600 no-underline inline-flex items-center gap-1 no-print">
                     <i class="fas fa-arrow-up text-xs"></i>
                     <span>Back to Top</span>
@@ -672,7 +617,7 @@
             </div>
 
             <div class="space-y-3">
-                {{range .WebAppsFound}}
+                {{range $idx, $asset := .WebAppsFound}}{{if lt $idx 5}}
                 <div class="bg-gradient-card-subtle border border-[#e7eaed] rounded-2xl p-4">
                     <div class="flex items-start justify-between gap-6">
                         <!-- Domain + Details -->
@@ -723,6 +668,13 @@
                     {{end}}
                 </div>
                 {{end}}
+        {{if gt (len $.WebAppsFound) 5}}
+        <div class="text-sm text-gray-600 mt-3 px-5 pb-3">
+            <hr class="border-gray-200 mb-3">
+            And {{subtract (len $.WebAppsFound) 5}} more...
+        </div>
+        {{end}}
+        {{end}}
             </div>
         </div>
         {{end}}
@@ -778,281 +730,6 @@
         </div>
         {{end}}
 
-        <!-- Main Domains Coverage -->
-        {{if .MainDomains}}
-        <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-6 page-break-before" id="main-domains-coverage">
-            <div class="flex items-center justify-between mb-1">
-                <h2 class="text-xl font-medium text-gray-700">Main Domains Coverage</h2>
-                <a href="#" class="text-xs text-blue-500 hover:text-blue-600 no-underline inline-flex items-center gap-1 no-print">
-                    <i class="fas fa-arrow-up text-xs"></i>
-                    <span>Back to Top</span>
-                </a>
-            </div>
-            <p class="text-xs text-gray-600 mb-4">Primary domains scanned in this report (excluding subdomains)</p>
-
-            <div class="flex flex-wrap gap-2">
-                {{range .MainDomains}}
-                <div class="px-4 py-2 rounded-2xl border border-[#C4CFE8] bg-gradient-card-subtle">
-                    <a href="https://{{.}}" target="_blank" class="text-sm font-medium text-gray-800 no-underline hover:text-blue-500">{{.}}</a>
-                </div>
-                {{end}}
-            </div>
         </div>
-        {{end}}
-
-        <!-- Appendix -->
-        <div class="my-7 page-break-before" id="appendix-security-rating">
-            <h2 class="text-gray-800 text-2xl mb-5 font-bold">Appendix</h2>
-
-            <!-- Report Structure Section -->
-            <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-5">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-lg font-bold text-gray-800">Understanding This Report</h3>
-                    <a href="#" class="text-xs text-blue-500 hover:text-blue-600 no-underline inline-flex items-center gap-1 no-print">
-                        <i class="fas fa-arrow-up text-xs"></i>
-                        <span>Back to Top</span>
-                    </a>
-                </div>
-
-                <p class="text-sm text-gray-700 mb-4 leading-relaxed">
-                    This report shows assets discovered across your organization's internet presence. Only categories with findings are displayed in the report.
-                </p>
-
-                <div class="space-y-2 text-sm mb-4">
-                    <div class="flex gap-2">
-                        <span class="text-gray-600 font-semibold min-w-32">API Endpoints:</span>
-                        <span class="text-gray-700">RESTful APIs, GraphQL endpoints, and programmatic interfaces</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="text-gray-600 font-semibold min-w-32">API Specifications:</span>
-                        <span class="text-gray-700">OpenAPI/Swagger documentation and API schema files</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="text-gray-600 font-semibold min-w-32">AI Services:</span>
-                        <span class="text-gray-700">Machine learning models, chatbots, and AI applications</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="text-gray-600 font-semibold min-w-32">Web Applications:</span>
-                        <span class="text-gray-700">Web portals, dashboards, and user facing applications</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="text-gray-600 font-semibold min-w-32">Other Domains:</span>
-                        <span class="text-gray-700">Discovered assets not categorized above</span>
-                    </div>
-                </div>
-
-                <p class="text-xs text-gray-600 italic">
-                    Note: If a category is not shown in this report, no assets of that type were discovered.
-                </p>
-            </div>
-
-            <!-- How This Report Works Section -->
-            <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-5">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-lg font-bold text-gray-800">How This Report Works</h3>
-                    <a href="#" class="text-xs text-blue-500 hover:text-blue-600 no-underline inline-flex items-center gap-1 no-print">
-                        <i class="fas fa-arrow-up text-xs"></i>
-                        <span>Back to Top</span>
-                    </a>
-                </div>
-
-                <p class="text-sm text-gray-700 mb-4 leading-relaxed">
-                    This report identifies what applications and technologies are visible from the internet for your organization.
-                    It categorizes discovered assets and provides context to help prioritize security efforts.
-                </p>
-
-                <div class="space-y-3">
-                    <div class="flex items-start gap-3">
-                        <i class="fas fa-search text-blue-500 mt-1"></i>
-                        <div>
-                            <p class="text-sm text-gray-700 leading-relaxed">
-                                <strong>Discovery:</strong> Identifies web applications, APIs, and services associated with your domain
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start gap-3">
-                        <i class="fas fa-tags text-blue-500 mt-1"></i>
-                        <div>
-                            <p class="text-sm text-gray-700 leading-relaxed">
-                                <strong>Classification:</strong> Categorizes assets by type and identifies technologies in use
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start gap-3">
-                        <i class="fas fa-chart-line text-blue-500 mt-1"></i>
-                        <div>
-                            <p class="text-sm text-gray-700 leading-relaxed">
-                                <strong>Assessment:</strong> Evaluates security posture and provides predicted risk indicators
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Asset Criticality Section -->
-            <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-5" id="appendix-criticality">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-lg font-bold text-gray-800">Asset Criticality Score (ACS)</h3>
-                    <a href="#" class="text-xs text-blue-500 hover:text-blue-600 no-underline inline-flex items-center gap-1 no-print">
-                        <i class="fas fa-arrow-up text-xs"></i>
-                        <span>Back to Top</span>
-                    </a>
-                </div>
-
-                <p class="text-sm text-gray-700 mb-4 leading-relaxed">
-                    Asset Criticality Score (ACS) is a predicted score that estimates the business importance and risk exposure of each discovered asset based on domain patterns, function, and environment.
-                    The score ranges from 1 (Minimal) to 5 (Critical) and helps prioritize security and remediation efforts.
-                </p>
-
-                <div class="mb-5">
-                    <h4 class="text-base font-bold text-gray-800 mb-2">Criticality Scale</h4>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-bold" style="color: #6B2C28;">5</span>
-                            <span class="text-gray-700">Critical - Mission critical assets with highest business importance</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-bold" style="color: #C13832;">4</span>
-                            <span class="text-gray-700">High - Important assets with significant business impact</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-bold" style="color: #C1603D;">3</span>
-                            <span class="text-gray-700">Medium - Production baseline for internet exposed assets</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-bold" style="color: #E5A550;">2</span>
-                            <span class="text-gray-700">Low - Assets with limited business impact</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-bold" style="color: #E5A550;">1</span>
-                            <span class="text-gray-700">Minimal - Assets with very low criticality</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mb-5">
-                    <h4 class="text-base font-bold text-gray-800 mb-2">Factors Considered</h4>
-                    <ul class="text-sm text-gray-700 space-y-1 ml-4 list-disc">
-                        <li>Authentication mechanisms</li>
-                        <li>Infrastructure components and security controls</li>
-                        <li>Application type and business function</li>
-                        <li>Domain characteristics and environment indicators</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- TruRisk Range Section -->
-            <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-5" id="appendix-trurisk">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-lg font-bold text-gray-800">Estimated TruRisk™ Range</h3>
-                    <a href="#" class="text-xs text-blue-500 hover:text-blue-600 no-underline inline-flex items-center gap-1 no-print">
-                        <i class="fas fa-arrow-up text-xs"></i>
-                        <span>Back to Top</span>
-                    </a>
-                </div>
-
-                <p class="text-sm text-gray-700 mb-4 leading-relaxed">
-                    Estimated TruRisk™ Range is a predictive risk scoring system inspired by Qualys TruRisk™ methodology. It provides a numeric risk range (min-max) from 0 to 1000 for each asset without requiring active vulnerability scanning.
-                </p>
-
-                <div class="mb-5">
-                    <h4 class="text-base font-bold text-gray-800 mb-2">Understanding the Score</h4>
-                    <p class="text-sm text-gray-700 mb-3 leading-relaxed">
-                        TruRisk scores range from 0 to 1000, with higher scores indicating greater risk exposure. The score is displayed as a range to account for uncertainty in vulnerability presence and exploitability.
-                    </p>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-bold" style="color: #6B2C28;">850</span><span class="text-sm">-</span><span class="text-sm font-bold" style="color: #6B2C28;">1000</span>
-                            <span class="text-gray-700">Critical - Higher risk likelihood, consider prioritizing for security review</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-bold" style="color: #C13832;">650</span><span class="text-sm">-</span><span class="text-sm font-bold" style="color: #C13832;">849</span>
-                            <span class="text-gray-700">High - Elevated risk indicators, recommended for security assessment</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-bold" style="color: #C1603D;">400</span><span class="text-sm">-</span><span class="text-sm font-bold" style="color: #C1603D;">649</span>
-                            <span class="text-gray-700">Medium - Moderate risk indicators, address in regular security cycles</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-bold" style="color: #E5A550;">200</span><span class="text-sm">-</span><span class="text-sm font-bold" style="color: #E5A550;">399</span>
-                            <span class="text-gray-700">Low - Lower risk indicators, monitor and maintain</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-bold" style="color: #E5A550;">0</span><span class="text-sm">-</span><span class="text-sm font-bold" style="color: #E5A550;">199</span>
-                            <span class="text-gray-700">Minimal - Very low risk indicators, standard maintenance</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mb-5">
-                    <h4 class="text-base font-bold text-gray-800 mb-2">How It's Calculated</h4>
-                    <p class="text-sm text-gray-700 mb-3 leading-relaxed">
-                        The Estimated TruRisk Range uses the formula:
-                    </p>
-                    <div class="bg-gray-50 border border-[#e7eaed] rounded-2xl p-3 mb-3 text-center">
-                        <strong class="text-base">TruRisk = MIN(ACS × Findings × Environmental_Multipliers, 1000)</strong>
-                    </div>
-                    <ul class="text-sm text-gray-700 space-y-1 ml-4 list-disc">
-                        <li><strong>ACS:</strong> Asset Criticality Score</li>
-                        <li><strong>Findings:</strong> Technology vulnerabilities and risk indicators</li>
-                        <li><strong>Environmental Multipliers:</strong> Security controls and exposure factors</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Compliance Frameworks Section -->
-            {{if and .ReportMetadata.Industry .ReportMetadata.Industry.Compliances}}
-            <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-5" id="appendix-compliances">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-lg font-bold text-gray-800">Applicable Compliance Frameworks</h3>
-                    <a href="#" class="text-xs text-blue-500 hover:text-blue-600 no-underline inline-flex items-center gap-1 no-print">
-                        <i class="fas fa-arrow-up text-xs"></i>
-                        <span>Back to Top</span>
-                    </a>
-                </div>
-
-                <p class="text-sm text-gray-700 mb-4 leading-relaxed">
-                    Based on the organization's industry, geographic presence, and operations, the following compliance frameworks may apply.
-                    Each framework is accompanied by a specific reason explaining why it is relevant to this organization.
-                </p>
-
-                <div class="space-y-3">
-                    {{range .ReportMetadata.Industry.Compliances}}
-                    <div class="bg-gradient-card-subtle border border-[#e7eaed] rounded-2xl p-4" id="compliance-{{.Name}}">
-                        <h4 class="text-base font-bold text-gray-800 mb-2">{{.Name}}</h4>
-                        <p class="text-sm text-gray-700 leading-relaxed">{{.Reason}}</p>
-                    </div>
-                    {{end}}
-                </div>
-            </div>
-            {{end}}
-
-            <!-- TRU (Threat Research Unit) Section -->
-            <div class="bg-white border border-[#e7eaed] rounded-2xl p-5 mb-5" id="appendix-tru">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-lg font-bold text-gray-800">TRU (Threat Research Unit)</h3>
-                    <a href="#" class="text-xs text-blue-500 hover:text-blue-600 no-underline inline-flex items-center gap-1 no-print">
-                        <i class="fas fa-arrow-up text-xs"></i>
-                        <span>Back to Top</span>
-                    </a>
-                </div>
-
-                <p class="text-sm text-gray-700 leading-relaxed">
-                    The Qualys Threat Research Unit (TRU) is a global security intelligence team dedicated to researching emerging threats,
-                    vulnerabilities, and attack trends. TRU analysts continuously monitor global threat activity, analyze real world attacks,
-                    and research vulnerabilities to provide actionable intelligence. The team translates complex security research into
-                    practical insights that help organizations understand which threats are most relevant to their specific environment.
-                </p>
-            </div>
-
-        </div>
-
-        <!-- Footer -->
-        <footer class="mt-5 pt-2.5 border-t border-gray-300 text-center text-gray-500 text-[8px]">
-            © 2025 Qualys, Inc. All rights reserved | Confidential and Proprietary Information
-        </footer>
-    </div>
 </body>
 </html>

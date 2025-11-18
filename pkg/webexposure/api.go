@@ -1,14 +1,14 @@
 package webexposure
 
 import (
+	"web-exposure-detection/pkg/webexposure/common"
 	"web-exposure-detection/pkg/webexposure/criticality"
-	_ "web-exposure-detection/pkg/webexposure/nuclei" // Import for init() side effects
 	"web-exposure-detection/pkg/webexposure/findings"
 	"web-exposure-detection/pkg/webexposure/industry"
 	"web-exposure-detection/pkg/webexposure/nuclei"
+	_ "web-exposure-detection/pkg/webexposure/nuclei" // Import for init() side effects
 	"web-exposure-detection/pkg/webexposure/report"
 	"web-exposure-detection/pkg/webexposure/scanner"
-	"web-exposure-detection/pkg/webexposure/common"
 	"web-exposure-detection/pkg/webexposure/truinsights"
 )
 
@@ -36,13 +36,13 @@ type (
 
 // Report types
 type (
-	ExposureReport    = common.ExposureReport
-	ReportMetadata    = common.ReportMetadata
-	Summary           = common.Summary
-	Discovery         = findings.Discovery
-	APIFinding        = findings.APIFinding
-	WebAppFinding     = findings.WebAppFinding
-	DomainMetrics     = common.DomainMetrics
+	ExposureReport = common.ExposureReport
+	ReportMetadata = common.ReportMetadata
+	Summary        = common.Summary
+	Discovery      = findings.Discovery
+	APIFinding     = findings.APIFinding
+	WebAppFinding  = findings.WebAppFinding
+	DomainMetrics  = common.DomainMetrics
 )
 
 // Findings types
@@ -50,9 +50,9 @@ type FindingItem = findings.FindingItem
 
 // Criticality types (moved to findings package)
 type (
-	Criticality              = findings.Criticality
-	CriticalityFactor        = findings.CriticalityFactor
-	CriticalityDistribution  = findings.CriticalityDistribution
+	Criticality             = findings.Criticality
+	CriticalityFactor       = findings.CriticalityFactor
+	CriticalityDistribution = findings.CriticalityDistribution
 )
 
 // Industry types
@@ -63,7 +63,7 @@ type (
 
 // TRU Insights types
 type (
-	TRUInsightsResult = truinsights.TRUInsightsResult
+	TRUInsightsResult    = truinsights.TRUInsightsResult
 	TRUInsightsGenerator = truinsights.Generator
 )
 
@@ -83,8 +83,8 @@ const (
 
 // Scanner functions
 var (
-	New                  = scanner.New
-	NewWithPDFGenerator  = scanner.NewWithPDFGenerator
+	New                 = scanner.New
+	NewWithPDFGenerator = scanner.NewWithPDFGenerator
 )
 
 // Findings functions
@@ -92,8 +92,8 @@ var NewFindingItem = findings.NewFindingItem
 
 // Criticality functions
 var (
-	CalculateCriticality       = criticality.CalculateCriticality
-	NewCriticalityFactor       = findings.NewCriticalityFactor
+	CalculateCriticality = criticality.CalculateCriticality
+	NewCriticalityFactor = findings.NewCriticalityFactor
 )
 
 // Industry functions (only cached version exposed)

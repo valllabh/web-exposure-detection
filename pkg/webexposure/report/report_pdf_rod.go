@@ -1,13 +1,13 @@
 package report
 
 import (
-	"web-exposure-detection/pkg/webexposure/logger"
 	"context"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"time"
+	"web-exposure-detection/pkg/webexposure/logger"
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/launcher"

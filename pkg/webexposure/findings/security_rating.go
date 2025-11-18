@@ -9,18 +9,18 @@ import (
 
 // HeadersGradeFactor represents a single scoring factor for headers grade
 type HeadersGradeFactor struct {
-	Factor     string  `json:"factor"`       // Human-readable description
-	FactorSlug string  `json:"factor_slug"`  // Machine-readable slug
-	ScoreDelta float64 `json:"score_delta"`  // Score change (+/-)
-	Value      string  `json:"value"`        // Actual value detected
+	Factor     string  `json:"factor"`      // Human-readable description
+	FactorSlug string  `json:"factor_slug"` // Machine-readable slug
+	ScoreDelta float64 `json:"score_delta"` // Score change (+/-)
+	Value      string  `json:"value"`       // Actual value detected
 }
 
 // HeadersGrade represents the HTTP security headers grade assessment of a domain
 type HeadersGrade struct {
-	Grade       string                `json:"grade"`        // Letter grade: A+, A, B, C, D, F
-	Score       int                   `json:"score"`        // 0-100 percentage score
-	Factors     []*HeadersGradeFactor `json:"factors"`      // Scoring breakdown
-	Description string                `json:"description"`  // Brief description of the grade
+	Grade       string                `json:"grade"`       // Letter grade: A+, A, B, C, D, F
+	Score       int                   `json:"score"`       // 0-100 percentage score
+	Factors     []*HeadersGradeFactor `json:"factors"`     // Scoring breakdown
+	Description string                `json:"description"` // Brief description of the grade
 }
 
 // NewHeadersGradeFactor creates a new headers grade factor

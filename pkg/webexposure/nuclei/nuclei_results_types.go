@@ -31,10 +31,10 @@ type StoredResult struct {
 	Host        string              `json:"host"`
 	TemplateID  string              `json:"template-id"`
 	MatcherName string              `json:"matcher-name,omitempty"`
-	URL         string              `json:"url,omitempty"`          // Original URL that was scanned
-	MatchedAt   string              `json:"matched-at,omitempty"`   // Final URL after redirects
-	IP          string              `json:"ip,omitempty"`           // Resolved IP address
-	Findings    map[string][]string `json:"findings,omitempty"`     // Generic key-value findings from all templates
+	URL         string              `json:"url,omitempty"`        // Original URL that was scanned
+	MatchedAt   string              `json:"matched-at,omitempty"` // Final URL after redirects
+	IP          string              `json:"ip,omitempty"`         // Resolved IP address
+	Findings    map[string][]string `json:"findings,omitempty"`   // Generic key-value findings from all templates
 }
 
 // FindingXML represents the new <f><k></k><vg><v></v></vg></f> structure

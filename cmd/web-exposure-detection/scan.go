@@ -144,13 +144,10 @@ Examples:
 		}
 
 		// Use unified pipeline (handles caching automatically)
-		// Loop through domains if multiple are provided
-		for _, domain := range domains {
-			logger.Info().Msgf("Processing domain: %s", domain)
-			err = scanner.RunCompletePipeline(domain, force, domainKeywords, templates, skipDiscoveryAll, skipDiscoveryPassive, skipDiscoveryCertificate, preset)
-			if err != nil {
-				return fmt.Errorf("scan failed for domain %s: %w", domain, err)
-			}
+		// Pass all domains at once for aggregated discovery and scanning
+		err = scanner.RunCompletePipeline(domains, force, domainKeywords, templates, skipDiscoveryAll, skipDiscoveryPassive, skipDiscoveryCertificate, preset)
+		if err != nil {
+			return fmt.Errorf("scan failed: %w", err)
 		}
 
 		logger.Info().Msg("Scan completed successfully")

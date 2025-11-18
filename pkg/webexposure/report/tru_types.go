@@ -2,9 +2,9 @@ package report
 
 // TRUInsightsData represents the complete threat landscape assessment report
 type TRUInsightsData struct {
-	Organization         OrganizationInfo       `json:"organization"`
-	AttackSurfaceSummary AttackSurfaceSummary   `json:"attack_surface_summary"`
-	ThreatAssessment     ThreatAssessment       `json:"threat_assessment"`
+	Organization         OrganizationInfo     `json:"organization"`
+	AttackSurfaceSummary AttackSurfaceSummary `json:"attack_surface_summary"`
+	ThreatAssessment     ThreatAssessment     `json:"threat_assessment"`
 }
 
 // OrganizationInfo represents organization details

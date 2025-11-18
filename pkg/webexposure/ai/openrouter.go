@@ -26,8 +26,8 @@ type openRouterProvider struct {
 
 // openRouterRequest represents the request payload for OpenRouter API
 type openRouterRequest struct {
-	Model    string                   `json:"model"`
-	Messages []openRouterMessage      `json:"messages"`
+	Model    string              `json:"model"`
+	Messages []openRouterMessage `json:"messages"`
 }
 
 // openRouterMessage represents a message in the chat

@@ -2,9 +2,9 @@ package findings
 
 // CriticalityFactor represents a single scoring factor
 type CriticalityFactor struct {
-	Factor     string  `json:"factor"`       // Human-readable description
-	FactorSlug string  `json:"factor_slug"`  // Machine-readable slug
-	ScoreDelta float64 `json:"score_delta"`  // Score change (+/-)
+	Factor     string  `json:"factor"`      // Human-readable description
+	FactorSlug string  `json:"factor_slug"` // Machine-readable slug
+	ScoreDelta float64 `json:"score_delta"` // Score change (+/-)
 }
 
 // Criticality represents the criticality assessment of a domain

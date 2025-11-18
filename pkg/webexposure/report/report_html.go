@@ -135,6 +135,17 @@ func GenerateHTMLContent(report *common.ExposureReport) ([]byte, error) {
 			}
 			return s[:maxLen] + "..."
 		},
+		"slice": func(v interface{}, start, end int) interface{} {
+			switch val := v.(type) {
+			case []*findings.Discovery:
+				if end > len(val) {
+					end = len(val)
+				}
+				return val[start:end]
+			default:
+				return v
+			}
+		},
 	}
 	tmpl, err := template.New("report").Funcs(funcMap).Parse(string(templateData))
 	if err != nil {
@@ -216,6 +227,17 @@ func GenerateHTMLContentWithTRU(report *common.ExposureReport, truInsights *TRUI
 			}
 			return s[:maxLen] + "..."
 		},
+		"slice": func(v interface{}, start, end int) interface{} {
+			switch val := v.(type) {
+			case []*findings.Discovery:
+				if end > len(val) {
+					end = len(val)
+				}
+				return val[start:end]
+			default:
+				return v
+			}
+		},
 	}
 	tmpl, err := template.New("report").Funcs(funcMap).Parse(string(templateBytes))
 	if err != nil {
@@ -240,6 +262,154 @@ func GenerateHTMLContentWithTRU(report *common.ExposureReport, truInsights *TRUI
 	if err := tmpl.Execute(&htmlBuffer, data); err != nil {
 		logger.Error().Msgf("Failed to execute HTML template: %v", err)
 		return nil, fmt.Errorf("failed to execute HTML template: %w", err)
+	}
+
+	return htmlBuffer.Bytes(), nil
+}
+
+// GenerateShortHTMLReport generates a short version HTML report with top 5 assets only
+func GenerateShortHTMLReport(report *common.ExposureReport, resultsDir string) (string, error) {
+	logger := logger.GetLogger()
+	logger.Debug().Msgf("Generating short HTML report in %s", resultsDir)
+
+	// Create report directory structure
+	reportDir := filepath.Join(resultsDir, "report-short")
+	assetsDir := filepath.Join(reportDir, "assets")
+
+	// Create report directory
+	if err := os.MkdirAll(reportDir, 0750); err != nil {
+		return "", fmt.Errorf("failed to create short report directory: %w", err)
+	}
+	logger.Info().Msgf("Created short report directory: %s", reportDir)
+
+	// Copy entire assets directory from embedded templates
+	if err := copyEmbeddedDirectory(templatesFS, "templates/assets", assetsDir); err != nil {
+		return "", fmt.Errorf("failed to copy assets directory: %w", err)
+	}
+
+	// Extract domain from resultsDir (results/{domain})
+	domain := filepath.Base(resultsDir)
+
+	// Try to load TRU insights (optional)
+	truInsights, err := LoadTRUInsights(domain)
+	if err != nil {
+		logger.Warning().Msgf("Failed to load TRU insights: %v", err)
+		truInsights = nil
+	}
+
+	// Generate short HTML content using short template
+	htmlContent, err := GenerateShortHTMLContentWithTRU(report, truInsights)
+	if err != nil {
+		logger.Error().Msgf("Failed to generate short HTML content: %v", err)
+		return "", fmt.Errorf("failed to generate short HTML content: %w", err)
+	}
+
+	// Write the HTML report
+	htmlPath := filepath.Join(reportDir, "index.html")
+	if err := os.WriteFile(htmlPath, htmlContent, 0600); err != nil {
+		return "", fmt.Errorf("failed to write short HTML report: %w", err)
+	}
+	logger.Info().Msgf("Short HTML report generated: %s", htmlPath)
+
+	return htmlPath, nil
+}
+
+// GenerateShortHTMLContentWithTRU generates short HTML content with optional TRU insights
+func GenerateShortHTMLContentWithTRU(report *common.ExposureReport, truInsights *TRUInsightsData) ([]byte, error) {
+	logger := logger.GetLogger()
+	logger.Debug().Msg("Reading short HTML template from embedded filesystem")
+
+	// Read the short HTML template from embedded filesystem
+	templateBytes, err := templatesFS.ReadFile("templates/report-short.html")
+	if err != nil {
+		logger.Error().Msgf("Failed to read short HTML template: %v", err)
+		return nil, fmt.Errorf("failed to read short HTML template: %w", err)
+	}
+
+	// Parse the HTML template with custom functions (same as full report)
+	funcMap := template.FuncMap{
+		"subtract": func(a, b int) int {
+			return a - b
+		},
+		"add": func(a, b int) int {
+			return a + b
+		},
+		"multiply": func(a, b int) int {
+			return a * b
+		},
+		"len": func(v interface{}) int {
+			switch val := v.(type) {
+			case []interface{}:
+				return len(val)
+			case []string:
+				return len(val)
+			case []common.WeaknessPattern:
+				return len(val)
+			case []*findings.FindingItem:
+				return len(val)
+			default:
+				return 0
+			}
+		},
+		"hasInfraClassification": func(classifications []string) bool {
+			for _, c := range classifications {
+				if c == "~webapp" || c == "~api" {
+					return true
+				}
+			}
+			return false
+		},
+		"markdownBold": func(text string) template.HTML {
+			result := text
+			count := strings.Count(text, "**")
+			if count%2 == 0 {
+				for i := 0; i < count/2; i++ {
+					result = strings.Replace(result, "**", "<span class=\"font-semibold\">", 1)
+					result = strings.Replace(result, "**", "</span>", 1)
+				}
+			}
+			return template.HTML(result)
+		},
+		"truncate": func(s string, maxLen int) string {
+			if len(s) <= maxLen {
+				return s
+			}
+			return s[:maxLen] + "..."
+		},
+		"slice": func(v interface{}, start, end int) interface{} {
+			switch val := v.(type) {
+			case []*findings.Discovery:
+				if end > len(val) {
+					end = len(val)
+				}
+				return val[start:end]
+			default:
+				return v
+			}
+		},
+	}
+	tmpl, err := template.New("report-short").Funcs(funcMap).Parse(string(templateBytes))
+	if err != nil {
+		logger.Error().Msgf("Failed to parse short HTML template: %v", err)
+		return nil, fmt.Errorf("failed to parse short HTML template: %w", err)
+	}
+
+	// Create template data with TRU insights
+	type TemplateData struct {
+		*common.ExposureReport
+		TRUInsights *TRUInsightsData
+	}
+
+	data := &TemplateData{
+		ExposureReport: report,
+		TRUInsights:    truInsights,
+	}
+
+	// Execute the template
+	var htmlBuffer bytes.Buffer
+	if err := tmpl.Execute(&htmlBuffer, data); err != nil {
+		logger.Error().Msgf("Failed to execute short HTML template: %v", err)
+		return nil, fmt.Errorf("failed to execute short HTML template: %w", err)
 	}
 
 	return htmlBuffer.Bytes(), nil

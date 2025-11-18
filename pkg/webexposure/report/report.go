@@ -25,12 +25,11 @@ type ResultProcessor struct {
 	apiSpecs       []*findings.Discovery
 	aiAssets       []*findings.Discovery
 	webApps        []*findings.Discovery
-	otherDomains   []*findings.Discovery
-	technologies   map[string]bool                // set for deduplication
-	techCounts     map[string]int                 // count of domains using each technology
-	grouped        *nuclei.GroupedResults         // stored for populating technology values
-	industryInfo   *common.IndustryInfo           // industry classification for risk calculations
-	falsePositives map[string]bool                // set of slugs marked as false positives
+	technologies   map[string]bool        // set for deduplication
+	techCounts     map[string]int         // count of domains using each technology
+	grouped        *nuclei.GroupedResults // stored for populating technology values
+	industryInfo   *common.IndustryInfo   // industry classification for risk calculations
+	falsePositives map[string]bool        // set of slugs marked as false positives
 }
 
 // GenerateReport creates an exposure report from grouped Nuclei results
@@ -40,7 +39,7 @@ func GenerateReport(grouped *nuclei.GroupedResults, targetDomain string, industr
 
 	// Use the new ResultProcessor for efficient single-pass processing
 	processor := NewResultProcessor()
-	processor.industryInfo = industryClassification // Set industry info for TRR calculations
+	processor.industryInfo = industryClassification             // Set industry info for TRR calculations
 	processor.falsePositives = LoadFalsePositives(targetDomain) // Load false positives for filtering
 
 	// Process all domains in one pass and build the report
@@ -75,6 +74,10 @@ func GenerateReport(grouped *nuclei.GroupedResults, targetDomain string, industr
 			report.Summary.DomainMetrics.NotReachable)
 	}
 
+	// Extract main domains (non-subdomains) for coverage reporting
+	report.MainDomains = ExtractMainDomains(grouped)
+	logger.Debug().Msgf("Extracted %d main domains for coverage reporting", len(report.MainDomains))
+
 	logger.Info().Msgf("Report generated successfully for %s: %d apps, %d APIs, %d API specs, %d AI assets",
 		targetDomain, report.Summary.TotalApps, report.Summary.APIServers,
 		report.Summary.APISpecificationsFound, report.Summary.AIAssetsFound)
@@ -101,7 +104,6 @@ func (rp *ResultProcessor) ProcessAllDomains(grouped *nuclei.GroupedResults) *co
 	rp.apiSpecs = nil
 	rp.aiAssets = nil
 	rp.webApps = nil
-	rp.otherDomains = nil
 	rp.technologies = make(map[string]bool)
 	rp.techCounts = make(map[string]int)
 	rp.summary = &common.Summary{}
@@ -464,9 +466,10 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *common.DomainResult, tem
 		}
 	}
 
-	// Track unclassified domains - domains that were scanned but didn't match any classification
+	// Track unclassified domains - treat them as web applications
 	if domainResult.Discovered == "" {
-		rp.summary.UnclassifiedFound++
+		logger := logger.GetLogger()
+		logger.Debug().Msgf("Classifying unclassified domain %s as WebApp", domainResult.Domain)
 
 		// Collect all available findings for unclassified domains
 		findingsMap := rp.extractFindingsWithSlugs(domainResult.Findings)
@@ -506,12 +509,12 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *common.DomainResult, tem
 		// Extract URL metadata
 		url, ip := rp.extractURLMetadata(templates)
 
-		// Add to other domains collection
-		rp.otherDomains = append(rp.otherDomains, &findings.Discovery{
+		// Add to webApps collection instead of other domains
+		rp.webApps = append(rp.webApps, &findings.Discovery{
 			Domain:        domainResult.Domain,
 			Title:         domainResult.Title,
 			Description:   domainResult.Description,
-			Discovered:    "Other",
+			Discovered:    "WebApp",
 			FindingItems:  findingItems,
 			Criticality:   assetCriticality,
 			TrueRiskRange: trueRiskRange,
@@ -519,6 +522,8 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *common.DomainResult, tem
 			URL:           url,
 			IP:            ip,
 		})
+
+		domainResult.Discovered = "WebApp"
 	}
 }
 
@@ -699,15 +704,6 @@ func (rp *ResultProcessor) buildReport() *common.ExposureReport {
 		}
 		return rp.webApps[i].Domain < rp.webApps[j].Domain
 	})
-	sort.Slice(rp.otherDomains, func(i, j int) bool {
-		// Sort by TruRisk Max score descending (highest risk first)
-		if rp.otherDomains[i].TrueRiskRange != nil && rp.otherDomains[j].TrueRiskRange != nil {
-			if rp.otherDomains[i].TrueRiskRange.Max != rp.otherDomains[j].TrueRiskRange.Max {
-				return rp.otherDomains[i].TrueRiskRange.Max > rp.otherDomains[j].TrueRiskRange.Max
-			}
-		}
-		return rp.otherDomains[i].Domain < rp.otherDomains[j].Domain
-	})
 
 	// Build technologies list from slugs, filtering by ShowInTech flag for top 5
 	// and setting their usage counts
@@ -813,7 +809,6 @@ func (rp *ResultProcessor) buildReport() *common.ExposureReport {
 		APISpecsFound: rp.apiSpecs,
 		AIAssetsFound: rp.aiAssets,
 		WebAppsFound:  rp.webApps,
-		OtherDomains:  rp.otherDomains,
 	}
 }
 
@@ -1216,8 +1211,8 @@ func CalculateDomainMetrics(result *domainscan.AssetDiscoveryResult) *common.Dom
 
 			// Check if certificate is expiring soon (within 30 days)
 			if !entry.Certificate.ExpiresOn.IsZero() &&
-			   entry.Certificate.ExpiresOn.After(now) &&
-			   entry.Certificate.ExpiresOn.Before(expiringSoonThreshold) {
+				entry.Certificate.ExpiresOn.After(now) &&
+				entry.Certificate.ExpiresOn.Before(expiringSoonThreshold) {
 				metrics.ExpiringSoonCerts++
 			}
 		}
@@ -1263,4 +1258,119 @@ func LoadTRUInsights(domain string) (*TRUInsightsData, error) {
 
 	logger.Info().Msgf("Loaded threat landscape with %d top insights", len(landscapeData.ThreatLandscape.ThreatAssessment.TopInsights))
 	return &landscapeData.ThreatLandscape, nil
+}
+
+// ExtractMainDomains extracts main domains (non-subdomains) from all discovered domains
+func ExtractMainDomains(grouped *nuclei.GroupedResults) []string {
+	mainDomainsMap := make(map[string]bool)
+
+	for domain := range grouped.Domains {
+		mainDomain := extractMainDomain(domain)
+		if mainDomain != "" {
+			mainDomainsMap[mainDomain] = true
+		}
+	}
+
+	// Convert map to sorted slice
+	mainDomains := make([]string, 0, len(mainDomainsMap))
+	for domain := range mainDomainsMap {
+		mainDomains = append(mainDomains, domain)
+	}
+	sort.Strings(mainDomains)
+
+	return mainDomains
+}
+
+// extractMainDomain extracts the main domain from a subdomain using domain-scan's TLD list
+// Examples:
+//   - api.example.com -> example.com
+//   - sub.api.example.com -> example.com
+//   - example.com -> example.com
+//   - www.example.co.uk -> example.co.uk (uses comprehensive TLD list)
+func extractMainDomain(domain string) string {
+	// Remove port if present
+	if idx := strings.Index(domain, ":"); idx > 0 {
+		domain = domain[:idx]
+	}
+
+	domain = strings.ToLower(domain)
+	parts := strings.Split(domain, ".")
+	if len(parts) < 2 {
+		return domain
+	}
+
+	// Use domain-scan's comprehensive TLD detection
+	// Find the longest matching TLD suffix
+	longestTLD := ""
+	longestTLDParts := 0
+
+	// Check for multi-part TLDs (e.g., co.uk, com.au)
+	for i := len(parts) - 1; i >= 0; i-- {
+		suffix := strings.Join(parts[i:], ".")
+		if isKnownTLD(suffix) && len(parts[i:]) > longestTLDParts {
+			longestTLD = suffix
+			longestTLDParts = len(parts[i:])
+		}
+	}
+
+	if longestTLD == "" {
+		// Fallback: assume last part is TLD
+		if len(parts) >= 2 {
+			return parts[len(parts)-2] + "." + parts[len(parts)-1]
+		}
+		return domain
+	}
+
+	// Get the domain part (one level above the TLD)
+	domainPartIndex := len(parts) - longestTLDParts - 1
+	if domainPartIndex < 0 {
+		return domain // Edge case: domain is just a TLD
+	}
+
+	return strings.Join(parts[domainPartIndex:], ".")
+}
+
+// isKnownTLD checks if a suffix is a known TLD using a comprehensive list
+// This includes both single-part TLDs (com, org) and multi-part TLDs (co.uk, com.au)
+func isKnownTLD(suffix string) bool {
+	// Common single-part TLDs
+	singlePartTLDs := map[string]bool{
+		"com": true, "org": true, "net": true, "edu": true, "gov": true,
+		"mil": true, "int": true, "io": true, "co": true, "ai": true,
+		"app": true, "dev": true, "tech": true, "cloud": true, "info": true,
+		"biz": true, "name": true, "us": true, "uk": true, "ca": true,
+		"de": true, "fr": true, "it": true, "es": true, "nl": true,
+		"au": true, "in": true, "br": true, "mx": true, "jp": true,
+		"cn": true, "ru": true, "za": true, "kr": true, "tw": true,
+	}
+
+	// Common multi-part TLDs
+	multiPartTLDs := map[string]bool{
+		// UK
+		"co.uk": true, "org.uk": true, "ac.uk": true, "gov.uk": true,
+		// Australia
+		"com.au": true, "org.au": true, "net.au": true, "gov.au": true, "edu.au": true,
+		// India
+		"co.in": true, "gov.in": true,
+		// South Africa
+		"co.za": true,
+		// Brazil
+		"com.br": true,
+		// Mexico
+		"com.mx": true,
+		// China
+		"com.cn": true,
+		// Japan
+		"co.jp": true, "ne.jp": true, "or.jp": true, "go.jp": true,
+		// South Korea
+		"co.kr": true,
+		// Hong Kong
+		"com.hk": true,
+		// Singapore
+		"com.sg": true,
+		// Taiwan
+		"com.tw": true,
+	}
+
+	return singlePartTLDs[suffix] || multiPartTLDs[suffix]
 }

@@ -15,9 +15,9 @@ type IndustryClassification struct {
 	Industry         string       `json:"industry"`
 	SubIndustry      string       `json:"subIndustry,omitempty"`
 	Compliances      []Compliance `json:"compliances,omitempty"`
-	HeadquartersCity string       `json:"headquartersCity,omitempty"`     // City where headquarters is located
-	OperatingRegions []string     `json:"operatingRegions,omitempty"`     // Geographic regions where organization is active
-	PrimaryRegion    string       `json:"primaryRegion,omitempty"`        // Primary operating region
+	HeadquartersCity string       `json:"headquartersCity,omitempty"` // City where headquarters is located
+	OperatingRegions []string     `json:"operatingRegions,omitempty"` // Geographic regions where organization is active
+	PrimaryRegion    string       `json:"primaryRegion,omitempty"`    // Primary operating region
 
 	// Legacy/Fallback Fields
 	Other string `json:"other,omitempty"` // Used when industry doesn't match fixed categories

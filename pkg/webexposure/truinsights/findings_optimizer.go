@@ -8,35 +8,35 @@ import (
 
 // FindingMetadata represents metadata about a unique finding
 type FindingMetadata struct {
-	Slug             string   `json:"slug"`
-	DisplayName      string   `json:"display_name"`
-	Description      string   `json:"description"`
-	Labels           []string `json:"labels"`
-	CVEApplicable    bool     `json:"cve_applicable"`
-	CWEApplicable    bool     `json:"cwe_applicable"`
-	RatingWeight     int      `json:"rating_weight"`
-	Severity         string   `json:"severity"` // Derived from rating_weight
-	DomainCount      int      `json:"domain_count"`
+	Slug          string   `json:"slug"`
+	DisplayName   string   `json:"display_name"`
+	Description   string   `json:"description"`
+	Labels        []string `json:"labels"`
+	CVEApplicable bool     `json:"cve_applicable"`
+	CWEApplicable bool     `json:"cwe_applicable"`
+	RatingWeight  int      `json:"rating_weight"`
+	Severity      string   `json:"severity"` // Derived from rating_weight
+	DomainCount   int      `json:"domain_count"`
 }
 
 // DomainInfo represents a domain with its criticality and risk
 type DomainInfo struct {
-	Domain            string
-	CriticalityScore  int
-	CriticalityLevel  string
-	SecurityGrade     string
-	TrueRiskMin       int
-	TrueRiskMax       int
+	Domain           string
+	CriticalityScore int
+	CriticalityLevel string
+	SecurityGrade    string
+	TrueRiskMin      int
+	TrueRiskMax      int
 }
 
 // OptimizedFindings represents an optimized structure for findings
 type OptimizedFindings struct {
-	TotalUniqueFindings int                         `json:"total_unique_findings"`
+	TotalUniqueFindings int                           `json:"total_unique_findings"`
 	FindingsByCategory  map[string][]*FindingMetadata `json:"findings_by_category"`
-	CriticalityStats    map[string]int              `json:"criticality_stats"` // HIGH, MEDIUM, LOW counts
-	SecurityRatingStats map[string]int              `json:"security_rating_stats"` // A, B, C, D, F counts
-	Domains             []*DomainInfo               `json:"domains"` // All domains with criticality
-	FindingsMatrix      map[string]map[string]bool  `json:"findings_matrix"` // finding_slug -> domain -> present
+	CriticalityStats    map[string]int                `json:"criticality_stats"`     // HIGH, MEDIUM, LOW counts
+	SecurityRatingStats map[string]int                `json:"security_rating_stats"` // A, B, C, D, F counts
+	Domains             []*DomainInfo                 `json:"domains"`               // All domains with criticality
+	FindingsMatrix      map[string]map[string]bool    `json:"findings_matrix"`       // finding_slug -> domain -> present
 }
 
 // extractOptimizedFindings extracts findings in an optimized format
@@ -126,11 +126,11 @@ func extractOptimizedFindings(webExposureData interface{}) (*OptimizedFindings, 
 								meta, exists := findingsMap[slug]
 								if !exists {
 									meta = &FindingMetadata{
-										Slug:          slug,
-										DisplayName:   getStringValue(f, "display_name"),
-										Description:   getStringValue(f, "description"),
-										Labels:        extractLabels(f),
-										RatingWeight:  extractRatingWeight(f),
+										Slug:         slug,
+										DisplayName:  getStringValue(f, "display_name"),
+										Description:  getStringValue(f, "description"),
+										Labels:       extractLabels(f),
+										RatingWeight: extractRatingWeight(f),
 									}
 
 									// Extract security info

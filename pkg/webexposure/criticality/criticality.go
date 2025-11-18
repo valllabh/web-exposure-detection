@@ -80,7 +80,6 @@ func processCriticalityFindings(findingsSlugs []string) (float64, []*findings.Cr
 	return score, factors
 }
 
-
 // clampScore ensures score is within 1-5 boundaries
 func clampScore(score float64) float64 {
 	if score < MinScore {
