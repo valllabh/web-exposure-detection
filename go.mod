@@ -11,7 +11,7 @@ require (
 	github.com/projectdiscovery/nuclei/v3 v3.3.5
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/viper v1.21.0
-	github.com/valllabh/domain-scan v2.3.0+incompatible
+	github.com/valllabh/domain-scan v0.1.4
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -380,5 +380,4 @@ require (
 replace (
 	github.com/nwaples/rardecode/v2 => github.com/nwaples/rardecode/v2 v2.2.1
 	github.com/olekukonko/tablewriter => github.com/olekukonko/tablewriter v0.0.5
-	github.com/valllabh/domain-scan => ../domain-scan
 )
