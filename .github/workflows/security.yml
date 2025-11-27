@@ -67,8 +67,12 @@ jobs:
         with:
           go-version-file: 'go.mod'
           go-package: './...'
-        # Known transitive vulns in nuclei deps with no fix available:
-        # GO-2025-4020 (rardecode), GO-2025-3764 (go-pg), GO-2025-3605/GO-2024-2698 (archiver)
+        # Transitive vulns in nuclei deps - not exploitable, documented in .vex.yaml:
+        # - GO-2025-4020: rardecode DoS (no RAR processing)
+        # - GO-2025-3764: go-pg SQL injection (no DB usage)
+        # - GO-2025-3605/GO-2024-2698: archiver path traversal (no archive extraction)
+        # govulncheck shows init() chain reachability but vulnerable code paths
+        # are never invoked with user input. See .vex.yaml for full justification.
         continue-on-error: true
 
   staticcheck:
@@ -90,20 +94,5 @@ jobs:
       - name: Run staticcheck
         run: staticcheck ./...
 
-  codeql:
-    name: CodeQL Analysis
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
-        with:
-          languages: go
-
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v4
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
+  # CodeQL: Using GitHub's default setup instead of custom workflow
+  # Enable at: Settings > Code security > Code scanning > CodeQL analysis

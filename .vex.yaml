@@ -4,13 +4,16 @@
 version: 1.0.0
 author: valllabh/web-exposure-detection
 role: Project Maintainer
-timestamp: "2025-10-15T00:00:00Z"
+timestamp: "2025-11-27T00:00:00Z"
 
 statements:
   # Alert #3: mholt/archiver Path Traversal (High)
+  # GO-2025-3605
   - vulnerability:
       name: GHSA-c7q2-7mrq-w2rg
-      description: "Path Traversal in mholt/archiver"
+      aliases:
+        - GO-2025-3605
+      description: "Path Traversal in mholt/archiver via Crafted ZIP File"
     products:
       - "@pkg:golang/github.com/mholt/archiver@v3.1.1"
     status: not_affected
@@ -20,11 +23,15 @@ statements:
       However, this application does not extract archives or process user-supplied
       archive files. The package is only used transitively by the nuclei SDK for
       internal template management, which does not expose archive extraction to
-      external input. The vulnerable code path is never executed in normal operation.
+      external input. govulncheck reports reachability through init() chains but
+      the vulnerable extraction code is never invoked with user-controlled input.
 
   # Alert #2: mholt/archiver Path Traversal (Medium)
+  # GO-2024-2698
   - vulnerability:
       name: GHSA-rwgg-cpwv-53rm
+      aliases:
+        - GO-2024-2698
       description: "Archiver Path Traversal vulnerability"
     products:
       - "@pkg:golang/github.com/mholt/archiver@v3.1.1"
@@ -34,6 +41,7 @@ statements:
       This is a path traversal vulnerability in archive extraction. The application
       does not use archive extraction features and does not process user-supplied
       archives. Transitive dependency from nuclei SDK used only for internal operations.
+      govulncheck traces show init() chain reachability, not actual exploitation paths.
 
   # Alert #1: mholt/archiver Path Traversal (Medium)
   - vulnerability:
@@ -49,8 +57,11 @@ statements:
       vulnerable code path. Package included transitively via nuclei SDK.
 
   # Alert #4: go-pg/pg SQL Injection (Medium)
+  # GO-2025-3764
   - vulnerability:
       name: GHSA-4qg4-33j8-3p96
+      aliases:
+        - GO-2025-3764
       description: "go-pg SQL injection via append_value.go"
     products:
       - "@pkg:golang/github.com/go-pg/pg@v8.0.7"
@@ -60,18 +71,24 @@ statements:
       This application does not use any database functionality or SQL operations.
       The go-pg package is a transitive dependency that is never instantiated or
       invoked. No database connections are made and no SQL queries are executed.
+      govulncheck traces show init() and type parsing chains, not SQL execution paths.
 
-  # Alert #5: nwaples/rardecode DoS (Medium) - RESOLVED
+  # Alert #5: nwaples/rardecode DoS (Medium)
+  # GO-2025-4020
   - vulnerability:
       name: GHSA-8w7r-8hx2-f7mp
+      aliases:
+        - GO-2025-4020
       description: "DoS risk due to unrestricted RAR dictionary sizes"
     products:
-      - "@pkg:golang/github.com/nwaples/rardecode/v2@v2.1.1"
-    status: fixed
-    action_statement: |
-      Upgraded to v2.2.1 which includes fix for unrestricted dictionary sizes.
-      Forced via go.mod replace directive to ensure patched version is used.
-    action_statement_timestamp: "2025-10-15T06:00:00Z"
+      - "@pkg:golang/github.com/nwaples/rardecode@v1.1.3"
+    status: not_affected
+    justification: vulnerable_code_not_in_execute_path
+    impact_statement: |
+      This application does not process RAR archives or any user-supplied archive files.
+      The rardecode package is a transitive dependency from nuclei SDK. govulncheck
+      shows reachability through io.ReadAll chains but RAR decoding is never invoked
+      with external input. No fix available upstream (Fixed in: N/A).
 
 # Dependency Version Constraints
 dependency_notes:
