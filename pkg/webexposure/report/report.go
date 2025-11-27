@@ -255,7 +255,7 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *common.DomainResult, tem
 		// Calculate criticality for this asset (pass slugs, not display names)
 		slugs := rp.extractSlugs(finalFindings, finalMap)
 		assetCriticality := criticality.CalculateCriticality(domainResult.Domain, domainResult.Title, slugs)
-		logger.Debug().Msgf("WebApp %s criticality: %.2f (%s)", domainResult.Domain, assetCriticality.Score, assetCriticality.Category)
+		logger.Debug().Msgf("WebApp %s criticality: %d (%s)", domainResult.Domain, assetCriticality.Score, assetCriticality.Category)
 
 		// Build finding items
 		findingItems := rp.buildFindingItems(finalFindings, finalMap, templates)
@@ -312,7 +312,7 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *common.DomainResult, tem
 		// Calculate criticality for this asset (pass slugs, not display names)
 		slugs := rp.extractSlugs(finalFindings, finalMap)
 		assetCriticality := criticality.CalculateCriticality(domainResult.Domain, domainResult.Title, slugs)
-		logger.Debug().Msgf("API %s criticality: %.2f (%s)", domainResult.Domain, assetCriticality.Score, assetCriticality.Category)
+		logger.Debug().Msgf("API %s criticality: %d (%s)", domainResult.Domain, assetCriticality.Score, assetCriticality.Category)
 
 		// Build finding items
 		findingItems := rp.buildFindingItems(finalFindings, finalMap, templates)
@@ -370,7 +370,7 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *common.DomainResult, tem
 		// Calculate criticality for this asset (pass slugs, not display names)
 		slugs := rp.extractSlugs(finalFindings, finalMap)
 		assetCriticality := criticality.CalculateCriticality(domainResult.Domain, domainResult.Title, slugs)
-		logger.Debug().Msgf("API Spec %s criticality: %.2f (%s)", domainResult.Domain, assetCriticality.Score, assetCriticality.Category)
+		logger.Debug().Msgf("API Spec %s criticality: %d (%s)", domainResult.Domain, assetCriticality.Score, assetCriticality.Category)
 
 		// Build finding items
 		findingItems := rp.buildFindingItems(finalFindings, finalMap, templates)
@@ -428,7 +428,7 @@ func (rp *ResultProcessor) classifyAndAdd(domainResult *common.DomainResult, tem
 		// Calculate criticality for this asset (pass slugs, not display names)
 		slugs := rp.extractSlugs(finalFindings, finalMap)
 		assetCriticality := criticality.CalculateCriticality(domainResult.Domain, domainResult.Title, slugs)
-		logger.Debug().Msgf("AI Asset %s criticality: %.2f (%s)", domainResult.Domain, assetCriticality.Score, assetCriticality.Category)
+		logger.Debug().Msgf("AI Asset %s criticality: %d (%s)", domainResult.Domain, assetCriticality.Score, assetCriticality.Category)
 
 		// Build finding items
 		findingItems := rp.buildFindingItems(finalFindings, finalMap, templates)
