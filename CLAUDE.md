@@ -56,3 +56,25 @@ pkg/webexposure/
 ```
 
 See [docs/development.md](./docs/development.md#package-organization-guide) for complete package organization guide.
+
+## Temporary Scripts Policy
+
+**NEVER commit temporary scripts to repository root.** Follow these rules:
+
+1. **One-time migrations/refactoring**: Do NOT create shell scripts. Apply changes directly using Claude Code tools (Edit, Bash) and commit the results only.
+
+2. **Utility scripts for data processing**: Place in `scripts/` directory with clear naming.
+
+3. **Experimental/rejected scripts**: Move to `scripts/archive-rejected/` with explanation in README.
+
+4. **Test scripts**: Keep in `scripts/` only if reusable. One-time test scripts should be deleted after use.
+
+**Allowed in root:**
+- Makefile (build commands)
+- Go files (main.go, embed.go)
+- Config files (.goreleaser.yaml, .vex.yaml, etc.)
+
+**Never in root:**
+- *.sh files (except through Makefile targets)
+- *.py migration scripts
+- Temporary fix scripts
