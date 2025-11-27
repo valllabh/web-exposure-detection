@@ -55,7 +55,7 @@ sboms:
   - id: archive
     artifacts: archive
     documents:
-      - "{{ .ProjectName }}_{{ .Version }}_sbom.spdx.json"
+      - "{{ .ArtifactName }}.sbom.spdx.json"
 
 # Sign artifacts for verification
 signs:
