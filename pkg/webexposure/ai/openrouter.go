@@ -78,10 +78,7 @@ func (p *openRouterProvider) Complete(ctx context.Context, req *CompletionReques
 	// Convert messages
 	messages := make([]openRouterMessage, len(req.Messages))
 	for i, msg := range req.Messages {
-		messages[i] = openRouterMessage{
-			Role:    msg.Role,
-			Content: msg.Content,
-		}
+		messages[i] = openRouterMessage(msg)
 	}
 
 	// Create request body

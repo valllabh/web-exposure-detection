@@ -92,10 +92,7 @@ func (p *perplexityProvider) Complete(ctx context.Context, req *CompletionReques
 	// Convert messages
 	messages := make([]perplexityMessage, len(req.Messages))
 	for i, msg := range req.Messages {
-		messages[i] = perplexityMessage{
-			Role:    msg.Role,
-			Content: msg.Content,
-		}
+		messages[i] = perplexityMessage(msg)
 	}
 
 	// Create request body

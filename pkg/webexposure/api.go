@@ -6,7 +6,6 @@ import (
 	"web-exposure-detection/pkg/webexposure/findings"
 	"web-exposure-detection/pkg/webexposure/industry"
 	"web-exposure-detection/pkg/webexposure/nuclei"
-	_ "web-exposure-detection/pkg/webexposure/nuclei" // Import for init() side effects
 	"web-exposure-detection/pkg/webexposure/report"
 	"web-exposure-detection/pkg/webexposure/scanner"
 	"web-exposure-detection/pkg/webexposure/truinsights"

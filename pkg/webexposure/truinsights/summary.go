@@ -1,7 +1,6 @@
 package truinsights
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -147,13 +146,4 @@ func (s *WebExposureSummary) formatAsMarkdown() string {
 	md.WriteString(fmt.Sprintf("- **Web applications**: %d\n", s.WebAppsFound))
 
 	return md.String()
-}
-
-// formatAsJSON converts the summary to JSON string
-func (s *WebExposureSummary) formatAsJSON() (string, error) {
-	data, err := json.MarshalIndent(s, "", "  ")
-	if err != nil {
-		return "", err
-	}
-	return string(data), nil
 }

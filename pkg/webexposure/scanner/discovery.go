@@ -3,7 +3,6 @@ package scanner
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -256,70 +255,6 @@ func (s *scanner) discoverDomainsWithProtocolCached(domains []string, keywords [
 	return discoveredDomains, nil
 }
 
-// discoverDomainsWithCache handles domain discovery with caching support
-func (s *scanner) discoverDomainsWithCache(domains []string, keywords []string, resultsDir string, force bool) ([]string, error) {
-	log := logger.GetLogger()
-	discoveryResultFile := filepath.Join(resultsDir, "domain-discovery-result.json")
-
-	// If force flag is set, remove cache file
-	if force {
-		log.Debug().Msgf("Clearing domain discovery cache: %s", discoveryResultFile)
-		if err := os.Remove(discoveryResultFile); err != nil && !os.IsNotExist(err) {
-			log.Error().Msgf("Failed to clear cache file: %v", err)
-			return nil, fmt.Errorf("failed to clear cache: %w", err)
-		}
-	}
-
-	// Try to load from cache first
-	if !force {
-		if discoveryResult, err := s.loadDiscoveryResult(discoveryResultFile); err == nil {
-			s.lastDiscoveryResult = discoveryResult
-			log.Debug().Msgf("Cache hit: loaded discovery result with %d domains", len(discoveryResult.Domains))
-
-			// Extract live domain URLs from the result
-			cachedDomains := s.extractLiveURLsFromResult(discoveryResult)
-			log.Debug().Msgf("Extracted %d live URLs from cache", len(cachedDomains))
-
-			if s.progress != nil {
-				s.progress.OnDomainDiscoveryStart(domains, keywords)
-				s.progress.OnDomainDiscoveryComplete(len(cachedDomains), len(domains), len(cachedDomains)-len(domains))
-			}
-			return cachedDomains, nil
-		} else {
-			log.Debug().Msgf("Cache miss or invalid cache: %v", err)
-		}
-	}
-
-	// Perform fresh domain discovery (no skip flags in cached path, use defaults)
-	discoveredDomains, err := s.DiscoverDomains(domains, keywords, false, false)
-	if err != nil {
-		return nil, err
-	}
-
-	// Save full discovery result (includes all domain details and metrics)
-	if s.lastDiscoveryResult != nil {
-		if err := s.saveDiscoveryResult(s.lastDiscoveryResult, discoveryResultFile); err != nil {
-			log.Warning().Msgf("Failed to save discovery result: %v", err)
-		} else {
-			log.Debug().Msgf("Saved discovery result to %s", discoveryResultFile)
-		}
-	}
-
-	return discoveredDomains, nil
-}
-
-// extractLiveURLsFromResult extracts live/accessible domain URLs from AssetDiscoveryResult
-func (s *scanner) extractLiveURLsFromResult(result *domainscan.AssetDiscoveryResult) []string {
-	var urls []string
-	for domainURL, entry := range result.Domains {
-		// Include domains that are HTTP-accessible (Status > 0) OR explicitly marked as Reachable
-		if entry.Status > 0 || entry.Reachable {
-			urls = append(urls, domainURL)
-		}
-	}
-	return urls
-}
-
 // extractDomainFromURL extracts clean domain from URL
 // e.g., "https://example.com:443" -> "example.com"
 func extractDomainFromURL(url string) string {
@@ -338,56 +273,6 @@ func extractDomainFromURL(url string) string {
 		domain = domain[:idx]
 	}
 	return domain
-}
-
-// createDirectDomainList creates domain list with provided domains (skips discovery)
-func (s *scanner) createDirectDomainList(domains []string, resultsDir string) ([]string, error) {
-	log := logger.GetLogger()
-	log.Debug().Msgf("Creating direct domain list for %d domains (skipping discovery)", len(domains))
-
-	discoveryResultFile := filepath.Join(resultsDir, "domain-discovery-result.json")
-
-	// Convert domains to HTTPS URLs and create DomainEntry objects
-	var urls []string
-	domainEntries := make(map[string]*domainscan.DomainEntry)
-
-	for _, domain := range domains {
-		httpsURL := "https://" + domain
-		urls = append(urls, httpsURL)
-
-		// Create a basic DomainEntry (assumed reachable, no passive scan)
-		domainEntries[httpsURL] = &domainscan.DomainEntry{
-			Domain:    httpsURL,
-			Status:    200, // Assume reachable
-			Reachable: true,
-			Sources:   nil, // No passive sources for direct input domains
-		}
-	}
-
-	// Create minimal AssetDiscoveryResult
-	result := &domainscan.AssetDiscoveryResult{
-		Domains: domainEntries,
-	}
-
-	s.lastDiscoveryResult = result
-
-	// Save discovery result
-	if err := s.saveDiscoveryResult(result, discoveryResultFile); err != nil {
-		log.Error().Msgf("Failed to save discovery result to %s: %v", discoveryResultFile, err)
-		return nil, fmt.Errorf("failed to save discovery result: %w", err)
-	}
-
-	// Notify progress callback if set
-	if s.progress != nil {
-		s.progress.OnDomainDiscoveryStart(domains, []string{})
-		s.progress.OnDomainDiscoveryComplete(len(urls), len(domains), 0)
-	}
-
-	log.Info().Msg("Skipped discovery - using provided domains only")
-	log.Info().Msgf("Total domains: %d", len(urls))
-	log.Info().Msgf("Results saved to: %s", discoveryResultFile)
-
-	return urls, nil
 }
 
 // saveDiscoveryResult saves the full AssetDiscoveryResult to file for metrics calculation

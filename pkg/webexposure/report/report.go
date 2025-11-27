@@ -639,27 +639,6 @@ func (rp *ResultProcessor) updateSummary(domainResult *common.DomainResult) {
 	}
 }
 
-// securityGradeToSortValue converts security rating grade to numeric value for sorting
-// Lower values = worse security (F=0, D=1, C=2, B=3, A=4, A+=5)
-func securityGradeToSortValue(grade string) int {
-	switch grade {
-	case "F":
-		return 0
-	case "D":
-		return 1
-	case "C":
-		return 2
-	case "B":
-		return 3
-	case "A":
-		return 4
-	case "A+":
-		return 5
-	default:
-		return -1 // No grade
-	}
-}
-
 // buildReport constructs the final report
 func (rp *ResultProcessor) buildReport() *common.ExposureReport {
 	logger := logger.GetLogger()

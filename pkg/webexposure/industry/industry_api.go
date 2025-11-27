@@ -10,9 +10,6 @@ import (
 	"web-exposure-detection/pkg/webexposure/ai"
 )
 
-const (
-	defaultIndustryPreset = "@preset/industry-classification-prompt"
-)
 
 // AIBasedClassifier implements IndustryClassifier using any AI provider
 type AIBasedClassifier struct {

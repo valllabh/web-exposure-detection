@@ -79,14 +79,12 @@ func (a *domainScanProgressAdapter) OnEnd(result *domainscan.AssetDiscoveryResul
 	// when we process the final results
 }
 
-// Module-level variables for embedded filesystems (set from main package)
+// Module-level variable for embedded filesystem (set from main package)
 var scanTemplatesFS embed.FS
-var templatesFS embed.FS
 
 // SetEmbeddedFS sets the embedded filesystems from main package
 func SetEmbeddedFS(scanFS, tmplFS embed.FS) {
 	scanTemplatesFS = scanFS
-	templatesFS = tmplFS
 	// Set templates FS for report package
 	report.SetTemplatesFS(tmplFS)
 }
